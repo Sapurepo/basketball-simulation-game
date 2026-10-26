@@ -154,13 +154,16 @@ export function createPlayer(
   }
 }
 
-const PEAK: Record<GrowthType, number> = { early: 25, normal: 27, late: 29 }
+// 전성기 종료 나이. 그 뒤 33세까지는 완만히, 34세부터 급격히 노쇠한다.
+const PEAK: Record<GrowthType, number> = { early: 31, normal: 33, late: 34 }
+const DECLINE_AGE = 34
 
 function ageMult(age: number): number {
   if (age <= 18) return 0.3
   if (age <= 21) return 0.28
   if (age <= 24) return 0.25
-  return 0.2
+  if (age <= 27) return 0.2
+  return 0.12
 }
 
 // 한 시즌 성장(또는 노쇠). minutesShare = 평균 출전시간 / 경기 시간.
@@ -175,8 +178,10 @@ export function grow(
   const peak = PEAK[p.growthType]
   const gap = p.potential - overall(p)
   let g: number
-  if (age >= peak) {
-    g = -rng.range(0.3, 1) * (age - peak + 1) * 0.7 + bonus * 0.5
+  if (age >= DECLINE_AGE) {
+    g = -(1.5 + 0.6 * (age - DECLINE_AGE)) * rng.range(0.8, 1.2) + bonus * 0.5
+  } else if (age >= peak) {
+    g = -rng.range(0.2, 0.8) + bonus * 0.5
   } else if (gap <= 0) {
     g = rng.range(-0.5, 0.5) + bonus * 0.3
   } else {
@@ -191,7 +196,7 @@ export function grow(
   const denom = ATTR_KEYS.reduce((s, k) => s + w[k] * b(k), 0)
   for (const k of ATTR_KEYS) {
     let d = (g * b(k)) / denom
-    if (k === 'athleticism' && age >= peak) d -= 1
+    if (k === 'athleticism' && age >= DECLINE_AGE) d -= 1
     p.attrs[k] = clamp(p.attrs[k] + d, 20, 99)
   }
 }
