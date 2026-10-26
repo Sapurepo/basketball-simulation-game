@@ -3,7 +3,7 @@ import { applyEvent, buildOffseason } from './events'
 import { grow, overall } from './player'
 import { Rng } from './rng'
 import { simulateSeason } from './season'
-import type { GameState, Player } from './types'
+import type { AttrKey, GameState, Player } from './types'
 
 export const START_YEAR = 2027
 export const START_AGE = 16
@@ -12,6 +12,7 @@ export function newGame(
   seed: number,
   player: Player,
   schoolId: string,
+  focus?: AttrKey,
 ): GameState {
   const school = HIGH_SCHOOLS.find((h) => h.id === schoolId)!
   return {
@@ -26,7 +27,7 @@ export function newGame(
     player,
     history: [],
     events: [],
-    mods: { growthBonus: 0 },
+    mods: { growthBonus: 0, focus },
     earnings: { KRW: 0, USD: 0 },
     peakOvr: overall(player),
     service: { status: 'pending' },

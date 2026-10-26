@@ -1,6 +1,7 @@
-import type { GameState } from './types'
+import type { GameState, Look, Position, Stage } from './types'
 
 const KEY = 'basketball-career-v1'
+const HALL_KEY = 'basketball-hall-v1'
 
 export function loadGame(): GameState | null {
   try {
@@ -43,4 +44,47 @@ export function exportSave(s: GameState) {
   a.download = `career-${s.player.name}-${s.year}.json`
   a.click()
   URL.revokeObjectURL(a.href)
+}
+
+// 명예의 전당: 끝났거나 버린 커리어의 요약. 랜딩 랭킹에 쓴다.
+export interface HallEntry {
+  name: string
+  position: Position
+  look?: Look
+  peakOvr: number
+  stage: Stage
+  trophies: number
+  year: number
+}
+
+export function loadHall(): HallEntry[] {
+  try {
+    return JSON.parse(localStorage.getItem(HALL_KEY) ?? '[]') as HallEntry[]
+  } catch {
+    return []
+  }
+}
+
+export function recordHall(s: GameState): HallEntry[] {
+  if (!s.history.length) return loadHall()
+  const entry: HallEntry = {
+    name: s.player.name,
+    position: s.player.position,
+    look: s.player.look,
+    peakOvr: s.peakOvr,
+    stage: s.stage,
+    trophies:
+      s.history.reduce((n, h) => n + h.awards.length, 0) + s.honors.length,
+    year: s.year,
+  }
+  // ponytail: 최고 오버롤 순 상위 10명만 보관, 동률은 트로피 수
+  const hall = [...loadHall(), entry]
+    .sort((a, b) => b.peakOvr - a.peakOvr || b.trophies - a.trophies)
+    .slice(0, 10)
+  try {
+    localStorage.setItem(HALL_KEY, JSON.stringify(hall))
+  } catch {
+    // 저장 불가 환경
+  }
+  return hall
 }
