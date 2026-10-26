@@ -1,17 +1,18 @@
 :root {
-  --bg: #0e1420;
-  --panel: #161e2e;
-  --line: #263248;
-  --text: #e8edf5;
-  --muted: #8b97ab;
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --line: #e2e5ea;
+  --text: #1b2230;
+  --muted: #5d6878;
   --accent: #f07a2b;
-  --accent-soft: #f07a2b22;
-  --win: #4cc38a;
-  --loss: #e5566b;
+  --accent-ink: #b4500a;
+  --accent-soft: #f07a2b1f;
+  --win: #1d8a57;
+  --loss: #cc3049;
   --gold: #f2c14e;
-  color-scheme: dark;
-  font-family:
-    'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  --gold-ink: #8f6400;
+  color-scheme: light;
+  font-family: 'Noto Sans KR', system-ui, sans-serif;
   line-height: 1.55;
   word-break: keep-all;
 }
@@ -100,7 +101,7 @@ footer {
 
 .eyebrow {
   margin: 0 0 4px;
-  color: var(--accent);
+  color: var(--accent-ink);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -233,7 +234,7 @@ select {
 .ovr b {
   font-size: 2.6rem;
   line-height: 1;
-  color: var(--accent);
+  color: var(--accent-ink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -332,7 +333,7 @@ select {
 }
 
 .count {
-  color: var(--gold);
+  color: var(--gold-ink);
   font-weight: 700;
 }
 
@@ -392,7 +393,7 @@ td:nth-child(4) {
 }
 
 .pbp .hot {
-  color: var(--gold);
+  color: var(--gold-ink);
   font-weight: 700;
 }
 
@@ -409,4 +410,64 @@ td:nth-child(4) {
   margin: 12px auto 0;
   padding: 0 16px;
   color: var(--loss);
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.pixel {
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.look {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.swatches small {
+  width: 2.5em;
+}
+
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid var(--line);
+}
+
+.swatch.on {
+  border-color: var(--accent-ink);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.badges {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badges li {
+  font-size: 0.82rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.ovr small + small {
+  margin-top: 2px;
 }

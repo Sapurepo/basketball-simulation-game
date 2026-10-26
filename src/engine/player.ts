@@ -12,8 +12,8 @@ export const ATTR_KEYS: AttrKey[] = [
 
 export const ATTR_LABELS: Record<AttrKey, string> = {
   shooting: '슈팅',
-  finishing: '돌파·마무리',
-  playmaking: '패스·핸들링',
+  finishing: '돌파',
+  playmaking: '패스',
   rebounding: '리바운드',
   defense: '수비',
   athleticism: '운동능력',

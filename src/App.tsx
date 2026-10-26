@@ -66,8 +66,8 @@ export default function App() {
         <CreateScreen onStart={setState} />
       )}
       <footer className="muted">
-        팀·선수·경기 결과는 모두 가상입니다. 실제 리그·구단과 무관합니다. 진행
-        내용은 이 브라우저에만 저장됩니다.
+        팀, 선수, 경기 결과는 모두 가상이며 실제 리그나 구단과 관계가 없습니다.
+        진행 내용은 이 브라우저에만 저장됩니다.
       </footer>
     </>
   )

@@ -13,6 +13,8 @@ import {
 import { Rng } from '../engine/rng'
 import type { GameState, Position } from '../engine/types'
 import { AttrBars } from './attrBars'
+import { PixelPlayer } from './pixelPlayer'
+import { HAIRS, SKINS, teamKit } from './pose'
 
 const POSITIONS = Object.keys(POSITION_LABELS) as Position[]
 const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
@@ -23,9 +25,14 @@ export function CreateScreen({ onStart }: { onStart: (s: GameState) => void }) {
   const [style, setStyle] = useState(STYLES.PG[0].name)
   const [school, setSchool] = useState(HIGH_SCHOOLS[0].id)
   const [seed, setSeed] = useState(randomSeed)
+  const [skin, setSkin] = useState(0)
+  const [hair, setHair] = useState(0)
 
   const rng = new Rng(seed)
-  const player = createPlayer(rng, name.trim() || '이름 없음', position, style)
+  const player = {
+    ...createPlayer(rng, name.trim() || '이름 없음', position, style),
+    look: { skin, hair },
+  }
 
   const choosePosition = (p: Position) => {
     setPosition(p)
@@ -80,6 +87,39 @@ export function CreateScreen({ onStart }: { onStart: (s: GameState) => void }) {
                 {s.name}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <span>외형</span>
+          <div className="look">
+            <PixelPlayer pose="idle" kit={teamKit(school)} look={player.look} />
+            <div className="field">
+              <div className="swatches" role="group" aria-label="피부색">
+                <small className="muted">피부</small>
+                {SKINS.map((c, i) => (
+                  <button
+                    key={c}
+                    className={i === skin ? 'swatch on' : 'swatch'}
+                    style={{ background: c }}
+                    aria-label={`피부색 ${i + 1}`}
+                    onClick={() => setSkin(i)}
+                  />
+                ))}
+              </div>
+              <div className="swatches" role="group" aria-label="머리색">
+                <small className="muted">머리</small>
+                {HAIRS.map((c, i) => (
+                  <button
+                    key={c}
+                    className={i === hair ? 'swatch on' : 'swatch'}
+                    style={{ background: c }}
+                    aria-label={`머리색 ${i + 1}`}
+                    onClick={() => setHair(i)}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

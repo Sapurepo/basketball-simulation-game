@@ -1,4 +1,4 @@
-import type { SeasonRecord } from '../engine/types'
+import type { Honor, SeasonRecord } from '../engine/types'
 import { avg, pct, seasonLabel, STAGE_LABEL } from './format'
 
 export function SeasonTable({ history }: { history: SeasonRecord[] }) {
@@ -38,7 +38,7 @@ export function SeasonTable({ history }: { history: SeasonRecord[] }) {
               <td>{avg(h.stats, 'ast')}</td>
               <td>{pct(h.stats.fgm, h.stats.fga)}</td>
               <td>{pct(h.stats.tpm, h.stats.tpa)}</td>
-              <td className="left">{h.result}</td>
+              <td className="left">{h.result.join(', ')}</td>
             </tr>
           ))}
         </tbody>
@@ -47,18 +47,25 @@ export function SeasonTable({ history }: { history: SeasonRecord[] }) {
   )
 }
 
-export function TrophyCase({ history }: { history: SeasonRecord[] }) {
+export function TrophyCase({
+  history,
+  honors,
+}: {
+  history: SeasonRecord[]
+  honors: Honor[]
+}) {
   const counts = new Map<string, number[]>()
-  for (const h of history) {
-    for (const a of h.awards) counts.set(a, [...(counts.get(a) ?? []), h.year])
-  }
+  const add = (name: string, year: number) =>
+    counts.set(name, [...(counts.get(name) ?? []), year])
+  for (const h of history) for (const a of h.awards) add(a, h.year)
+  for (const h of honors) add(h.name, h.year)
   if (!counts.size) return <p className="muted">아직 수상 기록이 없습니다.</p>
   const rank = (a: string) =>
     a.includes('파이널 MVP')
       ? 0
       : a.startsWith('NBA') || a.startsWith('All-NBA')
         ? 1
-        : a.startsWith('KBL')
+        : a.startsWith('KBL') || a.startsWith('아시안게임')
           ? 2
           : 3
   return (

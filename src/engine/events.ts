@@ -1,6 +1,17 @@
 import { UNIVERSITIES } from '../data/schools'
 import { KBL_TEAMS, NBA_TEAMS } from '../data/teams'
-import { KBL_SALARY, NBA_SALARY, NBA_TWO_WAY_SALARY } from '../data/leagues'
+import {
+  ENLIST_MAX_AGE,
+  ENLIST_MIN_AGE,
+  KBL_SALARY,
+  NBA_SALARY,
+  NBA_TWO_WAY_SALARY,
+} from '../data/leagues'
+import {
+  isAsianGamesYear,
+  playAsianGames,
+  selectedForNational,
+} from './nationalTeam'
 import { ATTR_KEYS, ATTR_LABELS, overall } from './player'
 import { clamp, sigmoid, type Rng } from './rng'
 import type {
@@ -64,7 +75,7 @@ function offerOption(o: Offer, i: number): EventOption {
   return {
     id: `offer:${i}`,
     label: `${o.teamName}${o.twoWay ? ' (투웨이)' : ''}`,
-    desc: `${formatMoney(o.salary, o.currency)} · ${o.yearsLeft}년`,
+    desc: `연봉 ${formatMoney(o.salary, o.currency)}, ${o.yearsLeft}년 계약`,
   }
 }
 
@@ -155,7 +166,7 @@ function kblDraft(rng: Rng, s: GameState): GameEvent {
   })
   return notice(
     `KBL 신인 드래프트 ${round}라운드 ${pick}순위!`,
-    `${t.name}이(가) ${s.player.name}을(를) 지명했습니다. 연봉 ${formatMoney(salary, 'KRW')}, 계약 3년.`,
+    `${t.name}이(가) ${s.player.name}을(를) 지명했습니다. 연봉 ${formatMoney(salary, 'KRW')}에 3년 계약입니다.`,
   )
 }
 
@@ -188,7 +199,7 @@ function nbaDraft(rng: Rng, s: GameState): GameEvent[] {
   return [
     notice(
       `NBA 드래프트 ${firstRound ? 1 : 2}라운드 ${pick}순위!`,
-      `${t.name}이(가) 당신을 지명했습니다. ${firstRound ? '루키 스케일' : '투웨이'} 계약 ${formatMoney(c.salary, 'USD')}.`,
+      `${t.name}의 지명을 받았습니다. ${formatMoney(c.salary, 'USD')}에 ${firstRound ? '루키 스케일' : '투웨이'} 계약입니다.`,
     ),
   ]
 }
@@ -207,7 +218,7 @@ function nbaTryout(rng: Rng, s: GameState): GameEvent {
   sign(s, 'NBA', c)
   return notice(
     'NBA 계약 성공!',
-    `${c.teamName}와(과) ${c.twoWay ? '투웨이' : '정식'} 계약을 맺었습니다. ${formatMoney(c.salary, 'USD')}.`,
+    `${c.teamName}와(과) ${formatMoney(c.salary, 'USD')}에 ${c.twoWay ? '투웨이' : '정식'} 계약을 맺었습니다.`,
   )
 }
 
@@ -227,12 +238,23 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       },
     ]
   }
+  if (s.stage === 'MILITARY') {
+    ev.push(...leaveService(rng, s, true))
+  }
   const pro = s.stage === 'KBL' || s.stage === 'NBA' || s.stage === 'FREE'
+  if (
+    pro &&
+    s.service.status === 'pending' &&
+    s.age >= ENLIST_MIN_AGE &&
+    !ev.length
+  ) {
+    ev.push(enlistEvent(s))
+  }
   if (pro && s.age >= 34) {
     ev.push({
       kind: 'retire',
       title: '은퇴 고민',
-      body: `${s.age}세. 몸이 예전 같지 않습니다. 현역을 이어갈까요?`,
+      body: `${s.age}세, 몸이 예전 같지 않습니다. 현역을 이어갈까요?`,
       options: [
         { id: 'stay', label: '현역 연장' },
         { id: 'retire', label: '은퇴한다' },
@@ -248,7 +270,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
     ev.push({
       kind: 'hsGraduate',
       title: '고교 졸업 — 진로 선택',
-      body: `현재 오버롤 ${ovr}. 스카우트 제안이 도착했습니다.`,
+      body: `현재 오버롤은 ${ovr}입니다. 스카우트 제안이 도착했습니다.`,
       options: [
         ...list.map((u) => ({ id: `univ:${u.id}`, label: `${u.name} 진학` })),
         {
@@ -278,7 +300,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       ev.push({
         kind: 'collegeChoice',
         title: last ? '대학 졸업 — 드래프트' : '얼리 엔트리 결정',
-        body: `현재 오버롤 ${ovr}.`,
+        body: `현재 오버롤 ${ovr}`,
         options,
       })
     }
@@ -299,7 +321,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
           offersEvent(
             'kblFA',
             'KBL FA 시장',
-            `현재 오버롤 ${ovr}. 영입 제안이 왔습니다.`,
+            `현재 오버롤은 ${ovr}입니다. 영입 제안이 왔습니다.`,
             kblOffers(rng, s),
             nbaOpt,
           ),
@@ -324,14 +346,30 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
         'nbaFA',
         'NBA FA 시장',
         offers.length
-          ? `현재 오버롤 ${ovr}. 계약 제안이 도착했습니다.`
-          : `현재 오버롤 ${ovr}. NBA 팀들의 제안이 없습니다.`,
+          ? `현재 오버롤은 ${ovr}입니다. 계약 제안이 도착했습니다.`
+          : `현재 오버롤은 ${ovr}입니다. NBA 팀들의 제안은 없습니다.`,
         offers,
         extra,
       ),
     )
   } else if (s.stage === 'FREE') {
     ev.push(freeChoice(s))
+  }
+
+  if (
+    isAsianGamesYear(s.year) &&
+    s.stage !== 'HS' &&
+    selectedForNational(rng, s)
+  ) {
+    ev.push({
+      kind: 'asianGames',
+      title: `${s.year} 아시안게임 국가대표 발탁`,
+      body: '태극마크를 달 기회입니다. 금메달을 따면 병역특례(예술체육요원)를 받습니다.',
+      options: [
+        { id: 'go', label: '출전한다' },
+        { id: 'skip', label: '소속팀 시즌 준비에 집중한다' },
+      ],
+    })
   }
 
   ev.push(trainingEvent())
@@ -371,7 +409,7 @@ const RANDOM_EVENTS: (() => GameEvent)[] = [
     title: '개인 트레이너 제안',
     body: '유명 스킬 트레이너가 비시즌 1:1 훈련을 제안했습니다.',
     options: [
-      { id: 'yes', label: '함께 훈련한다', desc: '다음 시즌 성장 증가' },
+      { id: 'yes', label: '함께 훈련한다', desc: '다음 시즌 성장 폭 증가' },
       { id: 'no', label: '정중히 거절한다' },
     ],
   }),
@@ -495,6 +533,56 @@ export function applyEvent(
       }
       setStage(s, 'FREE', '', '무소속')
       return
+    case 'military':
+      if (optionId === 'later') return
+      if (optionId === 'active') {
+        enlist(s, 'active')
+        return front(notice('현역 입대', '18개월 동안 코트를 떠납니다.'))
+      }
+      if (ovr + rng.normal(0, 2) >= 64) {
+        enlist(s, 'sangmu')
+        return front(
+          notice('상무 합격', '국군체육부대에서 D리그를 뛰며 복무합니다.'),
+        )
+      }
+      if (s.age >= ENLIST_MAX_AGE) {
+        enlist(s, 'active')
+        return front(notice('상무 불합격', '현역으로 입대합니다.'))
+      }
+      return front(notice('상무 불합격', '내년에 다시 지원할 수 있습니다.'))
+    case 'asianGames': {
+      if (optionId === 'skip') return
+      const r = playAsianGames(rng, s, s.year)
+      s.honors.push({ year: s.year, name: '아시안게임 국가대표' })
+      if (r.medal)
+        s.honors.push({ year: s.year, name: `아시안게임 ${r.finish}` })
+      const ppg = r.stats.games ? (r.stats.pts / r.stats.games).toFixed(1) : '0'
+      const after: GameEvent[] = []
+      if (
+        r.medal === 'gold' &&
+        (s.service.status === 'pending' || s.service.status === 'serving')
+      ) {
+        const serving = s.service.status === 'serving'
+        after.push(
+          notice(
+            '예술체육요원 편입',
+            '4주 기초군사훈련을 마친 뒤 544시간의 체육 봉사로 병역을 대신합니다.',
+          ),
+        )
+        if (serving) after.push(...leaveService(rng, s, false))
+        s.service = { status: 'exempt' }
+      }
+      return front(
+        {
+          ...notice(
+            `아시안게임 ${r.finish}`,
+            `대한민국 ${r.finish}. ${s.player.name}의 평균 득점은 ${ppg}점입니다.`,
+          ),
+          data: { game: r.last },
+        },
+        ...after,
+      )
+    }
     case 'training':
       s.mods.focus = optionId === 'balance' ? undefined : (optionId as AttrKey)
       return
@@ -541,9 +629,88 @@ function signOffer(
   front(
     notice(
       `${o.teamName} 계약`,
-      `${formatMoney(o.salary, o.currency)} · ${o.yearsLeft}년 계약을 맺었습니다.`,
+      `연봉 ${formatMoney(o.salary, o.currency)}에 ${o.yearsLeft}년 계약을 맺었습니다.`,
     ),
   )
+}
+
+// 입대 시 소속팀 계약 관련 이벤트는 무효
+const CONTRACT_KINDS = new Set(['kblFA', 'nbaFA', 'nbaChallenge', 'free'])
+
+function enlistEvent(s: GameState): GameEvent {
+  const forced = s.age >= ENLIST_MAX_AGE
+  return {
+    kind: 'military',
+    title: forced ? '입영 통지서' : '병역 의무',
+    body: forced
+      ? `${s.age}세, 더는 입대를 미룰 수 없습니다.`
+      : '상무에 합격하면 복무 중에도 D리그에서 뛸 수 있습니다. 아시안게임 금메달을 따면 병역특례를 받습니다.',
+    options: [
+      {
+        id: 'sangmu',
+        label: '상무 지원',
+        desc: '합격 시 D리그 출전, 18개월 복무',
+      },
+      forced
+        ? { id: 'active', label: '현역 입대', desc: '복무 중 경기 출전 불가' }
+        : { id: 'later', label: '입대 연기' },
+    ],
+  }
+}
+
+function enlist(s: GameState, kind: 'sangmu' | 'active') {
+  s.service = {
+    status: 'serving',
+    kind,
+    returnTo: {
+      stage: s.stage,
+      teamId: s.teamId,
+      teamName: s.teamName,
+      // KBL 계약은 복무 기간 동안 멈췄다가 전역 후 이어간다
+      contract: s.stage === 'KBL' ? s.contract : undefined,
+    },
+  }
+  s.contract = undefined
+  setStage(
+    s,
+    'MILITARY',
+    kind === 'sangmu' ? 'sangmu' : 'army',
+    kind === 'sangmu' ? '국군체육부대(상무)' : '현역 복무',
+  )
+  s.events = s.events.filter((e) => !CONTRACT_KINDS.has(e.kind))
+}
+
+// 전역(또는 금메달 조기 전역): KBL 출신은 원소속팀 복귀, 그 외는 FA
+function leaveService(rng: Rng, s: GameState, late: boolean): GameEvent[] {
+  const back = s.service.returnTo
+  s.service = { status: 'done', kind: s.service.kind }
+  s.mods.lateReturn = late
+  const when = late
+    ? '12월 전역 후 시즌 중반에 합류합니다.'
+    : '조기 전역해 바로 시즌을 준비합니다.'
+  if (back?.stage === 'KBL' && back.contract) {
+    sign(s, 'KBL', {
+      ...back.contract,
+      yearsLeft: Math.max(1, back.contract.yearsLeft),
+    })
+    return [notice('전역', `${back.teamName}로 복귀합니다. ${when}`)]
+  }
+  setStage(s, 'FREE', '', '무소속')
+  s.contract = undefined
+  const ovr = overall(s.player)
+  const offers = back?.stage === 'NBA' && ovr >= 83 ? nbaOffers(rng, s) : []
+  return [
+    notice('전역', `소속팀 없이 전역합니다. ${when}`),
+    offersEvent(
+      'nbaFA',
+      '전역 후 진로',
+      offers.length
+        ? 'NBA 구단의 제안이 도착했습니다.'
+        : 'KBL 구단과 계약을 알아봅니다.',
+      offers,
+      [{ id: 'kbl', label: 'KBL 구단과 계약' }],
+    ),
+  ]
 }
 
 function retire(s: GameState) {

@@ -1,6 +1,7 @@
 import { HIGH_SCHOOLS, HS_TOURNAMENTS, UNIVERSITIES } from '../data/schools'
 import { KBL_TEAMS, NBA_TEAMS } from '../data/teams'
 import {
+  D_LEAGUE_GAMES,
   KBL_GAMES,
   LEAGUES,
   NBA_GAMES,
@@ -52,6 +53,8 @@ class SeasonCtx {
   readonly mpg: number
   readonly gameMin: number
   private readonly missChance: number
+  // 상무 전역 시즌: 정규리그 앞부분 결장 경기 수
+  private lateSkip: number
 
   constructor(
     rng: Rng,
@@ -71,11 +74,16 @@ class SeasonCtx {
     const injured = rng.chance(s.player.injuryProne ? 0.25 : 0.1)
     this.missChance = injured ? rng.range(0.1, 0.4) : 0
     if (injured) this.awards.push('__injured')
+    const regular =
+      league === 'KBL' ? KBL_GAMES : league === 'NBA' ? NBA_GAMES : 0
+    this.lateSkip = s.mods.lateReturn ? Math.round(regular * 0.55) : 0
   }
 
   game(opp: Team, label: string, playoff = false): boolean {
     const cfg = LEAGUES[this.league]
-    const out = this.rng.chance(this.missChance)
+    const late = !playoff && this.lateSkip > 0
+    if (late) this.lateSkip--
+    const out = late || this.rng.chance(this.missChance)
     const clutch = playoff && this.s.player.clutch ? 1.5 : 0
     const r = playGame(
       this.rng,
@@ -136,7 +144,7 @@ class SeasonCtx {
       (p, i, arr): p is Played => !!p && arr.indexOf(p) === i,
     )
     return picks.map((p) => ({
-      label: p === best ? `시즌 베스트 게임 · ${p.label}` : p.label,
+      label: p === best ? `시즌 베스트 (${p.label})` : p.label,
       opponent: p.opp.name,
       myScore: p.myScore,
       oppScore: p.oppScore,
@@ -286,7 +294,7 @@ function highSchool(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
       c.awards.push(`${name} 득점상`)
     }
   }
-  return { c, result: `최고 성적 ${RESULT_LABEL[best]}` }
+  return { c, result: [`대회 최고 성적 ${RESULT_LABEL[best]}`] }
 }
 
 function college(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
@@ -298,10 +306,10 @@ function college(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
   }
   const table = standings(rng, teams, c.team, c.wins, UNIV_LEAGUE_GAMES)
   const rank = table.indexOf(c.team) + 1
-  let result = `정규리그 ${rank}위`
+  const result = [`정규리그 ${rank}위`]
   if (rank <= 8) {
     const champ = bracket8Single(c, table.slice(0, 8))
-    result += champ.id === c.team.id ? ' · 통합 우승' : ' · 플레이오프 진출'
+    result.push(champ.id === c.team.id ? 'U-리그 우승' : '플레이오프 진출')
     if (champ.id === c.team.id) {
       c.awards.push('U-리그 우승')
       if (c.finalsMvp(finalsLine(c, 'U-리그 챔피언결정전'), 20))
@@ -338,7 +346,7 @@ function kbl(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
   }
   const table = standings(rng, teams, c.team, c.wins, KBL_GAMES)
   const rank = table.indexOf(c.team) + 1
-  let result = `정규리그 ${rank}위`
+  const result = [`정규리그 ${rank}위`]
   if (rank <= 6) {
     // 1·2위 4강 직행, 6강·4강 5전 3선승, 챔피언결정전 7전 4선승
     const w36 = c.series(table[2], table[5], 5, '6강 플레이오프')
@@ -348,17 +356,17 @@ function kbl(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
     const semis = [table[0], table[1], w36, w45]
     const champ = c.series(f1, f2, 7, '챔피언결정전')
     if (champ.id === c.team.id) {
-      result += ' · 챔피언결정전 우승'
+      result.push('챔피언결정전 우승')
       c.awards.push('KBL 챔피언결정전 우승')
       if (c.finalsMvp(finalsLine(c, '챔피언결정전'), 32)) {
         c.awards.push('KBL 챔피언결정전 MVP')
       }
     } else if (f1.id === c.team.id || f2.id === c.team.id) {
-      result += ' · 챔피언결정전 준우승'
+      result.push('챔피언결정전 준우승')
     } else if (semis.some((t) => t.id === c.team.id)) {
-      result += ' · 4강 플레이오프'
+      result.push('4강 플레이오프 탈락')
     } else {
-      result += ' · 6강 플레이오프'
+      result.push('6강 플레이오프 탈락')
     }
   }
   if (c.eligible()) {
@@ -397,7 +405,7 @@ function nba(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
   const conf = teams.filter((t) => t.conference === c.team.conference)
   const table = standings(rng, conf, c.team, c.wins, NBA_GAMES)
   const rank = table.indexOf(c.team) + 1
-  let result = `${c.team.conference === 'East' ? '동부' : '서부'} ${rank}위`
+  const result = [`${c.team.conference === 'East' ? '동부' : '서부'} ${rank}위`]
   if (rank <= 8) {
     const rounds = ['1라운드', '컨퍼런스 세미파이널', '컨퍼런스 파이널']
     const mine = bracket8(c, table.slice(0, 8), rounds)
@@ -408,17 +416,19 @@ function nba(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
     if (mine.id === c.team.id) {
       const champ = c.series(mine, other, 7, 'NBA 파이널')
       if (champ.id === c.team.id) {
-        result += ' · NBA 챔피언'
+        result.push('NBA 챔피언')
         c.awards.push('NBA 챔피언')
         if (c.finalsMvp(finalsLine(c, 'NBA 파이널'), 26)) {
           c.awards.push('NBA 파이널 MVP')
         }
       } else {
-        result += ' · NBA 파이널 준우승'
+        result.push('NBA 파이널 준우승')
       }
     } else {
       const lastRound = c.played.at(-1)?.label ?? ''
-      result += ` · ${rounds.find((r) => lastRound.startsWith(r)) ?? '플레이오프'} 탈락`
+      result.push(
+        `${rounds.find((r) => lastRound.startsWith(r)) ?? '플레이오프'} 탈락`,
+      )
     }
   }
   if (c.eligible()) {
@@ -461,7 +471,38 @@ type SeasonCtxFactory = (
   mpgScale?: number,
 ) => SeasonCtx
 
-const RUNNERS = { HS: highSchool, COLLEGE: college, KBL: kbl, NBA: nba }
+// 상무: KBL D리그 참가. 상대는 프로 구단 2군.
+function military(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
+  const teams = makeTeams(
+    rng,
+    [
+      { id: 'sangmu', name: '국군체육부대', strength: 64 },
+      ...KBL_TEAMS.slice(0, 6).map((t) => ({
+        id: t.id,
+        name: `${t.name} D리그`,
+      })),
+    ],
+    60,
+    2,
+  )
+  const c = ctx(teams, 'MILITARY')
+  const others = teams.filter((t) => t.id !== c.team.id)
+  for (let i = 0; i < D_LEAGUE_GAMES; i++) {
+    c.game(others[i % others.length], 'KBL D리그')
+  }
+  const table = standings(rng, teams, c.team, c.wins, D_LEAGUE_GAMES)
+  const rank = table.indexOf(c.team) + 1
+  if (rank === 1) c.awards.push('KBL D리그 우승')
+  return { c, result: [`D리그 ${rank}위`] }
+}
+
+const RUNNERS = {
+  HS: highSchool,
+  COLLEGE: college,
+  KBL: kbl,
+  NBA: nba,
+  MILITARY: military,
+}
 
 export function simulateSeason(rng: Rng, s: GameState): SeasonRecord {
   const ovr = overall(s.player)
@@ -474,30 +515,38 @@ export function simulateSeason(rng: Rng, s: GameState): SeasonRecord {
     stats: emptyLine(),
     wins: 0,
     losses: 0,
-    result: '',
+    result: [],
     awards: [],
     featured: [],
     minutesShare: 0.3,
   }
   if (s.stage === 'FREE' || s.stage === 'RETIRED') {
-    return { ...base, result: '무소속 · 개인 훈련' }
+    return { ...base, result: ['무소속으로 개인 훈련'] }
+  }
+  if (s.stage === 'MILITARY' && s.service.kind === 'active') {
+    return { ...base, result: ['현역 복무'], minutesShare: 0 }
   }
   const factory: SeasonCtxFactory = (teams, league, mpgScale) =>
     new SeasonCtx(rng, s, league, teamOf(teams, s.teamId), mpgScale)
   const { c, result } = RUNNERS[s.stage](rng, s, factory)
   const injured = c.awards.includes('__injured')
+  const extra = [
+    ...(s.mods.lateReturn ? ['전역 후 시즌 중반 합류'] : []),
+    ...(injured ? ['부상 결장'] : []),
+  ]
   return {
     ...base,
     stats: c.stats,
     playoffStats: c.po.games ? c.po : undefined,
     wins: c.wins,
     losses: c.losses,
-    result: injured ? `${result} · 부상 결장` : result,
+    result: [...result, ...extra],
     awards: c.awards.filter((a) => a !== '__injured'),
     featured: c.featured(),
-    salary: s.contract
-      ? { amount: s.contract.salary, currency: s.contract.currency }
-      : undefined,
+    salary:
+      s.contract && s.stage !== 'MILITARY'
+        ? { amount: s.contract.salary, currency: s.contract.currency }
+        : undefined,
     minutesShare: clamp(c.share(), 0, 1),
   }
 }

@@ -7,14 +7,22 @@ export type AttrKey =
   | 'defense'
   | 'athleticism'
 export type Attributes = Record<AttrKey, number>
-export type Stage = 'HS' | 'COLLEGE' | 'KBL' | 'NBA' | 'FREE' | 'RETIRED'
+export type Stage =
+  'HS' | 'COLLEGE' | 'KBL' | 'NBA' | 'MILITARY' | 'FREE' | 'RETIRED'
 export type GrowthType = 'early' | 'normal' | 'late'
+
+// 외형(픽셀 캐릭터): 팔레트 인덱스
+export interface Look {
+  skin: number
+  hair: number
+}
 
 export interface Player {
   name: string
   position: Position
   style: string
   height: number
+  look?: Look
   attrs: Attributes
   potential: number
   // 숨은 특성: UI 에 직접 노출하지 않는다.
@@ -67,7 +75,8 @@ export interface SeasonRecord {
   playoffStats?: StatLine
   wins: number
   losses: number
-  result: string
+  // 시즌 결과 요약 조각들 (화면에서는 뱃지로 표시)
+  result: string[]
   awards: string[]
   featured: GameLog[]
   minutesShare: number
@@ -91,6 +100,25 @@ export interface GameEvent {
 export interface Modifiers {
   focus?: AttrKey
   growthBonus: number
+  // 상무 전역 시즌: 시즌 중반(12월)부터 합류
+  lateReturn?: boolean
+}
+
+// 병역: 상무(국군체육부대) 또는 현역. 아시안게임 금메달이면 예술체육요원 편입.
+export interface Service {
+  status: 'pending' | 'serving' | 'done' | 'exempt'
+  kind?: 'sangmu' | 'active'
+  returnTo?: {
+    stage: Stage
+    teamId: string
+    teamName: string
+    contract?: Contract
+  }
+}
+
+export interface Honor {
+  year: number
+  name: string
 }
 
 export interface GameState {
@@ -109,4 +137,6 @@ export interface GameState {
   mods: Modifiers
   earnings: { KRW: number; USD: number }
   peakOvr: number
+  service: Service
+  honors: Honor[]
 }

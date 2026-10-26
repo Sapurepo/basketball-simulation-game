@@ -29,6 +29,8 @@ export function newGame(
     mods: { growthBonus: 0 },
     earnings: { KRW: 0, USD: 0 },
     peakOvr: overall(player),
+    service: { status: 'pending' },
+    honors: [],
   }
 }
 
@@ -52,14 +54,17 @@ export function advanceSeason(state: GameState): GameState {
     if (rec.salary) s.earnings[rec.salary.currency] += rec.salary.amount
     if (s.contract) s.contract.yearsLeft--
 
-    const injuredPenalty = rec.result.includes('부상') ? -1 : 0
+    const injuredPenalty = rec.result.includes('부상 결장') ? -1 : 0
+    // 현역 복무: 실전 공백으로 기량 하락
+    const armyPenalty =
+      s.stage === 'MILITARY' && s.service.kind === 'active' ? -2.5 : 0
     grow(
       rng,
       s.player,
       s.age,
       rec.minutesShare,
       s.mods.focus,
-      s.mods.growthBonus + injuredPenalty,
+      s.mods.growthBonus + injuredPenalty + armyPenalty,
     )
     s.peakOvr = Math.max(s.peakOvr, overall(s.player))
     s.mods = { growthBonus: 0 }

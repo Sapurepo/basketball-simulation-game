@@ -25,6 +25,14 @@ export function parseSave(raw: string): GameState {
   if (s?.version !== 1 || !s.player || !Array.isArray(s.history)) {
     throw new Error('올바른 저장 파일이 아닙니다.')
   }
+  // 병역 시스템 이전 저장 파일 호환
+  s.service ??= { status: 'pending' }
+  s.honors ??= []
+  // 결과가 문자열이던 저장 파일 호환
+  for (const h of s.history) {
+    const r = h.result as unknown
+    if (typeof r === 'string') h.result = r.split(' · ')
+  }
   return s
 }
 

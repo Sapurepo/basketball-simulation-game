@@ -10,19 +10,27 @@ export interface LeagueConfig {
 }
 
 export const LEAGUES: Record<
-  Exclude<Stage, 'FREE' | 'RETIRED'>,
+  Exclude<Stage, 'FREE' | 'RETIRED'> | 'NATIONAL',
   LeagueConfig
 > = {
   HS: { label: '고교', quarterMinutes: 8, level: 50, avgScore: 72 },
   COLLEGE: { label: '대학', quarterMinutes: 10, level: 60, avgScore: 76 },
   KBL: { label: 'KBL', quarterMinutes: 10, level: 66, avgScore: 80 },
   NBA: { label: 'NBA', quarterMinutes: 12, level: 85, avgScore: 114 },
+  MILITARY: { label: '상무', quarterMinutes: 10, level: 62, avgScore: 78 },
+  NATIONAL: { label: '국가대표', quarterMinutes: 10, level: 70, avgScore: 80 },
 }
 
 export const KBL_GAMES = 54
 export const NBA_GAMES = 82
 export const UNIV_LEAGUE_GAMES = 20 // 11개 팀 더블 라운드로빈
 export const TWO_WAY_GAME_LIMIT = 50
+export const D_LEAGUE_GAMES = 18
+
+// 병역: 만 28세까지 입대 연기 가능(게임용 단순화), 4년 주기 아시안게임
+export const ENLIST_MIN_AGE = 22
+export const ENLIST_MAX_AGE = 28
+export const ASIAN_GAMES_FIRST = 2030
 
 // 연봉 테이블: [OVR, 금액]. 사이는 선형 보간.
 // KBL 단위: 만원. 샐러리캡 30억, 2025-26 국내 최고 보수 8억.

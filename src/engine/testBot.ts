@@ -21,6 +21,10 @@ export function botChoice(s: GameState): string {
       return has('draft') ? 'draft' : 'tryout'
     case 'retire':
       return s.age >= 37 ? 'retire' : 'stay'
+    case 'military':
+      return 'sangmu'
+    case 'asianGames':
+      return 'go'
     case 'training':
       return 'balance'
     default:

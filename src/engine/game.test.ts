@@ -40,6 +40,55 @@ describe('커리어 전체 진행', () => {
   })
 })
 
+describe('병역', () => {
+  test('29세 이상 프로 선수는 병역을 마쳤거나 면제다', () => {
+    for (const s of careers) {
+      if (
+        s.history.some(
+          (h) => h.age >= 29 && (h.stage === 'KBL' || h.stage === 'NBA'),
+        )
+      ) {
+        expect(['done', 'exempt']).toContain(s.service.status)
+      }
+    }
+  })
+
+  test('상무 전역 후 KBL 원소속팀으로 시즌 중반에 복귀한다', () => {
+    const cases = careers.flatMap((s) =>
+      s.history.flatMap((h, i) => {
+        const before = s.history[i - 1]
+        const after = s.history[i + 1]
+        return h.stage === 'MILITARY' &&
+          before?.stage === 'KBL' &&
+          after?.stage === 'KBL'
+          ? [{ before, after }]
+          : []
+      }),
+    )
+    expect(cases.length).toBeGreaterThan(0)
+    for (const { before, after } of cases) {
+      expect(after.team).toBe(before.team)
+      expect(after.result).toContain('전역 후 시즌 중반 합류')
+    }
+  })
+
+  test('아시안게임 금메달이면 예술체육요원으로 면제된다', () => {
+    const gold = careers.filter((s) =>
+      s.honors.some((h) => h.name === '아시안게임 금메달'),
+    )
+    expect(gold.length).toBeGreaterThan(0)
+    for (const s of gold) {
+      const goldYear = s.honors.find(
+        (h) => h.name === '아시안게임 금메달',
+      )!.year
+      const servedBefore = s.history.some(
+        (h) => h.stage === 'MILITARY' && h.year < goldYear,
+      )
+      expect(s.service.status).toBe(servedBefore ? 'done' : 'exempt')
+    }
+  })
+})
+
 test('선수 생성 시 능력치 합계는 기준값 근처다', () => {
   const p = createPlayer(new Rng(1), 'a', 'PG', '플레이메이커')
   const total = Object.values(p.attrs).reduce((a, b) => a + b, 0)
