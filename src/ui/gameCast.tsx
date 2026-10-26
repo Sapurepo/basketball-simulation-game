@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { GameLog } from '../engine/types'
+import { TeamLogo } from './teamLogo'
 
 // 텍스트 중계: 한 줄씩 재생, 건너뛰기 가능
 export function GameCast({ game }: { game: GameLog }) {
@@ -25,8 +26,8 @@ export function GameCast({ game }: { game: GameLog }) {
       <div className="row between">
         <div>
           <p className="eyebrow">{game.label}</p>
-          <h3>
-            vs {game.opponent}{' '}
+          <h3 className="row">
+            vs <TeamLogo name={game.opponent} size={24} /> {game.opponent}{' '}
             <span className={win ? 'win' : 'loss'}>
               {win ? '승' : '패'} {game.myScore}-{game.oppScore}
             </span>

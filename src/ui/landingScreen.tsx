@@ -3,6 +3,7 @@ import type { HallEntry } from '../engine/save'
 import type { GameState } from '../engine/types'
 import { PixelPlayer } from './pixelPlayer'
 import { type Kit, type Pose, teamKit } from './pose'
+import { LeagueLogo } from './teamLogo'
 
 // 벤치 → 파엠: 마일스톤마다 포즈·유니폼·캡션을 바꿔가며 순환 재생
 const MILESTONES: { label: string; caption: string; pose: Pose; kit: Kit }[] = [
@@ -103,7 +104,11 @@ export function LandingScreen({
         <ol className="milestones">
           {MILESTONES.map((x, i) => (
             <li key={x.label} className={i <= step ? 'on' : undefined}>
-              {x.label}
+              {x.label === 'KBL' || x.label === 'NBA' ? (
+                <LeagueLogo league={x.label === 'KBL' ? 'kbl' : 'nba'} />
+              ) : (
+                x.label
+              )}
             </li>
           ))}
         </ol>
