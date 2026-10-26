@@ -14,7 +14,7 @@ import { Rng } from '../engine/rng'
 import type { AttrKey, GameState, Position } from '../engine/types'
 import { AttrBars } from './attrBars'
 import { PixelPlayer } from './pixelPlayer'
-import { HAIRS, SKINS, teamKit } from './pose'
+import { ACCESSORIES, HAIR_STYLES, HAIRS, SKINS, teamKit } from './pose'
 
 const POSITIONS = Object.keys(POSITION_LABELS) as Position[]
 const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
@@ -35,12 +35,14 @@ export function CreateScreen({
   const [seed, setSeed] = useState(randomSeed)
   const [skin, setSkin] = useState(0)
   const [hair, setHair] = useState(0)
+  const [hairStyle, setHairStyle] = useState(0)
+  const [accessory, setAccessory] = useState(0)
   const [focus, setFocus] = useState<AttrKey | undefined>()
 
   const rng = new Rng(seed)
   const player = {
     ...createPlayer(rng, name.trim() || '이름 없음', position, style),
-    look: { skin, hair },
+    look: { skin, hair, hairStyle, accessory },
   }
 
   const choosePosition = (p: Position) => {
@@ -85,6 +87,28 @@ export function CreateScreen({
                 aria-label={`머리색 ${i + 1}`}
                 onClick={() => setHair(i)}
               />
+            ))}
+          </div>
+          <div className="chips">
+            {HAIR_STYLES.map((label, i) => (
+              <button
+                key={label}
+                className={i === hairStyle ? 'chip on' : 'chip'}
+                onClick={() => setHairStyle(i)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="chips">
+            {ACCESSORIES.map((label, i) => (
+              <button
+                key={label}
+                className={i === accessory ? 'chip on' : 'chip'}
+                onClick={() => setAccessory(i)}
+              >
+                {label}
+              </button>
             ))}
           </div>
         </section>

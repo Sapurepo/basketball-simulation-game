@@ -1,5 +1,6 @@
-import type { Honor, SeasonRecord } from '../engine/types'
+import type { BestPlayer, Honor, SeasonRecord } from '../engine/types'
 import { avg, pct, seasonLabel, STAGE_LABEL } from './format'
+import { TeamLogo } from './teamLogo'
 
 export function SeasonTable({ history }: { history: SeasonRecord[] }) {
   if (!history.length) return <p className="muted">아직 기록이 없습니다.</p>
@@ -29,7 +30,12 @@ export function SeasonTable({ history }: { history: SeasonRecord[] }) {
               <td>{seasonLabel(h)}</td>
               <td>{h.age}</td>
               <td>{STAGE_LABEL[h.stage]}</td>
-              <td>{h.team}</td>
+              <td>
+                <span className="row nowrap">
+                  <TeamLogo name={h.team} size={18} />
+                  {h.team}
+                </span>
+              </td>
               <td>{h.ovr}</td>
               <td>{h.stats.games}</td>
               <td>{avg(h.stats, 'minutes')}</td>
@@ -80,5 +86,52 @@ export function TrophyCase({
           </li>
         ))}
     </ul>
+  )
+}
+
+const TIER_LABEL = ['퍼스트 팀', '세컨드 팀', '서드 팀']
+
+export function BestTeams({ teams }: { teams: BestPlayer[][] }) {
+  return (
+    <div className="best">
+      {teams.map((team, t) => (
+        <div key={t}>
+          <h3 className={t === 0 ? 'gold-ink' : undefined}>{TIER_LABEL[t]}</h3>
+          <div className="scroll-x">
+            <table>
+              <thead>
+                <tr>
+                  <th>POS</th>
+                  <th className="left">선수</th>
+                  <th className="left">팀</th>
+                  <th>OVR</th>
+                  <th>득점</th>
+                  <th>리바</th>
+                  <th>어시</th>
+                </tr>
+              </thead>
+              <tbody>
+                {team.map((b) => (
+                  <tr key={b.position} className={b.me ? 'me' : undefined}>
+                    <td>{b.position}</td>
+                    <td className="left">{b.name}</td>
+                    <td className="left">
+                      <span className="row nowrap">
+                        <TeamLogo name={b.team} size={18} />
+                        {b.team}
+                      </span>
+                    </td>
+                    <td>{b.ovr}</td>
+                    <td>{b.pts.toFixed(1)}</td>
+                    <td>{b.reb.toFixed(1)}</td>
+                    <td>{b.ast.toFixed(1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }

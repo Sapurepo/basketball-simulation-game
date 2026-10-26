@@ -1,5 +1,6 @@
 import { HIGH_SCHOOLS, HS_TOURNAMENTS, UNIVERSITIES } from '../data/schools'
 import { KBL_TEAMS, NBA_TEAMS } from '../data/teams'
+import { EN_FIRST, EN_LAST, KR_GIVEN, KR_SURNAMES } from '../data/names'
 import {
   D_LEAGUE_GAMES,
   KBL_GAMES,
@@ -9,7 +10,7 @@ import {
   UNIV_LEAGUE_GAMES,
 } from '../data/leagues'
 import { generatePbp } from './commentary'
-import { overall } from './player'
+import { overall, POSITION_LABELS } from './player'
 import { clamp, sigmoid, type Rng } from './rng'
 import {
   addLine,
@@ -19,7 +20,14 @@ import {
   perGame,
   playGame,
 } from './sim'
-import type { GameLog, GameState, SeasonRecord, StatLine } from './types'
+import type {
+  BestPlayer,
+  GameLog,
+  GameState,
+  Position,
+  SeasonRecord,
+  StatLine,
+} from './types'
 
 interface Team {
   id: string
@@ -294,7 +302,7 @@ function highSchool(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
       c.awards.push(`${name} 득점상`)
     }
   }
-  return { c, result: [`대회 최고 성적 ${RESULT_LABEL[best]}`] }
+  return { c, result: [`대회 최고 성적 ${RESULT_LABEL[best]}`], teams }
 }
 
 function college(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
@@ -321,7 +329,7 @@ function college(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
     if (perGame(c.stats, 'pts') >= c.rival(20, 2))
       c.awards.push('U-리그 득점상')
   }
-  return { c, result }
+  return { c, result, teams }
 }
 
 // 대학 플레이오프: 8강·4강 단판, 챔피언결정전 3전 2선승
@@ -383,7 +391,7 @@ function kbl(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
       c.awards.push('KBL 국내선수 득점 1위')
     if (improvement(s) >= c.rival(4.5, 1)) c.awards.push('KBL 기량발전상')
   }
-  return { c, result }
+  return { c, result, teams }
 }
 
 function nba(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
@@ -447,7 +455,7 @@ function nba(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
     if (improvement(s) >= c.rival(5, 1)) c.awards.push('NBA 기량발전상')
     if (perGame(c.stats, 'pts') >= c.rival(31, 1.5)) c.awards.push('NBA 득점왕')
   }
-  return { c, result }
+  return { c, result, teams }
 }
 
 function finalsLine(c: SeasonCtx, prefix: string) {
@@ -493,7 +501,7 @@ function military(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
   const table = standings(rng, teams, c.team, c.wins, D_LEAGUE_GAMES)
   const rank = table.indexOf(c.team) + 1
   if (rank === 1) c.awards.push('KBL D리그 우승')
-  return { c, result: [`D리그 ${rank}위`] }
+  return { c, result: [`D리그 ${rank}위`], teams }
 }
 
 const RUNNERS = {
@@ -502,6 +510,93 @@ const RUNNERS = {
   KBL: kbl,
   NBA: nba,
   MILITARY: military,
+}
+
+// 리그 베스트 팀: 포지션별 3명(퍼스트~서드)을 생성하고, 수상에 따라 유저를 끼워 넣는다.
+const POSITIONS = Object.keys(POSITION_LABELS) as Position[]
+// 베스트 팀 기준 오버롤 [퍼스트, 세컨드, 서드]
+const TIER_OVR: Partial<Record<League, [number, number, number]>> = {
+  COLLEGE: [70, 66, 63],
+  KBL: [78, 74, 71],
+  NBA: [94, 91, 89],
+}
+
+function myTier(league: League, awards: string[]): number {
+  const has = (p: string) => awards.some((a) => a.includes(p))
+  if (league === 'COLLEGE')
+    return has('U-리그 MVP')
+      ? 0
+      : has('득점상')
+        ? 1
+        : has('챔피언결정전 MVP')
+          ? 2
+          : -1
+  if (league === 'KBL')
+    return has('베스트5')
+      ? 0
+      : has('올스타')
+        ? 1
+        : has('득점 1위') || has('식스맨')
+          ? 2
+          : -1
+  if (league === 'NBA')
+    return has('퍼스트팀') ? 0 : has('세컨드팀') ? 1 : has('서드팀') ? 2 : -1
+  return -1
+}
+
+function bestTeams(
+  rng: Rng,
+  s: GameState,
+  c: SeasonCtx,
+  teams: Team[],
+): BestPlayer[][] | undefined {
+  const tiers = TIER_OVR[c.league]
+  if (!tiers) return undefined
+  const kr = c.league !== 'NBA'
+  const name = () =>
+    kr
+      ? rng.pick(KR_SURNAMES) + rng.pick(KR_GIVEN)
+      : `${rng.pick(EN_FIRST)} ${rng.pick(EN_LAST)}`
+  const scale = LEAGUES[c.league].avgScore / 80
+  const line = (pos: Position, ovr: number) => {
+    const big = pos === 'C' || pos === 'PF'
+    const guard = pos === 'PG'
+    const k = (ovr - tiers[2]) * 0.5
+    return {
+      pts: +(scale * (14 + k * 1.4 + rng.normal(0, 2))).toFixed(1),
+      reb: +(scale * ((big ? 8 : 4) + k * 0.4 + rng.normal(0, 1))).toFixed(1),
+      ast: +(
+        scale *
+        ((guard ? 6 : 2.5) + k * 0.4 + rng.normal(0, 0.8))
+      ).toFixed(1),
+    }
+  }
+  const mine = myTier(c.league, c.awards)
+  return tiers.map((base, t) =>
+    POSITIONS.map((pos): BestPlayer => {
+      if (t === mine && pos === s.player.position) {
+        return {
+          position: pos,
+          name: s.player.name,
+          team: c.team.name,
+          ovr: overall(s.player),
+          pts: +perGame(c.stats, 'pts').toFixed(1),
+          reb: +perGame(c.stats, 'reb').toFixed(1),
+          ast: +perGame(c.stats, 'ast').toFixed(1),
+          me: true,
+        }
+      }
+      const ovr = Math.round(base + rng.range(-1, 2))
+      const team = rng.pick(teams.filter((x) => x.id !== c.team.id))
+      return {
+        position: pos,
+        name: name(),
+        team: team.name,
+        ovr,
+        ...line(pos, ovr),
+      }
+    }),
+  )
 }
 
 export function simulateSeason(rng: Rng, s: GameState): SeasonRecord {
@@ -528,7 +623,7 @@ export function simulateSeason(rng: Rng, s: GameState): SeasonRecord {
   }
   const factory: SeasonCtxFactory = (teams, league, mpgScale) =>
     new SeasonCtx(rng, s, league, teamOf(teams, s.teamId), mpgScale)
-  const { c, result } = RUNNERS[s.stage](rng, s, factory)
+  const { c, result, teams } = RUNNERS[s.stage](rng, s, factory)
   const injured = c.awards.includes('__injured')
   const extra = [
     ...(s.mods.lateReturn ? ['전역 후 시즌 중반 합류'] : []),
@@ -543,6 +638,7 @@ export function simulateSeason(rng: Rng, s: GameState): SeasonRecord {
     result: [...result, ...extra],
     awards: c.awards.filter((a) => a !== '__injured'),
     featured: c.featured(),
+    bestTeams: bestTeams(rng, s, c, teams),
     salary:
       s.contract && s.stage !== 'MILITARY'
         ? { amount: s.contract.salary, currency: s.contract.currency }

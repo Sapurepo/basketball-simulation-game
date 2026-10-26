@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { formatMoney } from '../engine/events'
 import { advanceSeason, resolveEvent } from '../engine/game'
 import {
@@ -10,16 +10,33 @@ import {
 } from '../engine/player'
 import type { GameLog, GameState } from '../engine/types'
 import { AttrBars } from './attrBars'
-import { SeasonTable, TrophyCase } from './careerTables'
+import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { avg, pct, seasonLabel, serviceLabel, STAGE_LABEL } from './format'
 import { GameCast } from './gameCast'
 import { PixelPlayer } from './pixelPlayer'
 import { pickPose } from './pose'
+import { Shootout } from './shootout'
+import { TeamLogo } from './teamLogo'
 
-type Tab = 'season' | 'cast' | 'career' | 'trophy'
+// 시즌 진행 로딩에 보여줄 단계 (무대별)
+const STEP_MS = 800
+// 하이라이트 팝업으로 보여줄 주요 경기
+const KEY_GAME = /챔피언결정전|컨퍼런스 파이널|NBA 파이널/
+const LOAD_STEPS: Record<GameState['stage'], string[]> = {
+  HS: ['동계 훈련', '주말리그', '전국대회', '시즌 결산'],
+  COLLEGE: ['동계 훈련', 'U-리그', '대학농구 플레이오프', '시즌 결산'],
+  KBL: ['프리시즌', '정규리그', '플레이오프', '시상 및 결산'],
+  NBA: ['트레이닝 캠프', '정규 시즌', '플레이오프', '시상 및 결산'],
+  MILITARY: ['기초군사훈련', '상무 시즌', '복무 결산'],
+  FREE: ['개인 훈련', '시즌 결산'],
+  RETIRED: [],
+}
+
+type Tab = 'season' | 'cast' | 'best' | 'career' | 'trophy'
 const TABS: [Tab, string][] = [
   ['season', '이번 시즌'],
   ['cast', '경기 중계'],
+  ['best', '시즌 베스트'],
   ['career', '커리어 기록'],
   ['trophy', '트로피'],
 ]
@@ -33,7 +50,9 @@ export function MainScreen({
 }) {
   const [tab, setTab] = useState<Tab>('season')
   const [castIdx, setCastIdx] = useState(0)
-  const [playing, setPlaying] = useState(false)
+  const [loadStep, setLoadStep] = useState(-1)
+  const [highlight, setHighlight] = useState<GameLog | null>(null)
+  const playing = loadStep >= 0
   const p = state.player
   const last = state.history.at(-1)
   const ev = state.events[0]
@@ -41,21 +60,57 @@ export function MainScreen({
 
   const { pose, kit } = pickPose(state)
 
-  // 시즌 진행: 슛 애니메이션을 잠깐 보여준 뒤 결과 반영
+  // 시즌 진행: 단계 로딩을 보여준 뒤 결과 반영 (시뮬레이션 자체는 즉시 끝난다)
+  const steps = LOAD_STEPS[state.stage]
   const advance = () => {
     const apply = () => {
-      onChange(advanceSeason(state))
+      const next = advanceSeason(state)
+      onChange(next)
       setTab('season')
       setCastIdx(0)
-      setPlaying(false)
+      setLoadStep(-1)
+      const key = next.history
+        .at(-1)
+        ?.featured.find((g) => KEY_GAME.test(g.label))
+      if (key) setHighlight(key)
     }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return apply()
-    setPlaying(true)
-    setTimeout(apply, 900)
+    setLoadStep(0)
+    steps.forEach((_, i) =>
+      setTimeout(() => setLoadStep(i + 1), STEP_MS * (i + 1)),
+    )
+    setTimeout(apply, STEP_MS * steps.length + 300)
   }
 
   return (
     <main className="game">
+      {playing && (
+        <div className="overlay" role="status" aria-live="polite">
+          <div className="loading">
+            <PixelPlayer pose="shoot" kit={kit} look={p.look} scale={8} />
+            <p className="eyebrow">{seasonLabel(state)} 시즌 진행 중</p>
+            <h2>{steps[Math.min(loadStep, steps.length - 1)]}</h2>
+            <div className="progress">
+              <div style={{ width: `${(100 * loadStep) / steps.length}%` }} />
+            </div>
+            <ol className="steps">
+              {steps.map((label, i) => (
+                <li
+                  key={label}
+                  className={
+                    i < loadStep ? 'done' : i === loadStep ? 'now' : undefined
+                  }
+                >
+                  {label}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      )}
+      {highlight && (
+        <Highlight game={highlight} onClose={() => setHighlight(null)} />
+      )}
       <section className="panel card">
         <div className="row between">
           <PixelPlayer
@@ -65,10 +120,19 @@ export function MainScreen({
             look={p.look}
           />
           <div className="grow">
-            <p className="eyebrow">
-              {state.stage === 'RETIRED' || state.stage === 'FREE'
-                ? STAGE_LABEL[state.stage]
-                : `${STAGE_LABEL[state.stage]} ${state.teamName}`}
+            <p className="eyebrow row">
+              {state.stage === 'RETIRED' || state.stage === 'FREE' ? (
+                STAGE_LABEL[state.stage]
+              ) : (
+                <>
+                  <TeamLogo
+                    teamId={state.teamId}
+                    name={state.teamName}
+                    size={22}
+                  />
+                  {STAGE_LABEL[state.stage]} {state.teamName}
+                </>
+              )}
             </p>
             <h1>{p.name}</h1>
             <ul className="badges">
@@ -109,6 +173,12 @@ export function MainScreen({
             <h2>{ev.title}</h2>
             <p>{ev.body}</p>
             {ev.data?.game ? <GameCast game={ev.data.game as GameLog} /> : null}
+            {ev.kind === 'shootout' &&
+              !matchMedia('(prefers-reduced-motion: reduce)').matches && (
+                <Shootout
+                  onDone={(n) => onChange(resolveEvent(state, `made:${n}`))}
+                />
+              )}
             <div className="options">
               {ev.options.map((o) => (
                 <button
@@ -116,7 +186,10 @@ export function MainScreen({
                   className="option"
                   onClick={() => onChange(resolveEvent(state, o.id))}
                 >
-                  <b>{o.label}</b>
+                  <b className="row">
+                    {o.teamId && <TeamLogo teamId={o.teamId} size={22} />}
+                    {o.label}
+                  </b>
                   {o.desc && <small>{o.desc}</small>}
                 </button>
               ))}
@@ -189,6 +262,15 @@ export function MainScreen({
             </div>
           ) : (
             <p className="muted">시즌 진행 버튼을 눌러 첫 시즌을 시작하세요.</p>
+          ))}
+
+        {tab === 'best' &&
+          (last?.bestTeams ? (
+            <BestTeams teams={last.bestTeams} />
+          ) : (
+            <p className="muted">
+              베스트 팀은 대학·KBL·NBA 시즌이 끝나면 발표됩니다.
+            </p>
           ))}
 
         {tab === 'cast' &&
@@ -267,5 +349,22 @@ function RetiredSummary({ state }: { state: GameState }) {
           ` + ${formatMoney(state.earnings.USD, 'USD')}`}
       </p>
     </div>
+  )
+}
+
+// 주요 경기 하이라이트 팝업
+function Highlight({ game, onClose }: { game: GameLog; onClose: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    ref.current?.showModal()
+  }, [])
+  return (
+    <dialog ref={ref} className="modal" onClose={onClose}>
+      <p className="eyebrow">하이라이트</p>
+      <GameCast game={game} />
+      <button className="primary big" onClick={onClose}>
+        결과 확인
+      </button>
+    </dialog>
   )
 }

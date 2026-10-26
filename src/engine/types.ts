@@ -15,6 +15,9 @@ export type GrowthType = 'early' | 'normal' | 'late'
 export interface Look {
   skin: number
   hair: number
+  // 이전 저장 파일 호환을 위해 선택 필드
+  hairStyle?: number
+  accessory?: number
 }
 
 export interface Player {
@@ -65,6 +68,18 @@ export interface GameLog {
   pbp: string[]
 }
 
+// 리그 베스트 팀(퍼스트~서드)의 한 자리
+export interface BestPlayer {
+  position: Position
+  name: string
+  team: string
+  ovr: number
+  pts: number
+  reb: number
+  ast: number
+  me?: boolean
+}
+
 export interface SeasonRecord {
   year: number
   age: number
@@ -79,6 +94,8 @@ export interface SeasonRecord {
   result: string[]
   awards: string[]
   featured: GameLog[]
+  // 리그 베스트 퍼스트·세컨드·서드 팀 (프로·대학만)
+  bestTeams?: BestPlayer[][]
   minutesShare: number
   salary?: { amount: number; currency: 'KRW' | 'USD' }
 }
@@ -87,6 +104,8 @@ export interface EventOption {
   id: string
   label: string
   desc?: string
+  // 구단 제안이면 로고 표시용
+  teamId?: string
 }
 
 export interface GameEvent {

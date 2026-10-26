@@ -74,6 +74,7 @@ type Offer = Contract
 function offerOption(o: Offer, i: number): EventOption {
   return {
     id: `offer:${i}`,
+    teamId: o.teamId,
     label: `${o.teamName}${o.twoWay ? ' (투웨이)' : ''}`,
     desc: `연봉 ${formatMoney(o.salary, o.currency)}, ${o.yearsLeft}년 계약`,
   }
@@ -374,6 +375,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
 
   ev.push(trainingEvent())
   if (rng.chance(0.35)) ev.push(rng.pick(RANDOM_EVENTS)())
+  if (rng.chance(0.5)) ev.push(shootoutEvent())
   return ev
 }
 
@@ -388,6 +390,17 @@ function freeChoice(s: GameState): GameEvent {
     title: '무소속 선수의 선택',
     body: '어디서 다시 시작할까요?',
     options,
+  }
+}
+
+// 슈팅 미니게임: UI 가 타이밍 게임을 돌리고 'made:N' 으로 결과를 보낸다
+export const SHOOTOUT_SHOTS = 10
+function shootoutEvent(): GameEvent {
+  return {
+    kind: 'shootout',
+    title: '슈팅 훈련',
+    body: `타이밍에 맞춰 ${SHOOTOUT_SHOTS}개의 슛을 던지세요. 많이 넣을수록 슈팅 능력치가 오릅니다.`,
+    options: [{ id: 'auto', label: '코치에게 맡긴다', desc: '자동 진행' }],
   }
 }
 
@@ -601,6 +614,18 @@ export function applyEvent(
       if (optionId === 'yes')
         s.player.potential = Math.min(99, s.player.potential + 1)
       return
+    case 'shootout': {
+      const made =
+        optionId === 'auto' ? rng.int(3, 7) : Number(optionId.split(':')[1])
+      const gain = made >= 9 ? 2 : made >= 6 ? 1 : 0
+      s.player.attrs.shooting = Math.min(99, s.player.attrs.shooting + gain)
+      return front(
+        notice(
+          `${SHOOTOUT_SHOTS}개 중 ${made}개 성공`,
+          gain ? `슈팅 +${gain}` : '아쉽지만 감각은 익혔습니다.',
+        ),
+      )
+    }
     case 'slump':
       if (optionId === 'grind') {
         const good = rng.chance(0.5)

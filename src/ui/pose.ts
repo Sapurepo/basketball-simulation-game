@@ -12,6 +12,8 @@ export type Pose =
 
 export const SKINS = ['#ffe0c4', '#f6c9a0', '#d9a274', '#a8714a']
 export const HAIRS = ['#2b2420', '#5a3a22', '#a8743a', '#d8d2c4']
+export const HAIR_STYLES = ['기본', '짧은 머리', '장발', '곱슬']
+export const ACCESSORIES = ['없음', '헤어밴드', '고글']
 const TEAM_COLORS = [
   '#1f5fbf',
   '#d6262f',

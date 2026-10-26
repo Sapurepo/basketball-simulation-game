@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Look } from '../engine/types'
 import { DEFAULT_LOOK, HAIRS, SKINS, type Kit, type Pose } from './pose'
 
@@ -6,12 +6,13 @@ import { DEFAULT_LOOK, HAIRS, SKINS, type Kit, type Pose } from './pose'
 // x: 0~15, y: 0(머리 꼭대기)~20(신발). 팔을 들거나 점프하면 y 가 음수가 된다.
 type Px = [number, number, string]
 
+// 머리카락은 BODY 에서 빼고 HAIR_STYLES 로 따로 얹는다
 const BODY = [
-  '.....HHHHHH.....',
-  '...HHHHHHHHHH...',
-  '..HHHHHHHHHHHH..',
-  '..HHSSSSSSSSHH..',
-  '..HSSSSSSSSSSH..',
+  '................',
+  '................',
+  '................',
+  '....SSSSSSSS....',
+  '...SSSSSSSSSS...',
   '..SSSESSSSESSS..',
   '..SSSESSSSESSS..',
   '..SRSSSSSSSSRS..',
@@ -28,6 +29,51 @@ const BODY = [
   '....SS....SS....',
   '....SS....SS....',
   '...KKK....KKK...',
+]
+
+// 머리 모양 (라벨은 pose.ts HAIR_STYLES): 기본 / 짧은 머리 / 장발 / 곱슬
+const HAIR_ART: [string[], number][] = [
+  [
+    [
+      '.....HHHHHH.....',
+      '...HHHHHHHHHH...',
+      '..HHHHHHHHHHHH..',
+      '..HH........HH..',
+      '..H..........H..',
+    ],
+    0,
+  ],
+  [['....HHHHHHHH....', '..HHHHHHHHHHHH..', '..HH........HH..'], 1],
+  [
+    [
+      '.....HHHHHH.....',
+      '...HHHHHHHHHH...',
+      '..HHHHHHHHHHHH..',
+      '..HH........HH..',
+      '..HH........HH..',
+      '..HH........HH..',
+      '..HH........HH..',
+      '..HH........HH..',
+    ],
+    0,
+  ],
+  [
+    [
+      '....HHHHHHHH....',
+      '..HHHHHHHHHHHH..',
+      '.HHHHHHHHHHHHHH.',
+      '.HHHHHHHHHHHHHH.',
+      '.HHH........HHH.',
+      '..HH........HH..',
+    ],
+    -1,
+  ],
+]
+// 액세서리 (라벨은 pose.ts ACCESSORIES): 없음 / 헤어밴드 / 고글
+const ACC_ART: Px[][] = [
+  [],
+  [...Array(12)].map((_, i): Px => [i + 2, 2, 'A']),
+  [...Array(10)].map((_, i): Px => [i + 3, 5, i === 2 || i === 7 ? 'W' : 'K']),
 ]
 
 const BALL = ['.BB.', 'BLBB', 'BBLB', '.BB.']
@@ -118,69 +164,71 @@ const SAD_FACE: Px[] = [
 const BANDAGE: Px[] = [...Array(12)].map((_, i): Px => [i + 2, 2, 'W'])
 const STRIPE: Px[] = [...Array(10)].map((_, i): Px => [i + 3, 14, 'N'])
 
-const body = art(BODY)
+const BASE = art(BODY)
 
-const POSES: Record<Pose, { frames: Px[][]; ms: number }> = {
-  idle: {
-    ms: 280,
-    frames: [
-      [...body, ...ARM_DOWN_L, ...DRIBBLE_R, ...art(BALL, 12, 15)],
-      [...body, ...ARM_DOWN_L, ...DRIBBLE_R, ...art(BALL, 12, 17)],
-    ],
-  },
-  shoot: {
-    ms: 220,
-    frames: [
-      shift([...body, ...ARM_DOWN_L, ...ARM_DOWN_R, ...art(BALL, 6, 11)], 1),
-      shift([...body, ...ARM_UP_L, ...ARM_UP_R, ...art(BALL, 6, -5)], -2),
-      shift([...body, ...ARM_UP_L, ...ARM_UP_R], -1),
-    ],
-  },
-  celebrate: {
-    ms: 260,
-    frames: [
-      [...body, ...ARM_UP_L, ...ARM_UP_R, ...art(TROPHY, 5, -7)],
-      shift([...body, ...ARM_UP_L, ...ARM_UP_R, ...art(TROPHY, 5, -7)], -2),
-    ],
-  },
-  cheer: {
-    ms: 300,
-    frames: [
-      [...body, ...ARM_DOWN_L, ...FIST_R],
-      shift([...body, ...ARM_DOWN_L, ...FIST_R], -1),
-    ],
-  },
-  sad: {
-    ms: 500,
-    frames: [
-      [...body, ...SAD_FACE, ...ARM_DOWN_L, ...ARM_DOWN_R, [4, 7, 'T']],
-      [...body, ...SAD_FACE, ...ARM_DOWN_L, ...ARM_DOWN_R, [4, 8, 'T']],
-    ],
-  },
-  injured: {
-    ms: 500,
-    frames: [
-      [...body, ...SAD_FACE, ...BANDAGE, ...ARM_DOWN_L, ...ARM_DOWN_R],
-      shift(
+function makePoses(body: Px[]): Record<Pose, { frames: Px[][]; ms: number }> {
+  return {
+    idle: {
+      ms: 280,
+      frames: [
+        [...body, ...ARM_DOWN_L, ...DRIBBLE_R, ...art(BALL, 12, 15)],
+        [...body, ...ARM_DOWN_L, ...DRIBBLE_R, ...art(BALL, 12, 17)],
+      ],
+    },
+    shoot: {
+      ms: 220,
+      frames: [
+        shift([...body, ...ARM_DOWN_L, ...ARM_DOWN_R, ...art(BALL, 6, 11)], 1),
+        shift([...body, ...ARM_UP_L, ...ARM_UP_R, ...art(BALL, 6, -5)], -2),
+        shift([...body, ...ARM_UP_L, ...ARM_UP_R], -1),
+      ],
+    },
+    celebrate: {
+      ms: 260,
+      frames: [
+        [...body, ...ARM_UP_L, ...ARM_UP_R, ...art(TROPHY, 5, -7)],
+        shift([...body, ...ARM_UP_L, ...ARM_UP_R, ...art(TROPHY, 5, -7)], -2),
+      ],
+    },
+    cheer: {
+      ms: 300,
+      frames: [
+        [...body, ...ARM_DOWN_L, ...FIST_R],
+        shift([...body, ...ARM_DOWN_L, ...FIST_R], -1),
+      ],
+    },
+    sad: {
+      ms: 500,
+      frames: [
+        [...body, ...SAD_FACE, ...ARM_DOWN_L, ...ARM_DOWN_R, [4, 7, 'T']],
+        [...body, ...SAD_FACE, ...ARM_DOWN_L, ...ARM_DOWN_R, [4, 8, 'T']],
+      ],
+    },
+    injured: {
+      ms: 500,
+      frames: [
         [...body, ...SAD_FACE, ...BANDAGE, ...ARM_DOWN_L, ...ARM_DOWN_R],
-        1,
-      ),
-    ],
-  },
-  salute: {
-    ms: 600,
-    frames: [
-      [...body, ...STRIPE, ...ARM_DOWN_L, ...SALUTE_R],
-      shift([...body, ...STRIPE, ...ARM_DOWN_L, ...SALUTE_R], -1),
-    ],
-  },
-  wave: {
-    ms: 320,
-    frames: [
-      [...body, ...ARM_DOWN_L, ...WAVE_A],
-      [...body, ...ARM_DOWN_L, ...WAVE_B],
-    ],
-  },
+        shift(
+          [...body, ...SAD_FACE, ...BANDAGE, ...ARM_DOWN_L, ...ARM_DOWN_R],
+          1,
+        ),
+      ],
+    },
+    salute: {
+      ms: 600,
+      frames: [
+        [...body, ...STRIPE, ...ARM_DOWN_L, ...SALUTE_R],
+        shift([...body, ...STRIPE, ...ARM_DOWN_L, ...SALUTE_R], -1),
+      ],
+    },
+    wave: {
+      ms: 320,
+      frames: [
+        [...body, ...ARM_DOWN_L, ...WAVE_A],
+        [...body, ...ARM_DOWN_L, ...WAVE_B],
+      ],
+    },
+  }
 }
 
 const shade = (hex: string, k: number) =>
@@ -206,7 +254,17 @@ export function PixelPlayer({
   scale?: number
 }) {
   const [tick, setTick] = useState(0)
-  const { frames, ms } = POSES[pose]
+  const hairStyle = look.hairStyle ?? 0
+  const accessory = look.accessory ?? 0
+  const poses = useMemo(() => {
+    const [rows, dy] = HAIR_ART[hairStyle] ?? HAIR_ART[0]
+    return makePoses([
+      ...BASE,
+      ...art(rows, 0, dy),
+      ...(ACC_ART[accessory] ?? []),
+    ])
+  }, [hairStyle, accessory])
+  const { frames, ms } = poses[pose]
 
   useEffect(() => {
     if (reducedMotion()) return
@@ -231,6 +289,7 @@ export function PixelPlayer({
     g: '#c99628',
     W: '#ffffff',
     T: '#5aaef0',
+    A: '#d6262f',
   }
   const frame = frames[tick % frames.length]
   return (
