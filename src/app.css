@@ -163,6 +163,20 @@ footer {
   color: var(--muted);
 }
 
+.brand b .tag {
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+footer .build {
+  font: 11px var(--font-pixel);
+  color: var(--muted);
+}
+
+footer .build a {
+  color: var(--accent-lo);
+}
+
 .error {
   justify-self: start;
   margin: 3px;

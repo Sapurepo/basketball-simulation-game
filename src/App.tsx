@@ -58,10 +58,12 @@ export default function App() {
   return (
     <div className="shell">
       <div ref={screenRef} className="screen">
-        {/* 게임 화면은 헤더 없이 바로 시작 */}
-        {screen !== 'game' && (
+        {/* 헤더는 랜딩 화면에서만 */}
+        {screen === 'landing' && (
           <div className="brand">
-            <b>벤치에서 파엠까지</b>
+            <b>
+              벤치에서 파엠까지 <span className="tag gold">BETA</span>
+            </b>
             <small className="muted">나만의 농구 인생</small>
           </div>
         )}
@@ -109,7 +111,23 @@ export default function App() {
           </div>
           <p className="muted">
             선수와 경기 결과는 가상입니다. 구단·대회 명칭과 로고의 권리는 각
-            권리자에게 있습니다. 진행 내용은 이 브라우저에만 저장됩니다.
+            권리자에게 있습니다. 진행 내용은 이 브라우저에만 저장됩니다. 베타
+            기간에는 저장 형식이 바뀔 수 있으니 가끔 저장 파일을 내보내 두세요.
+          </p>
+          <p className="build">
+            v{__APP_VERSION__} · {__BUILD_SHA__}
+            {import.meta.env.VITE_FEEDBACK_URL && (
+              <>
+                {' · '}
+                <a
+                  href={import.meta.env.VITE_FEEDBACK_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  피드백 보내기
+                </a>
+              </>
+            )}
           </p>
         </footer>
       </div>
