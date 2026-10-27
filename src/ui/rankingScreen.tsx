@@ -17,6 +17,12 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   const [sort, setSort] = useState(readSort)
   const [data, setData] = useState<{ top: Data; best: Data }>()
   const [error, setError] = useState(false)
+  // 새로고침 버튼: 값을 올리면 같은 정렬로 다시 불러온다
+  const [tick, setTick] = useState(0)
+  const refresh = () => {
+    setData(undefined)
+    setTick((t) => t + 1)
+  }
 
   useEffect(() => {
     history.replaceState(null, '', `#ranking?sort=${sort}`)
@@ -27,7 +33,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
     return () => {
       alive = false
     }
-  }, [sort])
+  }, [sort, tick])
 
   return (
     <main className="ranking">
@@ -39,9 +45,18 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
             </p>
             <h1>전체 랭킹</h1>
           </div>
-          <button className="ghost" onClick={onBack}>
-            뒤로
-          </button>
+          <div className="row">
+            <button
+              className="ghost"
+              onClick={refresh}
+              disabled={!data && !error}
+            >
+              새로고침
+            </button>
+            <button className="ghost" onClick={onBack}>
+              뒤로
+            </button>
+          </div>
         </div>
         <div className="chips">
           {SORTS.map(([id, label]) => (
