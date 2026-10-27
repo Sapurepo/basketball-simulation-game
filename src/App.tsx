@@ -13,14 +13,22 @@ import { CreateScreen } from './ui/createScreen'
 import { LandingScreen } from './ui/landingScreen'
 import { LegalDialog } from './ui/legalDialog'
 import { MainScreen } from './ui/mainScreen'
+import { RankingScreen } from './ui/rankingScreen'
 import './app.css'
 
-type Screen = 'landing' | 'create' | 'game'
+type Screen = 'landing' | 'create' | 'game' | 'ranking'
 
 export default function App() {
   const [state, setState] = useState<GameState | null>(loadGame)
-  const [hall, setHall] = useState(loadHall)
-  const [screen, setScreen] = useState<Screen>('landing')
+  // 은퇴한 커리어는 이 브라우저의 명예의 전당(내 기록)에 남긴다. 커리어 id 로 한 번만
+  const [hall, setHall] = useState(() =>
+    state?.stage === 'RETIRED' ? recordHall(state) : loadHall(),
+  )
+  // 랭킹은 주소 해시로 바로 열 수 있다 (새로고침해도 같은 페이지)
+  const [screen, setScreen] = useState<Screen>(() =>
+    location.hash.startsWith('#ranking') ? 'ranking' : 'landing',
+  )
+  const [rankingFrom, setRankingFrom] = useState<Screen>('landing')
   const [error, setError] = useState('')
   const [legal, setLegal] = useState<LegalDoc | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -31,11 +39,14 @@ export default function App() {
   // (scrollTo 가 Promise 를 반환하는 브라우저가 있어 effect 에서 값을 돌려주지 않는다)
   useEffect(() => {
     screenRef.current?.scrollTo(0, 0)
+    // 랭킹을 떠나면 주소의 #ranking 을 지워 새로고침 때 다시 열리지 않게
+    if (screen !== 'ranking' && location.hash.startsWith('#ranking'))
+      history.replaceState(null, '', location.pathname + location.search)
   }, [screen])
 
   const importFile = async (file: File) => {
     try {
-      setState(parseSave(await file.text()))
+      change(parseSave(await file.text()))
       setScreen('game')
       setError('')
     } catch (e) {
@@ -43,18 +54,28 @@ export default function App() {
     }
   }
 
-  // 새 커리어: 기존 커리어는 명예의 전당에 남기고 생성 화면으로
+  // 새 커리어: 생성 화면으로. 은퇴하지 않은 커리어는 기록에 남지 않는다
   const reset = () => {
-    if (state) {
-      if (!window.confirm('현재 커리어를 끝내고 새로 시작할까요?')) return
-      setHall(recordHall(state))
-    }
+    if (state && !window.confirm('현재 커리어를 끝내고 새로 시작할까요?'))
+      return
     setState(null)
     setScreen('create')
   }
 
-  const start = (s: GameState) => {
+  const change = (s: GameState) => {
+    if (s.stage === 'RETIRED') setHall(recordHall(s))
     setState(s)
+  }
+
+  // 커리어 id 는 엔진 밖에서 붙인다 (엔진은 시드만으로 결정적)
+  const openRanking = () => {
+    if (screen !== 'ranking') setRankingFrom(screen)
+    setScreen('ranking')
+  }
+  const closeRanking = () => setScreen(rankingFrom)
+
+  const start = (s: GameState) => {
+    setState({ ...s, careerId: crypto.randomUUID() })
     setScreen('game')
   }
 
@@ -77,13 +98,15 @@ export default function App() {
             hall={hall}
             onContinue={() => setScreen('game')}
             onNew={reset}
+            onOpenRanking={openRanking}
           />
         )}
         {screen === 'create' && (
           <CreateScreen onStart={start} onBack={() => setScreen('landing')} />
         )}
+        {screen === 'ranking' && <RankingScreen onBack={closeRanking} />}
         {screen === 'game' && state && (
-          <MainScreen state={state} onChange={setState} />
+          <MainScreen state={state} onChange={change} />
         )}
         <footer>
           <div className="row">
@@ -94,6 +117,9 @@ export default function App() {
             )}
             <button className="ghost" onClick={() => fileRef.current?.click()}>
               가져오기
+            </button>
+            <button className="ghost" onClick={openRanking}>
+              랭킹
             </button>
             {state && (
               <button className="ghost" onClick={() => setScreen('landing')}>

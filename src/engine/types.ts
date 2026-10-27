@@ -202,4 +202,7 @@ export interface GameState {
   // 무대에 적용한 벽지·바닥타일 아이템 id
   wall?: string
   floor?: string
+  // 공용 명예의 전당 등록용 커리어 고유 id와 등록 여부
+  careerId?: string
+  hallPosted?: boolean
 }

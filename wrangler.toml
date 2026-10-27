@@ -1,0 +1,10 @@
+# Cloudflare Pages 설정. 바인딩은 이 파일이 기준이고, TURNSTILE_SECRET 은 대시보드에서 암호화 변수로 넣는다
+name = "bench-to-mvp"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bench-to-mvp-hall"
+database_id = "7c120033-d6d1-47de-92d6-7208a368f8b1"
+migrations_dir = "migrations"

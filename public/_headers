@@ -1,9 +1,10 @@
 # Cloudflare Pages 응답 헤더 (빌드 시 dist/ 로 복사된다)
-# CSP 허용 출처: Google Fonts(Noto Sans KR), jsDelivr(Galmuri11), 스프라이트 data: URL, 저장 파일 다운로드 blob:
+# CSP 허용 출처: Google Fonts(Noto Sans KR), jsDelivr(Galmuri11), Turnstile(명예의 전당 봇 확인 스크립트·iframe),
+# 스프라이트 data: URL, 저장 파일 다운로드 blob:
 # 인라인 style 속성(React style)을 쓰므로 style-src 에 'unsafe-inline' 이 필요하다
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin

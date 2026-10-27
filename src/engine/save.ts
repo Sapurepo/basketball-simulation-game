@@ -1,4 +1,5 @@
 import { START_CASH } from './game'
+import { hallFmvp, hallTrophies } from './hallEntry'
 import { idealWeight } from './player'
 import type {
   Accessory,
@@ -70,6 +71,8 @@ export function parseSave(raw: string): GameState {
   s.player.weight ??= idealWeight(s.player.height)
   s.cash ??= START_CASH
   s.items ??= []
+  // 공용 명예의 전당 이전 저장 파일
+  s.careerId ??= crypto.randomUUID()
   // 펫 세분화 이전의 '강아지'는 포메라니안으로
   s.items = s.items.map((id) => (id === 'dog' ? 'pomeranian' : id))
   if (s.player.look) s.player.look = migrateLook(s.player.look, s.player.name)
@@ -102,8 +105,10 @@ export function exportRawSave(): boolean {
   return true
 }
 
-// 명예의 전당: 끝났거나 버린 커리어의 요약. 랜딩 랭킹에 쓴다.
+// 이 브라우저의 명예의 전당(내 기록): 은퇴한 커리어의 요약
 export interface HallEntry {
+  // 커리어 id. 이전 기록에는 없다
+  id?: string
   name: string
   position: Position
   look?: Look
@@ -128,26 +133,27 @@ export function loadHall(): HallEntry[] {
 }
 
 export function recordHall(s: GameState): HallEntry[] {
-  if (!s.history.length) return loadHall()
+  const hall = loadHall()
+  if (s.stage !== 'RETIRED' || hall.some((e) => e.id && e.id === s.careerId))
+    return hall
   const entry: HallEntry = {
+    id: s.careerId,
     name: s.player.name,
     position: s.player.position,
     look: s.player.look,
     peakOvr: s.peakOvr,
     stage: s.stage,
-    trophies:
-      s.history.reduce((n, h) => n + h.awards.length, 0) + s.honors.length,
-    fmvp: s.history.filter((h) => h.awards.includes('NBA 파이널 MVP')).length,
+    trophies: hallTrophies(s),
+    fmvp: hallFmvp(s),
     year: s.year,
   }
-  // ponytail: 최고 오버롤 순 상위 10명만 보관, 동률은 트로피 수
-  const hall = [...loadHall(), entry]
-    .sort((a, b) => b.peakOvr - a.peakOvr || b.trophies - a.trophies)
-    .slice(0, 10)
+  const next = [...hall, entry].sort(
+    (a, b) => b.peakOvr - a.peakOvr || b.trophies - a.trophies,
+  )
   try {
-    localStorage.setItem(HALL_KEY, JSON.stringify(hall))
+    localStorage.setItem(HALL_KEY, JSON.stringify(next))
   } catch {
     // 저장 불가 환경
   }
-  return hall
+  return next
 }

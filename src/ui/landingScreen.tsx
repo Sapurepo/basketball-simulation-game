@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { HallEntry } from '../engine/save'
 import type { GameState } from '../engine/types'
+import { HallBoard } from './hallBoard'
 import { PixelPlayer } from './pixelPlayer'
 import { type Kit, type Pose, teamKit } from './pose'
-import { iconURL } from './sprite'
 
 // 벤치 → 파엠: 마일스톤마다 포즈·유니폼·캡션을 바꿔가며 순환 재생
 const MILESTONES: { label: string; caption: string; pose: Pose; kit: Kit }[] = [
@@ -64,11 +64,13 @@ export function LandingScreen({
   hall,
   onContinue,
   onNew,
+  onOpenRanking,
 }: {
   state: GameState | null
   hall: HallEntry[]
   onContinue: () => void
   onNew: () => void
+  onOpenRanking: () => void
 }) {
   const step = useMilestoneLoop()
   const m = MILESTONES[step]
@@ -110,41 +112,7 @@ export function LandingScreen({
         </ol>
       </section>
 
-      <section className="panel">
-        <h2>명예의 전당</h2>
-        {hall.length ? (
-          <ol className="hall">
-            {hall.map((e, i) => (
-              <li key={`${e.name}-${e.year}-${i}`}>
-                <b className="rank">{i + 1}</b>
-                <PixelPlayer
-                  pose="idle"
-                  kit={teamKit(e.name)}
-                  look={e.look}
-                  scale={1}
-                />
-                <span className="grow">
-                  {e.name} <small className="muted">{e.position}</small>
-                </span>
-                <span className="row nowrap">
-                  <img
-                    className="px"
-                    src={iconURL('trophy')}
-                    alt="NBA 파이널 MVP"
-                    title="NBA 파이널 MVP"
-                  />
-                  {e.fmvp ?? 0}
-                </span>
-                <b>OVR {e.peakOvr}</b>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="muted">
-            아직 기록이 없어요. 커리어를 마치면 이 브라우저에 남습니다.
-          </p>
-        )}
-      </section>
+      <HallBoard mine={hall} onOpenRanking={onOpenRanking} />
 
       <div className="cta">
         {state && (

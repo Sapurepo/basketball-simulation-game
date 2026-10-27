@@ -1982,8 +1982,44 @@ tr.me td {
     inset 0 -3px 0 0 var(--line);
 }
 
+.hall-submit {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 2px dashed var(--line);
+}
+
+.hall-submit h3 {
+  margin: 0;
+}
+
+.hall-detail {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 좁은 화면에서는 트로피·시즌·은퇴 연도를 숨긴다 */
+@media (max-width: 520px) {
+  .hall-detail {
+    display: none;
+  }
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
 .hall .rank {
-  width: 1.5em;
+  /* 세 자리 순위까지 같은 폭 */
+  width: 2.2em;
   color: var(--accent-lo);
   font: 400 16px var(--font-pixel);
 }

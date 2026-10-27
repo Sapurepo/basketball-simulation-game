@@ -20,6 +20,7 @@ import { AttrBars } from './attrBars'
 import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { avg, pct, seasonLabel, serviceLabel, STAGE_LABEL } from './format'
 import { GameCast } from './gameCast'
+import { HallSubmit } from './hallSubmit'
 import { DrillGame } from './drillGame'
 import { PixelPlayer } from './pixelPlayer'
 import { pickPose } from './pose'
@@ -363,7 +364,10 @@ export function MainScreen({
 
       {retired ? (
         <section className="panel">
-          <RetiredSummary state={state} />
+          <RetiredSummary
+            state={state}
+            onPosted={() => onChange({ ...state, hallPosted: true })}
+          />
         </section>
       ) : ev ? (
         <section className="panel event">
@@ -643,7 +647,13 @@ function Stat({ label, v }: { label: string; v: string }) {
   )
 }
 
-function RetiredSummary({ state }: { state: GameState }) {
+function RetiredSummary({
+  state,
+  onPosted,
+}: {
+  state: GameState
+  onPosted: () => void
+}) {
   const all = state.history.flatMap((h) => h.awards)
   const n = (a: string) => all.filter((x) => x === a).length
   const pro = state.history.filter(
@@ -677,6 +687,7 @@ function RetiredSummary({ state }: { state: GameState }) {
         {state.earnings.USD > 0 &&
           ` + ${formatMoney(state.earnings.USD, 'USD')}`}
       </p>
+      <HallSubmit state={state} onPosted={onPosted} />
     </div>
   )
 }

@@ -28,7 +28,7 @@ pnpm lint && pnpm typecheck && pnpm format
 
 ## 베타 배포 (Cloudflare Pages)
 
-정적 SPA라 Cloudflare Pages가 저장소를 직접 빌드한다. 세이브가 localStorage(도메인 단위)에 있으므로 **배포 주소를 바꾸면 기존 유저의 세이브가 사라진다.** 주소는 처음 정한 것을 계속 쓴다.
+Cloudflare Pages가 저장소를 직접 빌드한다. 게임은 정적 SPA이고, 공용 명예의 전당만 Pages Functions(`functions/`)와 D1을 쓴다. 세이브가 localStorage(도메인 단위)에 있으므로 **배포 주소를 바꾸면 기존 유저의 세이브가 사라진다.** 주소는 처음 정한 것을 계속 쓴다.
 
 | 항목 | 값 |
 | --- | --- |
@@ -36,10 +36,19 @@ pnpm lint && pnpm typecheck && pnpm format
 | 빌드 명령 / 출력 | `pnpm build` / `dist` |
 | Node / pnpm | `.nvmrc`(26) / `package.json` 의 `packageManager` |
 | 환경 변수 | `VITE_FEEDBACK_URL` (선택) — 있으면 푸터에 "피드백 보내기" 링크 |
+| 암호화 변수 | `TURNSTILE_SECRET` — Turnstile 위젯 `bench-to-mvp-hall` 의 시크릿 키 (대시보드에서 직접 입력) |
+| 바인딩 | `wrangler.toml` 이 기준 — D1 `bench-to-mvp-hall` → `DB` |
 | 헤더 | `public/_headers` — 에셋 1년 캐시, `index.html` no-cache, CSP 등 보안 헤더 |
 
 - 머지 전 확인: GitHub Actions(`.github/workflows/ci.yml`)가 lint → typecheck → test → build 를 돌린다.
 - 배포 흐름: `dev` 에서 작업 → 미리보기 URL 로 QA → `dev → main` PR 머지 → 운영 배포. 문제가 생기면 Cloudflare 대시보드에서 이전 배포로 롤백한다.
-- 외부 리소스를 추가하면 `public/_headers` 의 CSP 허용 목록도 함께 고친다 (현재: Google Fonts, jsDelivr).
-- 푸터에 `v<버전> · <커밋>` 이 표시된다. 버전은 `package.json`, 커밋은 Cloudflare 빌드의 `CF_PAGES_COMMIT_SHA`.
+- 외부 리소스를 추가하면 `public/_headers` 의 CSP 허용 목록도 함께 고친다 (현재: Google Fonts, jsDelivr, Turnstile).
+- 푸터에 `v<버전>` 이 표시된다. 버전은 `package.json`.
+
+### 공용 명예의 전당 (D1 + Turnstile)
+
+- 스키마는 `migrations/` 에 둔다. 새 마이그레이션은 `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --remote` 로 운영 DB 에 적용한다.
+- 로컬 확인: `pnpm build` → `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --local` → `pnpm dlx wrangler pages dev dist`. `.dev.vars` 에 `TURNSTILE_SECRET=1x0000000000000000000000000000000AA` (Cloudflare 테스트 키, 항상 통과)를 둔다. 로컬 호스트에서는 클라이언트도 테스트 사이트 키를 쓴다.
+- 미리보기 배포도 같은 D1 을 쓰므로, 미리보기에서 등록한 기록은 운영 명예의 전당에 그대로 남는다.
+- 기록 삭제 요청은 D1 콘솔에서 `DELETE FROM hall WHERE id = '...'` 로 처리한다.
 
