@@ -14,6 +14,7 @@ import { LandingScreen } from './ui/landingScreen'
 import { LegalDialog } from './ui/legalDialog'
 import { MainScreen } from './ui/mainScreen'
 import { RankingScreen } from './ui/rankingScreen'
+import { SitemapDialog } from './ui/sitemapDialog'
 import './app.css'
 
 type Screen = 'landing' | 'create' | 'game' | 'ranking'
@@ -31,6 +32,7 @@ export default function App() {
   const [rankingFrom, setRankingFrom] = useState<Screen>('landing')
   const [error, setError] = useState('')
   const [legal, setLegal] = useState<LegalDoc | null>(null)
+  const [sitemap, setSitemap] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const screenRef = useRef<HTMLDivElement>(null)
 
@@ -148,6 +150,9 @@ export default function App() {
               <button className="link" onClick={() => setLegal(TERMS)}>
                 이용약관
               </button>
+              <button className="link" onClick={() => setSitemap(true)}>
+                사이트맵
+              </button>
               {import.meta.env.VITE_FEEDBACK_URL && (
                 <a
                   href={import.meta.env.VITE_FEEDBACK_URL}
@@ -167,6 +172,82 @@ export default function App() {
           </div>
         </footer>
         {legal && <LegalDialog doc={legal} onClose={() => setLegal(null)} />}
+        {sitemap && (
+          <SitemapDialog
+            onClose={() => setSitemap(false)}
+            groups={[
+              {
+                title: '게임',
+                links: [
+                  {
+                    label: '처음 화면',
+                    desc: '게임 소개와 명예의 전당 미리보기',
+                    onSelect: () => setScreen('landing'),
+                  },
+                  ...(state
+                    ? [
+                        {
+                          label: '이어하기',
+                          desc: `${state.player.name} 선수의 커리어로 돌아가기`,
+                          onSelect: () => setScreen('game'),
+                        },
+                      ]
+                    : []),
+                  {
+                    label: '새 커리어 만들기',
+                    desc: '선수를 만들고 고1 시즌부터 시작',
+                    onSelect: reset,
+                  },
+                ],
+              },
+              {
+                title: '명예의 전당',
+                links: [
+                  {
+                    label: '전체 랭킹',
+                    desc: '포지션별 베스트 5와 상위 100명',
+                    onSelect: openRanking,
+                  },
+                ],
+              },
+              {
+                title: '안내',
+                links: [
+                  {
+                    label: '개인정보처리방침',
+                    desc: '수집하는 정보와 보관 기간',
+                    onSelect: () => setLegal(PRIVACY),
+                  },
+                  {
+                    label: '이용약관',
+                    desc: '서비스 이용 조건',
+                    onSelect: () => setLegal(TERMS),
+                  },
+                  {
+                    label: '문의 메일',
+                    desc: CONTACT_EMAIL,
+                    href: `mailto:${CONTACT_EMAIL}`,
+                  },
+                ],
+              },
+              {
+                title: '검색엔진용 파일',
+                links: [
+                  {
+                    label: 'sitemap.xml',
+                    desc: '검색엔진에 알려주는 페이지 목록',
+                    file: 'sitemap.xml',
+                  },
+                  {
+                    label: 'robots.txt',
+                    desc: '검색엔진 수집 허용 규칙',
+                    file: 'robots.txt',
+                  },
+                ],
+              },
+            ]}
+          />
+        )}
       </div>
     </div>
   )

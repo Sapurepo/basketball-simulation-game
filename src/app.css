@@ -1806,6 +1806,49 @@ tr.me td {
   white-space: nowrap;
 }
 
+/* 사이트맵 팝업 */
+.modal.sitemap[open] {
+  display: grid;
+  gap: 14px;
+}
+
+.modal.sitemap section {
+  display: grid;
+  gap: 8px;
+}
+
+.modal.sitemap h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.modal.sitemap ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.modal.sitemap .option {
+  width: calc(100% - 6px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.modal.sitemap .file-view {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  background: var(--ink);
+  color: var(--panel-hi);
+  font:
+    12px/1.6 ui-monospace,
+    monospace;
+  white-space: pre;
+}
+
 /* 상점 팝업 */
 .modal.shop[open] {
   display: grid;
