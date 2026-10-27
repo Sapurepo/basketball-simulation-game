@@ -3,13 +3,13 @@ import type { HallEntry } from '../engine/save'
 import type { GameState } from '../engine/types'
 import { PixelPlayer } from './pixelPlayer'
 import { type Kit, type Pose, teamKit } from './pose'
-import { LeagueLogo } from './teamLogo'
+import { iconURL } from './sprite'
 
 // 벤치 → 파엠: 마일스톤마다 포즈·유니폼·캡션을 바꿔가며 순환 재생
 const MILESTONES: { label: string; caption: string; pose: Pose; kit: Kit }[] = [
   {
     label: '벤치',
-    caption: '고1, 벤치 끝자리에서 출전을 기다려',
+    caption: '고1, 벤치 끝자리에서 출전을 기다리고',
     pose: 'sad',
     kit: teamKit('yongsan'),
   },
@@ -20,20 +20,20 @@ const MILESTONES: { label: string; caption: string; pose: Pose; kit: Kit }[] = [
     kit: teamKit('yongsan'),
   },
   {
-    label: 'KBL',
-    caption: 'KBL 드래프트 지명, 프로 무대에 서',
+    label: '프로 입성',
+    caption: 'KBL 드래프트 지명, 프로 무대에 입성하고',
     pose: 'cheer',
     kit: teamKit('kbl'),
   },
   {
     label: 'NBA',
-    caption: 'NBA 진출, 세계 최고의 무대에서 슛',
+    caption: '꿈에 그리던 NBA 진출, 세계 최고의 무대에서 슛',
     pose: 'shoot',
     kit: teamKit('nba'),
   },
   {
     label: '파엠',
-    caption: '파이널 MVP, 트로피를 들어 올려',
+    caption: '불가능이라 여겼던 파이널 MVP를 거머쥐다',
     pose: 'celebrate',
     kit: { jersey: '#f2c14e', number: '#1b2230' },
   },
@@ -104,11 +104,7 @@ export function LandingScreen({
         <ol className="milestones">
           {MILESTONES.map((x, i) => (
             <li key={x.label} className={i <= step ? 'on' : undefined}>
-              {x.label === 'KBL' || x.label === 'NBA' ? (
-                <LeagueLogo league={x.label === 'KBL' ? 'kbl' : 'nba'} />
-              ) : (
-                x.label
-              )}
+              {x.label}
             </li>
           ))}
         </ol>
@@ -125,12 +121,15 @@ export function LandingScreen({
                   pose="idle"
                   kit={teamKit(e.name)}
                   look={e.look}
-                  scale={2}
+                  scale={1}
                 />
                 <span className="grow">
                   {e.name} <small className="muted">{e.position}</small>
                 </span>
-                <span>🏆 {e.trophies}</span>
+                <span className="row nowrap">
+                  <img className="px" src={iconURL('trophy')} alt="트로피" />
+                  {e.trophies}
+                </span>
                 <b>OVR {e.peakOvr}</b>
               </li>
             ))}

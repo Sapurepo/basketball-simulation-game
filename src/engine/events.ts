@@ -17,6 +17,7 @@ import { clamp, sigmoid, type Rng } from './rng'
 import type {
   AttrKey,
   Contract,
+  DrillKind,
   EventOption,
   GameEvent,
   GameState,
@@ -375,7 +376,6 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
 
   ev.push(trainingEvent())
   if (rng.chance(0.35)) ev.push(rng.pick(RANDOM_EVENTS)())
-  if (rng.chance(0.5)) ev.push(shootoutEvent())
   return ev
 }
 
@@ -393,15 +393,61 @@ function freeChoice(s: GameState): GameEvent {
   }
 }
 
-// 슈팅 미니게임: UI 가 타이밍 게임을 돌리고 'made:N' 으로 결과를 보낸다
-export const SHOOTOUT_SHOTS = 10
-function shootoutEvent(): GameEvent {
-  return {
-    kind: 'shootout',
+// 훈련 미니게임: 오프시즌마다 종류별로 한 번. UI 가 게임을 돌리고 DRILL_REPS 회 중 성공 수를 넘긴다
+export const DRILL_REPS = 10
+export const DRILL_KINDS: DrillKind[] = [
+  'shootout',
+  'passDrill',
+  'dribbleDrill',
+]
+export const DRILLS: Record<
+  DrillKind,
+  { title: string; body: string; attr: AttrKey }
+> = {
+  shootout: {
     title: '슈팅 훈련',
-    body: `타이밍에 맞춰 ${SHOOTOUT_SHOTS}개의 슛을 던지세요. 많이 넣을수록 슈팅 능력치가 오릅니다.`,
-    options: [{ id: 'auto', label: '코치에게 맡긴다', desc: '자동 진행' }],
-  }
+    body: `게이지를 정확히 채워 골대에 ${DRILL_REPS}번 슛을 던지세요.`,
+    attr: 'shooting',
+  },
+  passDrill: {
+    title: '패스 훈련',
+    body: `동료까지의 거리에 맞춰 게이지를 채워 ${DRILL_REPS}번 패스하세요.`,
+    attr: 'playmaking',
+  },
+  dribbleDrill: {
+    title: '드리블 훈련',
+    body: `수비가 기우는 반대쪽으로 ${DRILL_REPS}번 돌파하세요.`,
+    attr: 'finishing',
+  },
+}
+export const isDrill = (kind: string): kind is DrillKind => kind in DRILLS
+
+// 훈련 결과 안내: 성공했는데 못 오른 건 최고치(99)라서다
+export const drillOutcome = (
+  attr: AttrKey,
+  success: boolean,
+  raised: boolean,
+) =>
+  raised
+    ? `${ATTR_LABELS[attr]} +1`
+    : success
+      ? `${ATTR_LABELS[attr]} 이미 최고치예요`
+      : '아쉽지만 감각은 익혔습니다.'
+
+// 'made:N' 또는 'auto'(코치에게 맡김: 3~7개). 6개 이상이면 해당 능력치 +1 (99 상한).
+// raised 는 실제로 올랐는지 — 99 에 막히면 성공해도 false
+export function applyDrill(
+  rng: Rng,
+  s: GameState,
+  kind: DrillKind,
+  optionId: string,
+) {
+  const { attr } = DRILLS[kind]
+  const made =
+    optionId === 'auto' ? rng.int(3, 7) : Number(optionId.split(':')[1])
+  const before = s.player.attrs[attr]
+  if (made >= 6) s.player.attrs[attr] = Math.min(99, before + 1)
+  return { made, raised: s.player.attrs[attr] > before }
 }
 
 function trainingEvent(): GameEvent {
@@ -614,15 +660,17 @@ export function applyEvent(
       if (optionId === 'yes')
         s.player.potential = Math.min(99, s.player.potential + 1)
       return
-    case 'shootout': {
-      const made =
-        optionId === 'auto' ? rng.int(3, 7) : Number(optionId.split(':')[1])
-      const gain = made >= 9 ? 2 : made >= 6 ? 1 : 0
-      s.player.attrs.shooting = Math.min(99, s.player.attrs.shooting + gain)
+    // 이전 저장 파일에 남은 훈련 이벤트 (이제 오프시즌 이벤트로는 생기지 않는다)
+    case 'shootout':
+    case 'passDrill':
+    case 'dribbleDrill': {
+      const kind = ev.kind as DrillKind
+      const { attr } = DRILLS[kind]
+      const { made, raised } = applyDrill(rng, s, kind, optionId)
       return front(
         notice(
-          `${SHOOTOUT_SHOTS}개 중 ${made}개 성공`,
-          gain ? `슈팅 +${gain}` : '아쉽지만 감각은 익혔습니다.',
+          `${DRILL_REPS}개 중 ${made}개 성공`,
+          drillOutcome(attr, made >= 6, raised),
         ),
       )
     }

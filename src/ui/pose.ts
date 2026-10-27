@@ -1,4 +1,4 @@
-import type { GameState, Look } from '../engine/types'
+import type { GameState } from '../engine/types'
 
 export type Pose =
   | 'idle'
@@ -9,11 +9,8 @@ export type Pose =
   | 'injured'
   | 'salute'
   | 'wave'
+  | 'guard'
 
-export const SKINS = ['#ffe0c4', '#f6c9a0', '#d9a274', '#a8714a']
-export const HAIRS = ['#2b2420', '#5a3a22', '#a8743a', '#d8d2c4']
-export const HAIR_STYLES = ['기본', '짧은 머리', '장발', '곱슬']
-export const ACCESSORIES = ['없음', '헤어밴드', '고글']
 const TEAM_COLORS = [
   '#1f5fbf',
   '#d6262f',
@@ -30,10 +27,7 @@ const TEAM_COLORS = [
 export interface Kit {
   jersey: string
   number: string
-  cap?: string
 }
-
-export const DEFAULT_LOOK: Look = { skin: 0, hair: 0 }
 
 export function teamKit(teamId: string): Kit {
   let h = 0
@@ -42,7 +36,7 @@ export function teamKit(teamId: string): Kit {
 }
 
 const NATIONAL: Kit = { jersey: '#d6262f', number: '#ffffff' }
-const SANGMU: Kit = { jersey: '#4b5d3a', number: '#e6d38a', cap: '#3d4b2f' }
+const SANGMU: Kit = { jersey: '#4b5d3a', number: '#e6d38a' }
 const PLAIN: Kit = { jersey: '#8b97ab', number: '#ffffff' }
 
 // 상황별 포즈와 유니폼 고르기

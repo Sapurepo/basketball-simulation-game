@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { BestPlayer, Honor, SeasonRecord } from '../engine/types'
 import { avg, pct, seasonLabel, STAGE_LABEL } from './format'
 import { TeamLogo } from './teamLogo'
@@ -9,10 +10,10 @@ export function SeasonTable({ history }: { history: SeasonRecord[] }) {
       <table>
         <thead>
           <tr>
-            <th>시즌</th>
+            <th className="left">시즌</th>
             <th>나이</th>
-            <th>무대</th>
-            <th>팀</th>
+            <th className="left">무대</th>
+            <th className="left">팀</th>
             <th>OVR</th>
             <th>경기</th>
             <th>분</th>
@@ -21,16 +22,16 @@ export function SeasonTable({ history }: { history: SeasonRecord[] }) {
             <th>어시</th>
             <th>FG%</th>
             <th>3P%</th>
-            <th>성적</th>
+            <th className="left">성적</th>
           </tr>
         </thead>
         <tbody>
           {[...history].reverse().map((h) => (
             <tr key={h.year}>
-              <td>{seasonLabel(h)}</td>
+              <td className="left">{seasonLabel(h)}</td>
               <td>{h.age}</td>
-              <td>{STAGE_LABEL[h.stage]}</td>
-              <td>
+              <td className="left">{STAGE_LABEL[h.stage]}</td>
+              <td className="left">
                 <span className="row nowrap">
                   <TeamLogo name={h.team} size={18} />
                   {h.team}
@@ -89,49 +90,66 @@ export function TrophyCase({
   )
 }
 
-const TIER_LABEL = ['퍼스트 팀', '세컨드 팀', '서드 팀']
+const TIER_LABEL = ['퍼스트', '세컨드', '서드']
 
 export function BestTeams({ teams }: { teams: BestPlayer[][] }) {
+  const [tier, setTier] = useState(0)
+  const team = teams[tier] ?? teams[0]
   return (
     <div className="best">
-      {teams.map((team, t) => (
-        <div key={t}>
-          <h3 className={t === 0 ? 'gold-ink' : undefined}>{TIER_LABEL[t]}</h3>
-          <div className="scroll-x">
-            <table>
-              <thead>
-                <tr>
-                  <th>POS</th>
-                  <th className="left">선수</th>
-                  <th className="left">팀</th>
-                  <th>OVR</th>
-                  <th>득점</th>
-                  <th>리바</th>
-                  <th>어시</th>
-                </tr>
-              </thead>
-              <tbody>
-                {team.map((b) => (
-                  <tr key={b.position} className={b.me ? 'me' : undefined}>
-                    <td>{b.position}</td>
-                    <td className="left">{b.name}</td>
-                    <td className="left">
-                      <span className="row nowrap">
-                        <TeamLogo name={b.team} size={18} />
-                        {b.team}
-                      </span>
-                    </td>
-                    <td>{b.ovr}</td>
-                    <td>{b.pts.toFixed(1)}</td>
-                    <td>{b.reb.toFixed(1)}</td>
-                    <td>{b.ast.toFixed(1)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <div className="panel-head">
+        <h3>시즌 베스트 팀</h3>
+        <div className="tabs" role="tablist">
+          {teams.map((_, t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={t === tier}
+              onClick={() => setTier(t)}
+            >
+              {TIER_LABEL[t]}
+            </button>
+          ))}
         </div>
-      ))}
+      </div>
+      <div className="scroll-x">
+        <table>
+          <thead>
+            <tr>
+              <th className="left">POS</th>
+              <th className="left">선수</th>
+              <th className="left">팀</th>
+              <th>OVR</th>
+              <th>득점</th>
+              <th>리바</th>
+              <th>어시</th>
+            </tr>
+          </thead>
+          <tbody>
+            {team.map((b) => (
+              <tr key={b.position} className={b.me ? 'me' : undefined}>
+                <td className="left pos">{b.position}</td>
+                <td className="left">
+                  <span className="row nowrap">
+                    {b.name}
+                    {b.me && <span className="tag">YOU</span>}
+                  </span>
+                </td>
+                <td className="left">
+                  <span className="row nowrap">
+                    <TeamLogo name={b.team} size={18} />
+                    {b.team}
+                  </span>
+                </td>
+                <td>{b.ovr}</td>
+                <td>{b.pts.toFixed(1)}</td>
+                <td>{b.reb.toFixed(1)}</td>
+                <td>{b.ast.toFixed(1)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

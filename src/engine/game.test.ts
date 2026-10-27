@@ -1,10 +1,17 @@
 import { describe, expect, test } from 'vitest'
 import { generatePbp } from './commentary'
-import { advanceSeason, newGame, resolveEvent } from './game'
+import { isDrill } from './events'
+import {
+  advanceSeason,
+  availableDrills,
+  newGame,
+  playDrill,
+  resolveEvent,
+} from './game'
 import { createPlayer, START_TOTAL } from './player'
 import { Rng } from './rng'
-import { parseSave } from './save'
-import { playCareer } from './testBot'
+import { migrateLook, parseSave } from './save'
+import { botChoice, playCareer } from './testBot'
 
 const careers = Array.from({ length: 200 }, (_, i) =>
   playCareer(i * 7919 + 1, (['PG', 'SG', 'SF', 'PF', 'C'] as const)[i % 5]),
@@ -132,4 +139,96 @@ test('저장 파일 검증', () => {
   expect(() => parseSave('{"foo":1}')).toThrow()
   const s = careers[0]
   expect(parseSave(JSON.stringify(s)).player.name).toBe(s.player.name)
+})
+
+test('이전 외형(팔레트 인덱스)은 v2 외형으로 바뀐다', () => {
+  const s = structuredClone(careers[0])
+  const legacy = { skin: 2, hair: 1, hairStyle: 3, accessory: 1 }
+  ;(s.player as { look: unknown }).look = legacy
+  expect(parseSave(JSON.stringify(s)).player.look).toEqual({
+    skin: 2,
+    hair: '#5a3a22',
+    hairStyle: 'afro',
+    face: 'fierce',
+    acc: ['headband'],
+    num: expect.any(Number),
+  })
+  // 선택 필드가 없던 더 오래된 외형, 외형이 아예 없던 선수
+  ;(s.player as { look: unknown }).look = { skin: 0, hair: 0 }
+  expect(parseSave(JSON.stringify(s)).player.look).toMatchObject({
+    hairStyle: 'crew',
+    acc: [],
+  })
+  delete s.player.look
+  expect(parseSave(JSON.stringify(s)).player.look).toBeUndefined()
+  // v2 외형은 그대로
+  const v2 = migrateLook(legacy, '강민준')
+  expect(migrateLook(v2, '강민준')).toBe(v2)
+  expect(v2.num).toBe(migrateLook(legacy, '강민준').num)
+})
+
+describe('훈련 미니게임', () => {
+  const base = () => {
+    const rng = new Rng(11)
+    return newGame(11, createPlayer(rng, 'a', 'PG', '플레이메이커'), 'yongsan')
+  }
+
+  test.each([
+    ['shootout', 'shooting'],
+    ['passDrill', 'playmaking'],
+    ['dribbleDrill', 'finishing'],
+  ] as const)('%s 는 시즌마다 한 번, %s 를 최대 +1 올린다', (kind, attr) => {
+    const s = base()
+    const before = s.player.attrs[attr]
+    expect(availableDrills(s)).toContain(kind)
+    const done = playDrill(s, kind, 'made:9')
+    expect(done.player.attrs[attr]).toBe(Math.min(99, before + 1))
+    expect(playDrill(s, kind, 'made:6').player.attrs[attr]).toBe(
+      Math.min(99, before + 1),
+    )
+    expect(playDrill(s, kind, 'made:5').player.attrs[attr]).toBe(before)
+    expect(() => playDrill(s, kind, 'auto')).not.toThrow()
+    // 같은 오프시즌에는 다시 못 하고, 시즌을 진행하면 다시 열린다
+    expect(availableDrills(done)).not.toContain(kind)
+    expect(playDrill(done, kind, 'made:9')).toBe(done)
+    expect(availableDrills(advanceSeason(done))).toContain(kind)
+  })
+
+  test('최고치(99)면 성공해도 오르지 않고, 안내도 실패가 아닌 최고치로 나온다', () => {
+    const s = base()
+    s.player.attrs.playmaking = 99
+    s.events = [{ kind: 'passDrill', title: '', body: '', options: [] }]
+    const next = resolveEvent(s, 'made:9')
+    expect(next.player.attrs.playmaking).toBe(99)
+    expect(next.events[0].body).toBe('패스 이미 최고치예요')
+    expect(resolveEvent(s, 'made:5').events[0].body).toBe(
+      '아쉽지만 감각은 익혔습니다.',
+    )
+  })
+
+  test('은퇴하면 훈련이 없다', () => {
+    expect(availableDrills({ ...base(), stage: 'RETIRED' })).toEqual([])
+  })
+
+  test('오프시즌에 훈련 이벤트가 더는 생기지 않는다', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const rng = new Rng(seed)
+      let s = newGame(seed, createPlayer(rng, 'a', 'SF', 'n/a'), 'yongsan')
+      for (let i = 0; i < 300 && s.stage !== 'RETIRED'; i++) {
+        expect(s.events.some((e) => isDrill(e.kind))).toBe(false)
+        s = s.events.length ? resolveEvent(s, botChoice(s)) : advanceSeason(s)
+      }
+    }
+  })
+
+  test('이전 저장 파일에 남은 훈련 이벤트도 같은 기준으로 처리한다', () => {
+    const s = {
+      ...base(),
+      events: [{ kind: 'passDrill', title: '', body: '', options: [] }],
+    }
+    const before = s.player.attrs.playmaking
+    const next = resolveEvent(s, 'made:9')
+    expect(next.player.attrs.playmaking).toBe(Math.min(99, before + 1))
+    expect(next.events[0].title).toBe('10개 중 9개 성공')
+  })
 })

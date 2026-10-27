@@ -1,311 +1,71 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import type { Look } from '../engine/types'
-import { DEFAULT_LOOK, HAIRS, SKINS, type Kit, type Pose } from './pose'
+import type { Kit, Pose } from './pose'
+import { DEFAULT_LOOK, type DrawnPose, H, spriteURL, W } from './sprite'
 
-// 16×22 픽셀 치비 캐릭터. 아트는 문자 격자로 그리고, 문자를 팔레트 색으로 칠한다.
-// x: 0~15, y: 0(머리 꼭대기)~20(신발). 팔을 들거나 점프하면 y 가 음수가 된다.
-type Px = [number, number, string]
-
-// 머리카락은 BODY 에서 빼고 HAIR_STYLES 로 따로 얹는다
-const BODY = [
-  '................',
-  '................',
-  '................',
-  '....SSSSSSSS....',
-  '...SSSSSSSSSS...',
-  '..SSSESSSSESSS..',
-  '..SSSESSSSESSS..',
-  '..SRSSSSSSSSRS..',
-  '...SSSSMMSSSS...',
-  '....SSSSSSSS....',
-  '......SSSS......',
-  '....JJJJJJJJ....',
-  '...JJJJNNJJJJ...',
-  '...JJJJNNJJJJ...',
-  '...JJJJJJJJJJ...',
-  '...JJJJJJJJJJ...',
-  '...PPPPPPPPPP...',
-  '...PPPP..PPPP...',
-  '....SS....SS....',
-  '....SS....SS....',
-  '...KKK....KKK...',
-]
-
-// 머리 모양 (라벨은 pose.ts HAIR_STYLES): 기본 / 짧은 머리 / 장발 / 곱슬
-const HAIR_ART: [string[], number][] = [
-  [
-    [
-      '.....HHHHHH.....',
-      '...HHHHHHHHHH...',
-      '..HHHHHHHHHHHH..',
-      '..HH........HH..',
-      '..H..........H..',
-    ],
-    0,
-  ],
-  [['....HHHHHHHH....', '..HHHHHHHHHHHH..', '..HH........HH..'], 1],
-  [
-    [
-      '.....HHHHHH.....',
-      '...HHHHHHHHHH...',
-      '..HHHHHHHHHHHH..',
-      '..HH........HH..',
-      '..HH........HH..',
-      '..HH........HH..',
-      '..HH........HH..',
-      '..HH........HH..',
-    ],
-    0,
-  ],
-  [
-    [
-      '....HHHHHHHH....',
-      '..HHHHHHHHHHHH..',
-      '.HHHHHHHHHHHHHH.',
-      '.HHHHHHHHHHHHHH.',
-      '.HHH........HHH.',
-      '..HH........HH..',
-    ],
-    -1,
-  ],
-]
-// 액세서리 (라벨은 pose.ts ACCESSORIES): 없음 / 헤어밴드 / 고글
-const ACC_ART: Px[][] = [
-  [],
-  [...Array(12)].map((_, i): Px => [i + 2, 2, 'A']),
-  [...Array(10)].map((_, i): Px => [i + 3, 5, i === 2 || i === 7 ? 'W' : 'K']),
-]
-
-const BALL = ['.BB.', 'BLBB', 'BBLB', '.BB.']
-const TROPHY = ['GGGGGG', 'GgGGgG', '.GGGG.', '..GG..', '..GG..', '.gggg.']
-
-const art = (rows: string[], dx = 0, dy = 0): Px[] =>
-  rows.flatMap((row, y) =>
-    [...row].flatMap((c, x): Px[] => (c === '.' ? [] : [[x + dx, y + dy, c]])),
-  )
-const mirror = (px: Px[]): Px[] => px.map(([x, y, c]) => [15 - x, y, c])
-const shift = (px: Px[], dy: number): Px[] =>
-  px.map(([x, y, c]) => [x, y + dy, c])
-
-const ARM_DOWN_L: Px[] = [11, 12, 13, 14, 15].flatMap((y): Px[] => [
-  [1, y, y <= 12 ? 'J' : 'S'],
-  [2, y, y <= 12 ? 'J' : 'S'],
-])
-const ARM_DOWN_R = mirror(ARM_DOWN_L)
-// 머리 위로 둥글게 올린 팔 (양손이 머리 위에서 모인다)
-const ARM_UP_L: Px[] = [
-  [1, 11, 'J'],
-  [1, 10, 'J'],
-  [0, 9, 'S'],
-  [0, 8, 'S'],
-  [0, 7, 'S'],
-  [0, 6, 'S'],
-  [0, 5, 'S'],
-  [1, 4, 'S'],
-  [1, 3, 'S'],
-  [1, 2, 'S'],
-  [2, 1, 'S'],
-  [3, 0, 'S'],
-  [4, -1, 'S'],
-  [4, -2, 'S'],
-  [5, -2, 'S'],
-]
-const ARM_UP_R = mirror(ARM_UP_L)
-// 한 팔 번쩍 (주먹)
-const FIST_R: Px[] = [
-  [13, 11, 'J'],
-  [14, 11, 'J'],
-  [14, 10, 'J'],
-  ...[9, 8, 7, 6, 5, 4, 3].map((y): Px => [15, y, 'S']),
-  [14, 2, 'S'],
-  [15, 2, 'S'],
-]
-// 거수경례: 오른손이 이마로
-const SALUTE_R: Px[] = [
-  [13, 11, 'J'],
-  [14, 11, 'J'],
-  [14, 10, 'J'],
-  [14, 9, 'S'],
-  [14, 8, 'S'],
-  [14, 7, 'S'],
-  [14, 6, 'S'],
-  [13, 5, 'S'],
-  [13, 4, 'S'],
-  [13, 3, 'S'],
-]
-const WAVE_A: Px[] = [
-  [13, 11, 'J'],
-  [14, 11, 'J'],
-  [14, 10, 'J'],
-  ...[9, 8, 7, 6, 5].map((y): Px => [15, y, 'S']),
-  [14, 4, 'S'],
-  [15, 4, 'S'],
-]
-const WAVE_B: Px[] = [
-  [13, 11, 'J'],
-  [14, 11, 'J'],
-  [14, 10, 'J'],
-  ...[9, 8, 7, 6].map((y): Px => [14, y, 'S']),
-  [13, 5, 'S'],
-  [14, 5, 'S'],
-]
-const DRIBBLE_R: Px[] = [...ARM_DOWN_R, [13, 16, 'S'], [14, 16, 'S']]
-// 눈 감고 입꼬리 내림
-const SAD_FACE: Px[] = [
-  [5, 5, 'S'],
-  [10, 5, 'S'],
-  [4, 6, 'D'],
-  [5, 6, 'D'],
-  [10, 6, 'D'],
-  [11, 6, 'D'],
-  [6, 8, 'D'],
-  [9, 8, 'D'],
-]
-const BANDAGE: Px[] = [...Array(12)].map((_, i): Px => [i + 2, 2, 'W'])
-const STRIPE: Px[] = [...Array(10)].map((_, i): Px => [i + 3, 14, 'N'])
-
-const BASE = art(BODY)
-
-function makePoses(body: Px[]): Record<Pose, { frames: Px[][]; ms: number }> {
-  return {
-    idle: {
-      ms: 280,
-      frames: [
-        [...body, ...ARM_DOWN_L, ...DRIBBLE_R, ...art(BALL, 12, 15)],
-        [...body, ...ARM_DOWN_L, ...DRIBBLE_R, ...art(BALL, 12, 17)],
-      ],
-    },
-    shoot: {
-      ms: 220,
-      frames: [
-        shift([...body, ...ARM_DOWN_L, ...ARM_DOWN_R, ...art(BALL, 6, 11)], 1),
-        shift([...body, ...ARM_UP_L, ...ARM_UP_R, ...art(BALL, 6, -5)], -2),
-        shift([...body, ...ARM_UP_L, ...ARM_UP_R], -1),
-      ],
-    },
-    celebrate: {
-      ms: 260,
-      frames: [
-        [...body, ...ARM_UP_L, ...ARM_UP_R, ...art(TROPHY, 5, -7)],
-        shift([...body, ...ARM_UP_L, ...ARM_UP_R, ...art(TROPHY, 5, -7)], -2),
-      ],
-    },
-    cheer: {
-      ms: 300,
-      frames: [
-        [...body, ...ARM_DOWN_L, ...FIST_R],
-        shift([...body, ...ARM_DOWN_L, ...FIST_R], -1),
-      ],
-    },
-    sad: {
-      ms: 500,
-      frames: [
-        [...body, ...SAD_FACE, ...ARM_DOWN_L, ...ARM_DOWN_R, [4, 7, 'T']],
-        [...body, ...SAD_FACE, ...ARM_DOWN_L, ...ARM_DOWN_R, [4, 8, 'T']],
-      ],
-    },
-    injured: {
-      ms: 500,
-      frames: [
-        [...body, ...SAD_FACE, ...BANDAGE, ...ARM_DOWN_L, ...ARM_DOWN_R],
-        shift(
-          [...body, ...SAD_FACE, ...BANDAGE, ...ARM_DOWN_L, ...ARM_DOWN_R],
-          1,
-        ),
-      ],
-    },
-    salute: {
-      ms: 600,
-      frames: [
-        [...body, ...STRIPE, ...ARM_DOWN_L, ...SALUTE_R],
-        shift([...body, ...STRIPE, ...ARM_DOWN_L, ...SALUTE_R], -1),
-      ],
-    },
-    wave: {
-      ms: 320,
-      frames: [
-        [...body, ...ARM_DOWN_L, ...WAVE_A],
-        [...body, ...ARM_DOWN_L, ...WAVE_B],
-      ],
-    },
-  }
+// v2 에 없는 포즈는 가장 가까운 포즈로 그린다
+const DRAWN: Record<Pose, DrawnPose> = {
+  idle: 'idle',
+  shoot: 'shoot',
+  cheer: 'cheer',
+  sad: 'sad',
+  celebrate: 'cheer',
+  injured: 'sad',
+  salute: 'cheer',
+  wave: 'cheer',
+  guard: 'guard',
 }
 
-const shade = (hex: string, k: number) =>
-  '#' +
-  [1, 3, 5]
-    .map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * k))
-    .map((v) => v.toString(16).padStart(2, '0'))
-    .join('')
-
-const reducedMotion = () =>
-  typeof matchMedia !== 'undefined' &&
-  matchMedia('(prefers-reduced-motion: reduce)').matches
+// 화면의 모든 선수가 한 타이머로 같은 박자(380ms)에 프레임을 넘긴다
+let tick = 0
+let timer: ReturnType<typeof setInterval> | undefined
+const subs = new Set<() => void>()
+function subscribe(cb: () => void) {
+  subs.add(cb)
+  const reduced =
+    typeof matchMedia !== 'undefined' &&
+    matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!timer && !reduced) {
+    timer = setInterval(() => {
+      tick++
+      subs.forEach((f) => f())
+    }, 380)
+  }
+  return () => {
+    subs.delete(cb)
+    if (!subs.size) {
+      clearInterval(timer)
+      timer = undefined
+    }
+  }
+}
+const useFrame = () => useSyncExternalStore(subscribe, () => tick % 2)
 
 export function PixelPlayer({
   pose,
   kit,
   look = DEFAULT_LOOK,
-  scale = 6,
+  scale = 3,
 }: {
   pose: Pose
   kit: Kit
   look?: Look
   scale?: number
 }) {
-  const [tick, setTick] = useState(0)
-  const hairStyle = look.hairStyle ?? 0
-  const accessory = look.accessory ?? 0
-  const poses = useMemo(() => {
-    const [rows, dy] = HAIR_ART[hairStyle] ?? HAIR_ART[0]
-    return makePoses([
-      ...BASE,
-      ...art(rows, 0, dy),
-      ...(ACC_ART[accessory] ?? []),
-    ])
-  }, [hairStyle, accessory])
-  const { frames, ms } = poses[pose]
-
-  useEffect(() => {
-    if (reducedMotion()) return
-    const id = setInterval(() => setTick((t) => t + 1), ms)
-    return () => clearInterval(id)
-  }, [ms])
-
-  const palette: Record<string, string> = {
-    H: kit.cap ?? HAIRS[look.hair],
-    S: SKINS[look.skin],
-    E: '#2a2320',
-    D: '#2a2320',
-    R: '#f2a0a0',
-    M: '#c4545b',
-    J: kit.jersey,
-    N: kit.number,
-    P: shade(kit.jersey, 0.75),
-    K: '#3a3a44',
-    B: '#ef7a2a',
-    L: '#8a3a10',
-    G: '#f2c14e',
-    g: '#c99628',
-    W: '#ffffff',
-    T: '#5aaef0',
-    A: '#d6262f',
+  const frame = useFrame()
+  const spec = {
+    ...look,
+    jersey: kit.jersey,
+    // 흰 트림은 시안의 오프화이트로 (신발 포인트 색 규칙이 이 값을 본다)
+    trim: kit.number === '#ffffff' ? '#f7f3ea' : kit.number,
   }
-  const frame = frames[tick % frames.length]
   return (
-    <svg
-      className="pixel"
-      viewBox="0 -8 16 30"
-      width={16 * scale}
-      height={30 * scale}
-      shapeRendering="crispEdges"
-      role="img"
-      aria-label="선수 캐릭터"
-    >
-      <ellipse cx="8" cy="21.4" rx="5.5" ry="0.8" fill="#00000018" />
-      {frame.map(([x, y, c], i) => (
-        <rect key={i} x={x} y={y} width="1" height="1" fill={palette[c]} />
-      ))}
-    </svg>
+    <img
+      className="px"
+      src={spriteURL(spec, DRAWN[pose], frame)}
+      width={W * scale}
+      height={H * scale}
+      alt="선수 캐릭터"
+    />
   )
 }

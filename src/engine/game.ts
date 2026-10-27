@@ -1,9 +1,9 @@
 import { HIGH_SCHOOLS } from '../data/schools'
-import { applyEvent, buildOffseason } from './events'
+import { applyDrill, applyEvent, buildOffseason, DRILL_KINDS } from './events'
 import { grow, overall } from './player'
 import { Rng } from './rng'
 import { simulateSeason } from './season'
-import type { AttrKey, GameState, Player } from './types'
+import type { AttrKey, DrillKind, GameState, Player } from './types'
 
 export const START_YEAR = 2027
 export const START_AGE = 16
@@ -72,6 +72,7 @@ export function advanceSeason(state: GameState): GameState {
     s.age++
     s.year++
     s.stageYear++
+    s.drillsDone = []
     s.events = buildOffseason(rng, s)
   })
 }
@@ -81,5 +82,24 @@ export function resolveEvent(state: GameState, optionId: string): GameState {
   return step(state, (rng, s) => {
     const ev = s.events.shift()!
     applyEvent(rng, s, ev, optionId)
+  })
+}
+
+// 이번 오프시즌에 아직 하지 않은 훈련 (은퇴하면 없음)
+export function availableDrills(s: GameState): DrillKind[] {
+  if (s.stage === 'RETIRED') return []
+  return DRILL_KINDS.filter((k) => !s.drillsDone?.includes(k))
+}
+
+// 훈련 결과 반영: optionId 는 'made:N' 또는 'auto'. 이미 한 훈련이면 그대로 돌려준다
+export function playDrill(
+  state: GameState,
+  kind: DrillKind,
+  optionId: string,
+): GameState {
+  if (!availableDrills(state).includes(kind)) return state
+  return step(state, (rng, s) => {
+    applyDrill(rng, s, kind, optionId)
+    s.drillsDone = [...(s.drillsDone ?? []), kind]
   })
 }

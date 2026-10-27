@@ -14,11 +14,18 @@ import { Rng } from '../engine/rng'
 import type { AttrKey, GameState, Position } from '../engine/types'
 import { AttrBars } from './attrBars'
 import { PixelPlayer } from './pixelPlayer'
-import { ACCESSORIES, HAIR_STYLES, HAIRS, SKINS, teamKit } from './pose'
+import { type Pose, teamKit } from './pose'
+import { ROSTER } from './sprite'
 
 const POSITIONS = Object.keys(POSITION_LABELS) as Position[]
 const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
 const STEPS = ['아바타', '기본 정보', '스카우팅 리포트', '집중 능력치']
+const POSE_STRIP: [Pose, string][] = [
+  ['idle', '드리블'],
+  ['shoot', '슛'],
+  ['cheer', '환호'],
+  ['sad', '패배'],
+]
 
 export function CreateScreen({
   onStart,
@@ -33,16 +40,15 @@ export function CreateScreen({
   const [style, setStyle] = useState(STYLES.PG[0].name)
   const [school, setSchool] = useState(HIGH_SCHOOLS[0].id)
   const [seed, setSeed] = useState(randomSeed)
-  const [skin, setSkin] = useState(0)
-  const [hair, setHair] = useState(0)
-  const [hairStyle, setHairStyle] = useState(0)
-  const [accessory, setAccessory] = useState(0)
+  const [sel, setSel] = useState(0)
   const [focus, setFocus] = useState<AttrKey | undefined>()
 
   const rng = new Rng(seed)
+  const look = ROSTER[sel].look
+  const kit = teamKit(school)
   const player = {
     ...createPlayer(rng, name.trim() || '이름 없음', position, style),
-    look: { skin, hair, hairStyle, accessory },
+    look,
   }
 
   const choosePosition = (p: Position) => {
@@ -63,51 +69,33 @@ export function CreateScreen({
       </header>
 
       {step === 0 && (
-        <section className="panel center">
-          <PixelPlayer pose="idle" kit={teamKit(school)} look={player.look} />
-          <div className="swatches" role="group" aria-label="피부색">
-            <small className="muted">피부</small>
-            {SKINS.map((c, i) => (
-              <button
-                key={c}
-                className={i === skin ? 'swatch on' : 'swatch'}
-                style={{ background: c }}
-                aria-label={`피부색 ${i + 1}`}
-                onClick={() => setSkin(i)}
-              />
-            ))}
+        <section className="panel panel-sunk pick">
+          <div className="pick-head">
+            <span className="tag gold">P1 SELECT</span>
+            <h2>
+              {ROSTER[sel].name} <small>#{look.num}</small>
+            </h2>
+            <div className="pose-strip">
+              {POSE_STRIP.map(([pose, label]) => (
+                <figure key={pose}>
+                  <PixelPlayer pose={pose} kit={kit} look={look} scale={2} />
+                  <figcaption>{label}</figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
-          <div className="swatches" role="group" aria-label="머리색">
-            <small className="muted">머리</small>
-            {HAIRS.map((c, i) => (
+          <div className="roster" role="group" aria-label="외형 선택">
+            {ROSTER.map((r, i) => (
               <button
-                key={c}
-                className={i === hair ? 'swatch on' : 'swatch'}
-                style={{ background: c }}
-                aria-label={`머리색 ${i + 1}`}
-                onClick={() => setHair(i)}
-              />
-            ))}
-          </div>
-          <div className="chips">
-            {HAIR_STYLES.map((label, i) => (
-              <button
-                key={label}
-                className={i === hairStyle ? 'chip on' : 'chip'}
-                onClick={() => setHairStyle(i)}
+                key={r.name}
+                className="roster-card"
+                aria-pressed={i === sel}
+                onClick={() => setSel(i)}
               >
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="chips">
-            {ACCESSORIES.map((label, i) => (
-              <button
-                key={label}
-                className={i === accessory ? 'chip on' : 'chip'}
-                onClick={() => setAccessory(i)}
-              >
-                {label}
+                {i === sel && <span className="tag gold">P1</span>}
+                <PixelPlayer pose="idle" kit={kit} look={r.look} />
+                <b>{r.name}</b>
+                <small>#{r.look.num}</small>
               </button>
             ))}
           </div>

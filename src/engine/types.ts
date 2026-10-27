@@ -11,13 +11,30 @@ export type Stage =
   'HS' | 'COLLEGE' | 'KBL' | 'NBA' | 'MILITARY' | 'FREE' | 'RETIRED'
 export type GrowthType = 'early' | 'normal' | 'late'
 
-// 외형(픽셀 캐릭터): 팔레트 인덱스
+// 외형(픽셀 캐릭터 v2). 이전 저장 파일의 팔레트 인덱스 외형은 save.ts 에서 변환한다.
+export type HairStyle =
+  | 'crew'
+  | 'flatTop'
+  | 'spiky'
+  | 'bangs'
+  | 'slick'
+  | 'buzz'
+  | 'curtains'
+  | 'afro'
+  | 'messy'
+export type Face = 'fierce' | 'calm' | 'grin'
+export type Accessory =
+  'wrist' | 'knee' | 'sleeve' | 'headband' | 'bandaid' | 'glasses'
 export interface Look {
+  // 피부 팔레트 인덱스 0~5
   skin: number
-  hair: number
-  // 이전 저장 파일 호환을 위해 선택 필드
-  hairStyle?: number
-  accessory?: number
+  hair: string
+  hairStyle: HairStyle
+  face: Face
+  acc: Accessory[]
+  num: number
+  // 헤드밴드·손목밴드 색
+  accent?: string
 }
 
 export interface Player {
@@ -135,6 +152,8 @@ export interface Service {
   }
 }
 
+export type DrillKind = 'shootout' | 'passDrill' | 'dribbleDrill'
+
 export interface Honor {
   year: number
   name: string
@@ -158,4 +177,6 @@ export interface GameState {
   peakOvr: number
   service: Service
   honors: Honor[]
+  // 이번 오프시즌에 마친 훈련 (시즌을 진행하면 비운다). 이전 저장 파일에는 없다
+  drillsDone?: DrillKind[]
 }

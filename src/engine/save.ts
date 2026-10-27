@@ -1,4 +1,11 @@
-import type { GameState, Look, Position, Stage } from './types'
+import type {
+  Accessory,
+  GameState,
+  HairStyle,
+  Look,
+  Position,
+  Stage,
+} from './types'
 
 const KEY = 'basketball-career-v1'
 const HALL_KEY = 'basketball-hall-v1'
@@ -21,6 +28,33 @@ export function saveGame(s: GameState | null) {
   }
 }
 
+// 이전 외형: 팔레트 인덱스 (피부 4 · 머리색 4 · 머리 모양 4 · 액세서리 3)
+interface LegacyLook {
+  skin: number
+  hair: number
+  hairStyle?: number
+  accessory?: number
+}
+const LEGACY_HAIRS = ['#2b2420', '#5a3a22', '#a8743a', '#d8d2c4']
+const LEGACY_STYLES: HairStyle[] = ['crew', 'buzz', 'curtains', 'afro']
+const LEGACY_ACC: Accessory[][] = [[], ['headband'], ['glasses']]
+
+export function migrateLook(look: Look | LegacyLook, name: string): Look {
+  if (typeof look.hair === 'string') return look as Look
+  const old = look as LegacyLook
+  // 등번호가 없던 시절: 이름으로 1~99 사이 번호를 고정 배정
+  let h = 0
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return {
+    skin: old.skin,
+    hair: LEGACY_HAIRS[old.hair] ?? LEGACY_HAIRS[0],
+    hairStyle: LEGACY_STYLES[old.hairStyle ?? 0] ?? 'crew',
+    face: 'fierce',
+    acc: LEGACY_ACC[old.accessory ?? 0] ?? [],
+    num: (h % 99) + 1,
+  }
+}
+
 export function parseSave(raw: string): GameState {
   const s = JSON.parse(raw) as GameState
   if (s?.version !== 1 || !s.player || !Array.isArray(s.history)) {
@@ -29,6 +63,7 @@ export function parseSave(raw: string): GameState {
   // 병역 시스템 이전 저장 파일 호환
   s.service ??= { status: 'pending' }
   s.honors ??= []
+  if (s.player.look) s.player.look = migrateLook(s.player.look, s.player.name)
   // 결과가 문자열이던 저장 파일 호환
   for (const h of s.history) {
     const r = h.result as unknown
@@ -59,7 +94,11 @@ export interface HallEntry {
 
 export function loadHall(): HallEntry[] {
   try {
-    return JSON.parse(localStorage.getItem(HALL_KEY) ?? '[]') as HallEntry[]
+    const hall = JSON.parse(
+      localStorage.getItem(HALL_KEY) ?? '[]',
+    ) as HallEntry[]
+    for (const e of hall) if (e.look) e.look = migrateLook(e.look, e.name)
+    return hall
   } catch {
     return []
   }
