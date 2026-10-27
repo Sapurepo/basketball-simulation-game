@@ -149,6 +149,13 @@ img.px {
   color: var(--accent-lo);
 }
 
+/* 제목 아래 후원 계좌 한 줄 */
+.brand .donate {
+  margin: 0;
+  font: 11px var(--font-pixel);
+  color: var(--muted);
+}
+
 main {
   display: grid;
   gap: 20px;

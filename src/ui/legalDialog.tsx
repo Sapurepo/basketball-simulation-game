@@ -64,7 +64,7 @@ export function LegalDialog({
           닫기
         </button>
       </div>
-      <p className="muted">시행일 {EFFECTIVE_DATE}</p>
+      <p className="muted">{doc.subtitle ?? `시행일 ${EFFECTIVE_DATE}`}</p>
       <p>{doc.intro}</p>
       {doc.sections.map((s) => (
         <section key={s.title}>

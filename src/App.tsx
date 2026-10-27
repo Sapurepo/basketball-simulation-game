@@ -8,7 +8,14 @@ import {
   saveGame,
 } from './engine/save'
 import type { GameState } from './engine/types'
-import { CONTACT_EMAIL, type LegalDoc, PRIVACY, TERMS } from './data/legal'
+import {
+  CONTACT_EMAIL,
+  DONATE_ACCOUNT,
+  type LegalDoc,
+  PRIVACY,
+  TERMS,
+} from './data/legal'
+import { ODDS } from './data/odds'
 import { CreateScreen } from './ui/createScreen'
 import { LandingScreen } from './ui/landingScreen'
 import { LegalDialog } from './ui/legalDialog'
@@ -89,10 +96,9 @@ export default function App() {
         {/* 헤더는 랜딩 화면에서만 */}
         {screen === 'landing' && (
           <div className="brand">
-            <b>
-              벤치에서 파엠까지 <span className="tag gold">BETA</span>
-            </b>
+            <b>벤치에서 파엠까지</b>
             <small className="muted">나만의 농구 인생</small>
+            <p className="donate">서버비 후원하기: 토스뱅크 {DONATE_ACCOUNT}</p>
           </div>
         )}
         {error && <p className="error">{error}</p>}
@@ -152,9 +158,13 @@ export default function App() {
               <button className="link" onClick={() => setLegal(TERMS)}>
                 이용약관
               </button>
+              <button className="link" onClick={() => setLegal(ODDS)}>
+                게임 확률표
+              </button>
               <button className="link" onClick={() => setSitemap(true)}>
                 사이트맵
               </button>
+              <a href={`mailto:${CONTACT_EMAIL}`}>문의하기</a>
               {import.meta.env.VITE_FEEDBACK_URL && (
                 <a
                   href={import.meta.env.VITE_FEEDBACK_URL}
@@ -165,7 +175,9 @@ export default function App() {
                 </a>
               )}
             </div>
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <span>
+              광고 문의: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            </span>
             <small>
               © 2026 imhyun. 학교, 구단, 대회 명칭과 로고에 대한 권리는 각
               권리자에게 있으며, 서비스는 해당 권리자와 제휴하거나 후원을 받지
@@ -226,7 +238,12 @@ export default function App() {
                     onSelect: () => setLegal(TERMS),
                   },
                   {
-                    label: '문의 메일',
+                    label: '게임 확률표',
+                    desc: '성장·수상·NBA 진출 등 주요 판정의 확률',
+                    onSelect: () => setLegal(ODDS),
+                  },
+                  {
+                    label: '문의하기',
                     desc: CONTACT_EMAIL,
                     href: `mailto:${CONTACT_EMAIL}`,
                   },

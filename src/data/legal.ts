@@ -8,12 +8,16 @@ export type LegalBlock = string | { list: string[] } | { table: string[][] }
 
 export interface LegalDoc {
   title: string
+  // 제목 아래 한 줄. 없으면 시행일을 보여준다
+  subtitle?: string
   intro: string
   sections: { title: string; blocks: LegalBlock[] }[]
 }
 
-export const EFFECTIVE_DATE = '2026년 10월 27일'
+export const EFFECTIVE_DATE = '2026년 10월 28일'
 export const CONTACT_EMAIL = 'igmyhuyun@gmail.com'
+// 푸터에 표기하는 후원 계좌 (토스뱅크)
+export const DONATE_ACCOUNT = '1000-3880-4125'
 
 export const PRIVACY: LegalDoc = {
   title: '개인정보 처리방침',
@@ -214,8 +218,8 @@ export const TERMS: LegalDoc = {
     {
       title: '제4조 서비스의 제공과 변경',
       blocks: [
-        '서비스는 무료로 제공되며 회원가입 없이 이용할 수 있습니다. 서비스에 유료 결제나 광고는 없습니다.',
-        '서비스는 베타 상태로 운영되며, 운영자는 게임 내용과 규칙, 게임 데이터의 저장 형식을 변경할 수 있습니다. 중요한 변경은 서비스 화면을 통해 알립니다.',
+        '서비스는 무료로 제공되며 회원가입 없이 이용할 수 있습니다. 서비스에 유료 결제는 없습니다. 운영자는 서버 운영 비용을 위해 자발적 후원을 받거나 광고를 게재할 수 있으며, 후원 여부는 게임 이용 조건과 내용에 영향을 주지 않습니다.',
+        '운영자는 게임 내용과 규칙, 게임 데이터의 저장 형식을 변경할 수 있습니다. 중요한 변경은 서비스 화면을 통해 알립니다.',
       ],
     },
     {
