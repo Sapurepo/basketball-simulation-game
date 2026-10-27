@@ -8,8 +8,10 @@ import {
   saveGame,
 } from './engine/save'
 import type { GameState } from './engine/types'
+import { CONTACT_EMAIL, type LegalDoc, PRIVACY, TERMS } from './data/legal'
 import { CreateScreen } from './ui/createScreen'
 import { LandingScreen } from './ui/landingScreen'
+import { LegalDialog } from './ui/legalDialog'
 import { MainScreen } from './ui/mainScreen'
 import './app.css'
 
@@ -20,6 +22,7 @@ export default function App() {
   const [hall, setHall] = useState(loadHall)
   const [screen, setScreen] = useState<Screen>('landing')
   const [error, setError] = useState('')
+  const [legal, setLegal] = useState<LegalDoc | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const screenRef = useRef<HTMLDivElement>(null)
 
@@ -109,16 +112,17 @@ export default function App() {
               }}
             />
           </div>
-          <p className="muted">
-            선수와 경기 결과는 가상입니다. 구단·대회 명칭과 로고의 권리는 각
-            권리자에게 있습니다. 진행 내용은 이 브라우저에만 저장됩니다. 베타
-            기간에는 저장 형식이 바뀔 수 있으니 가끔 저장 파일을 내보내 두세요.
-          </p>
-          <p className="build">
-            v{__APP_VERSION__} · {__BUILD_SHA__}
-            {import.meta.env.VITE_FEEDBACK_URL && (
-              <>
-                {' · '}
+          <div className="site-info">
+            <b>벤치에서 파엠까지</b>
+            <div className="row build">
+              v{__APP_VERSION__}
+              <button className="link" onClick={() => setLegal(PRIVACY)}>
+                개인정보처리방침
+              </button>
+              <button className="link" onClick={() => setLegal(TERMS)}>
+                이용약관
+              </button>
+              {import.meta.env.VITE_FEEDBACK_URL && (
                 <a
                   href={import.meta.env.VITE_FEEDBACK_URL}
                   target="_blank"
@@ -126,10 +130,17 @@ export default function App() {
                 >
                   피드백 보내기
                 </a>
-              </>
-            )}
-          </p>
+              )}
+            </div>
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <small>
+              © 2026 imhyun. 학교, 구단, 대회 명칭과 로고에 대한 권리는 각
+              권리자에게 있으며, 서비스는 해당 권리자와 제휴하거나 후원을 받지
+              않습니다.
+            </small>
+          </div>
         </footer>
+        {legal && <LegalDialog doc={legal} onClose={() => setLegal(null)} />}
       </div>
     </div>
   )

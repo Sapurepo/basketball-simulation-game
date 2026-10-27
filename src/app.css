@@ -168,13 +168,36 @@ footer {
   font-size: 12px;
 }
 
+footer .site-info {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+
+footer .site-info > b {
+  font: 14px var(--font-pixel);
+  color: var(--text);
+}
+
 footer .build {
+  gap: 12px;
   font: 11px var(--font-pixel);
   color: var(--muted);
 }
 
-footer .build a {
+footer a,
+footer .link {
   color: var(--accent-lo);
+}
+
+/* 밑줄 텍스트 링크처럼 보이는 버튼 */
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .error {
@@ -1731,6 +1754,56 @@ tr.me td {
 
 .modal .primary {
   margin-top: 16px;
+}
+
+/* 개인정보 처리방침·이용약관 팝업 */
+.modal.legal[open] {
+  display: grid;
+  gap: 12px;
+  max-height: 85dvh;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.modal.legal :is(p, ul, h3) {
+  margin: 0;
+}
+
+.modal.legal section {
+  display: grid;
+  gap: 6px;
+}
+
+.modal.legal h3 {
+  font-size: 14px;
+}
+
+.modal.legal ul {
+  padding-left: 18px;
+}
+
+.modal.legal .table-scroll {
+  overflow-x: auto;
+}
+
+.modal.legal table {
+  width: 100%;
+  border-collapse: collapse;
+  /* 기록 표의 전역 nowrap 대신 본문은 줄바꿈 */
+  white-space: normal;
+}
+
+.modal.legal :is(th, td) {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.modal.legal th {
+  background: var(--panel-sunk);
+  white-space: nowrap;
 }
 
 /* 상점 팝업 */
