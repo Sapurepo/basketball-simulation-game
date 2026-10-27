@@ -28,10 +28,11 @@ export const shotZone = (stat: number): Zone => {
   return [SHOT_PEAK - w / 2, SHOT_PEAK + w / 2]
 }
 
-// 패스: 동료까지 거리(게이지 0~1 과 같은 축)를 중심으로
+// 패스: 동료까지 거리(게이지 0~1 과 같은 축)를 중심으로. 구간은 슈팅보다 1.6배 넓다
+export const PASS_ZONE_SCALE = 1.6
 export const passDistance = (r = Math.random()) => 0.35 + r * 0.5
 export const passZone = (d: number, stat: number): Zone => {
-  const w = zoneWidth(stat)
+  const w = zoneWidth(stat) * PASS_ZONE_SCALE
   return [d - w / 2, d + w / 2]
 }
 

@@ -7,6 +7,7 @@ import {
   MAX_HOLD_MS,
   passDistance,
   passZone,
+  PASS_ZONE_SCALE,
   reactionMs,
   shotZone,
   zoneWidth,
@@ -45,6 +46,7 @@ describe('훈련 판정', () => {
         expect(lo).toBeGreaterThan(0)
         expect(hi).toBeLessThan(1)
         expect(judge(d, [lo, hi])).toBe('good')
+        expect(hi - lo).toBeCloseTo(zoneWidth(stat) * PASS_ZONE_SCALE, 5)
       }
   })
 
