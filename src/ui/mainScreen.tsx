@@ -1,4 +1,5 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
+import { itemById } from '../data/items'
 import { formatMoney, isDrill } from '../engine/events'
 import {
   advanceSeason,
@@ -22,7 +23,7 @@ import { GameCast } from './gameCast'
 import { DrillGame } from './drillGame'
 import { PixelPlayer } from './pixelPlayer'
 import { pickPose } from './pose'
-import { Decor, ShopDialog } from './shop'
+import { Decor, ShopDialog, TrophyShelf } from './shop'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
 import { TeamLogo } from './teamLogo'
 import { TrainingPanel } from './trainingPanel'
@@ -49,6 +50,15 @@ const RECORDS: [Tab, string][] = [
   ['career', '커리어'],
   ['trophy', '트로피'],
 ]
+
+// 무대에 적용한 벽지·바닥타일을 CSS 변수로
+function stageStyle(s: GameState) {
+  const bg = (id?: string) => (id ? itemById(id)?.bg : undefined)
+  return {
+    '--wall': bg(s.wall),
+    '--floor': bg(s.floor),
+  } as CSSProperties
+}
 
 // 상태 바 왼쪽: 무대와 학년·연차. stageYear 는 재계약 때마다 0이 되므로 기록으로 센다
 function stageText(s: GameState) {
@@ -167,7 +177,9 @@ export function MainScreen({
         <ShopDialog
           cash={state.cash ?? 0}
           items={state.items}
+          applied={[state.wall, state.floor]}
           onBuy={(id) => onChange(buyItem(state, id))}
+          onApply={(it) => it.slot && onChange({ ...state, [it.slot]: it.id })}
           onClose={() => setShop(false)}
         />
       )}
@@ -190,7 +202,7 @@ export function MainScreen({
           </span>
           <span className="alert">{alertText}</span>
         </div>
-        <div className="stage">
+        <div className="stage" style={stageStyle(state)}>
           <div className="pennant">
             {state.stage === 'RETIRED' || state.stage === 'FREE' ? (
               STAGE_LABEL[state.stage]
@@ -206,6 +218,7 @@ export function MainScreen({
             )}
           </div>
           <Decor items={state.items} />
+          <TrophyShelf state={state} />
           <div className="ovr-shield">
             <div>
               <small>OVR</small>

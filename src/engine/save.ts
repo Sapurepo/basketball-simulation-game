@@ -70,6 +70,8 @@ export function parseSave(raw: string): GameState {
   s.player.weight ??= idealWeight(s.player.height)
   s.cash ??= START_CASH
   s.items ??= []
+  // 펫 세분화 이전의 '강아지'는 포메라니안으로
+  s.items = s.items.map((id) => (id === 'dog' ? 'pomeranian' : id))
   if (s.player.look) s.player.look = migrateLook(s.player.look, s.player.name)
   // 결과가 문자열이던 저장 파일 호환
   for (const h of s.history) {

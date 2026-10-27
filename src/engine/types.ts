@@ -199,4 +199,7 @@ export interface GameState {
   // 보유 자금(만원)과 상점에서 산 아이템 id. 이전 저장 파일에는 없다
   cash?: number
   items?: string[]
+  // 무대에 적용한 벽지·바닥타일 아이템 id
+  wall?: string
+  floor?: string
 }

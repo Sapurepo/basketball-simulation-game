@@ -121,6 +121,7 @@ export function buyItem(state: GameState, id: string): GameState {
   const s = structuredClone(state)
   s.cash = cash - item.price
   s.items = [...(s.items ?? []), id]
+  if (item.slot) s[item.slot] = id
   if (item.acc && s.player.look && !s.player.look.acc.includes(item.acc))
     s.player.look.acc = [...s.player.look.acc, item.acc]
   return s

@@ -41,6 +41,7 @@ export function interp(table: [number, number][], ovr: number): number {
 export function formatMoney(amount: number, currency: 'KRW' | 'USD') {
   if (currency === 'USD') return `$${(amount / 1_000_000).toFixed(2)}M`
   // KRW 는 만원 단위로 저장
+  if (amount >= 100_000_000) return `${(amount / 100_000_000).toFixed(1)}조 원`
   return amount >= 10000
     ? `${(amount / 10000).toFixed(1)}억 원`
     : `${Math.round(amount)}만 원`

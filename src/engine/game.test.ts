@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { generatePbp } from './commentary'
 import { isDrill } from './events'
-import { buffed, itemEffects } from '../data/items'
+import { buffed, itemById, itemEffects } from '../data/items'
 import {
   advanceSeason,
   availableDrills,
@@ -267,11 +267,15 @@ describe('상점과 자금', () => {
     return newGame(5, p, 'yongsan')
   }
 
+  const price = (id: string) => itemById(id)!.price
+
   test('새 게임은 시작 자금으로 시작하고, 구입하면 자금이 줄고 치장이 입혀진다', () => {
-    const s = base()
-    expect(s.cash).toBe(START_CASH)
+    expect(base().cash).toBe(START_CASH)
+    // 고교 자금으로는 가장 싼 스냅백도 못 산다
+    expect(buyItem(base(), 'cap')).toEqual(base())
+    const s = { ...base(), cash: price('cap') + 5 }
     const bought = buyItem(s, 'cap')
-    expect(bought.cash).toBe(START_CASH - 120)
+    expect(bought.cash).toBe(5)
     expect(bought.items).toEqual(['cap'])
     expect(bought.player.look?.acc).toContain('cap')
     // 원본은 그대로, 중복·자금 부족은 거부
@@ -282,23 +286,23 @@ describe('상점과 자금', () => {
   })
 
   test('아이템 효과는 합산되고 99 를 넘지 않는다', () => {
-    const fx = itemEffects(['chain', 'headphones', 'dog', 'nope'])
+    const fx = itemEffects(['chain', 'headphones', 'pomeranian', 'nope'])
     expect(fx.attrs).toEqual({
       finishing: 2,
       rebounding: 1,
       shooting: 1,
       playmaking: 1,
     })
-    expect(fx.growth).toBeCloseTo(0.3)
+    expect(fx.growth).toBeCloseTo(0.1)
     const b = buffed({ ...base().player.attrs, shooting: 99 }, fx.attrs)
     expect(b.shooting).toBe(99)
     expect(b.finishing).toBe(base().player.attrs.finishing + 2)
   })
 
   test('시즌을 진행하면 고교 용돈이 쌓이고 버프는 시즌 기록에만 반영된다', () => {
-    const s = buyItem({ ...base(), cash: 40000 }, 'chain')
+    const s = buyItem({ ...base(), cash: price('chain') }, 'chain')
     const next = advanceSeason(s)
-    expect(next.cash).toBe(40000 - 30000 + 100)
+    expect(next.cash).toBe(100)
     expect(next.items).toEqual(['chain'])
     // 시즌 OVR 은 버프가 얹힌 값, 선수 능력치에는 남지 않는다 (성장분만 반영)
     expect(next.history[0].ovr).toBeGreaterThanOrEqual(overall(s.player))
@@ -320,5 +324,14 @@ describe('상점과 자금', () => {
     expect(loaded.player.weight).toBe(loaded.player.height - 100)
     expect(loaded.cash).toBe(START_CASH)
     expect(loaded.items).toEqual([])
+  })
+
+  test('벽지는 사면 바로 적용되고, 이전 저장 파일의 강아지는 포메라니안이 된다', () => {
+    const rich = { ...base(), cash: price('wallStripe') + price('floorCheck') }
+    const s = buyItem(buyItem(rich, 'wallStripe'), 'floorCheck')
+    expect([s.wall, s.floor]).toEqual(['wallStripe', 'floorCheck'])
+    const raw = JSON.parse(JSON.stringify(s))
+    raw.items = ['dog', 'cap']
+    expect(parseSave(JSON.stringify(raw)).items).toEqual(['pomeranian', 'cap'])
   })
 })
