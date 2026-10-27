@@ -20,9 +20,14 @@ export interface HallRow {
   retiredYear: number
 }
 
-export async function fetchHall(sort: HallSort, page: number, size?: number) {
-  const q = new URLSearchParams({ sort, page: String(page) })
-  if (size) q.set('size', String(size))
+// 상위 size 명(최대 100), best 면 포지션별 1위
+export async function fetchHall(
+  sort: HallSort,
+  opts: { size?: number; best?: boolean } = {},
+) {
+  const q = new URLSearchParams({ sort })
+  if (opts.size) q.set('size', String(opts.size))
+  if (opts.best) q.set('best', '1')
   const res = await fetch(`/api/hall?${q}`)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const data = (await res.json()) as {

@@ -21,7 +21,8 @@ export interface HallPayload {
 }
 
 export const NAME_MAX = 10
-export const HALL_PAGE_SIZE = 50
+// 랭킹 화면에 보여주는 인원 (API 한 번 조회 상한)
+export const HALL_TOP = 100
 const POSITIONS: Position[] = ['PG', 'SG', 'SF', 'PF', 'C']
 const HAIR_STYLES: HairStyle[] = [
   'crew',

@@ -69,7 +69,7 @@ export function HallBoard({
 
   useEffect(() => {
     let alive = true
-    fetchHall(sort, 0, PREVIEW)
+    fetchHall(sort, { size: PREVIEW })
       .then((d) => alive && (setAll(d), setError(false)))
       .catch(() => alive && setError(true))
     return () => {

@@ -1,7 +1,8 @@
-import { HALL_PAGE_SIZE, validateHall } from '../../src/engine/hallEntry'
+import { HALL_TOP, validateHall } from '../../src/engine/hallEntry'
 
 // 공용 명예의 전당 API (Cloudflare Pages Function, D1 바인딩 DB)
-// GET  /api/hall?sort=ovr|fmvp&page=N&size=M → { rows(순위 포함), total }, 기본 50명씩
+// GET  /api/hall?sort=ovr|fmvp&size=N → { rows(순위 포함), total }, 상위 100명까지
+// GET  /api/hall?sort=ovr|fmvp&best=1 → 포지션별 1위 (베스트 5), rank 는 전체 순위
 // POST /api/hall { entry, token }       → Turnstile 확인 후 등록
 
 // ponytail: 쓰는 메서드만 최소 타입으로 둔다. 더 쓰면 @cloudflare/workers-types 도입
@@ -35,27 +36,35 @@ const json = (body: unknown, status = 200) =>
 
 export async function onRequestGet({ request, env }: Ctx) {
   const url = new URL(request.url)
-  const q = (k: string) => Number(url.searchParams.get(k)) || 0
   const sort = url.searchParams.get('sort') === 'fmvp' ? 'fmvp' : 'ovr'
   const size = Math.max(
     1,
-    Math.min(HALL_PAGE_SIZE, q('size') || HALL_PAGE_SIZE),
+    Math.min(
+      HALL_TOP,
+      Math.floor(Number(url.searchParams.get('size'))) || HALL_TOP,
+    ),
   )
-  const offset = Math.max(0, Math.min(10_000, q('page'))) * size
+  const cols = `id, name, position, look, peak_ovr AS peakOvr, fmvp, trophies, seasons,
+    retired_year AS retiredYear`
+  // 베스트 5: 전체 순위를 매긴 뒤 포지션마다 가장 앞선 한 명
+  const sql = url.searchParams.get('best')
+    ? `SELECT ${cols}, rank FROM (
+         SELECT *, ROW_NUMBER() OVER (ORDER BY ${ORDER[sort]}) AS rank,
+           ROW_NUMBER() OVER (PARTITION BY position ORDER BY ${ORDER[sort]}) AS pos_rank
+         FROM hall)
+       WHERE pos_rank = 1 ORDER BY rank`
+    : `SELECT ${cols}, ROW_NUMBER() OVER (ORDER BY ${ORDER[sort]}) AS rank
+       FROM hall ORDER BY ${ORDER[sort]} LIMIT ${size}`
   const [{ results }, count] = await Promise.all([
-    env.DB.prepare(
-      `SELECT id, name, position, look, peak_ovr AS peakOvr, fmvp, trophies, seasons,
-         retired_year AS retiredYear FROM hall ORDER BY ${ORDER[sort]} LIMIT ? OFFSET ?`,
-    )
-      .bind(size, offset)
-      .all<Record<string, unknown> & { look: string | null }>(),
+    env.DB.prepare(sql).all<
+      Record<string, unknown> & { look: string | null }
+    >(),
     env.DB.prepare('SELECT COUNT(*) AS n FROM hall').first<{ n: number }>(),
   ])
   return json({
     total: count?.n ?? 0,
-    rows: results.map((r, i) => ({
+    rows: results.map((r) => ({
       ...r,
-      rank: offset + i + 1,
       look: r.look ? JSON.parse(r.look) : null,
     })),
   })

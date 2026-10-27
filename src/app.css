@@ -2052,12 +2052,75 @@ tr.me td {
   }
 }
 
-.pager {
+/* 랭킹 베스트 5: 하프 코트 위 3-2 라인업 */
+.best-five {
+  position: relative;
+  aspect-ratio: 150 / 140;
+  margin: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    #d49a5e 0 28px,
+    #c98b52 28px 56px
+  );
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink);
+}
+
+.court-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  stroke: #fbf7ee;
+}
+
+.court-lines .paint {
+  fill: rgb(240 122 43 / 0.35);
+}
+
+.court-lines .rim {
+  stroke: #ef7a2b;
+}
+
+.best-five .spot {
+  position: absolute;
+  translate: -50% -50%;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: max-content;
+  max-width: 34%;
+}
+
+.best-five .spot .plate > span {
+  max-width: 7em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.best-five .spot small {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 4px;
+  padding: 1px 6px;
+  background: rgb(26 23 21 / 0.75);
+  color: var(--panel-hi);
+  font: 11px var(--font-pixel);
+  white-space: nowrap;
+}
+
+.best-five .vacant {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 3px dashed #fbf7ee;
+  color: #fbf7ee;
+  font: 16px var(--font-pixel);
 }
 
 .hall .rank {
