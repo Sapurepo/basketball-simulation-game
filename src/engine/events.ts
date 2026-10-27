@@ -458,7 +458,7 @@ function trainingEvent(): GameEvent {
     body: '다음 시즌 집중적으로 키울 능력을 고르세요.',
     options: [
       ...ATTR_KEYS.map((k) => ({ id: k, label: ATTR_LABELS[k] })),
-      { id: 'balance', label: '균형 훈련', desc: '포지션에 맞게 고르게 성장' },
+      { id: 'balance', label: '균형 훈련' },
     ],
   }
 }
