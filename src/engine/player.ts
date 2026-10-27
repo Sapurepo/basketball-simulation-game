@@ -173,11 +173,17 @@ export function createPlayer(
     height,
     weight: idealWeight(height) + rng.int(-5, 8),
     attrs,
-    potential: Math.round(clamp(rng.normal(78, 7), 60, 97)),
+    potential: rollPotential(rng),
     growthType: rng.pick<GrowthType>(['early', 'normal', 'normal', 'late']),
     injuryProne: rng.chance(0.2),
     clutch: rng.chance(0.25),
   }
+}
+
+// 정규분포만으로는 S(92+)가 약 2.7%. 2.8% 확률로 S 구간을 한 번 더 뽑아 약 5.4%로 맞춘다
+function rollPotential(rng: Rng) {
+  const p = Math.round(clamp(rng.normal(78, 7), 60, 97))
+  return p < 92 && rng.chance(0.028) ? rng.int(92, 95) : p
 }
 
 // 전성기 종료 나이. 그 뒤 33세까지는 완만히, 34세부터 급격히 노쇠한다.
