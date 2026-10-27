@@ -238,10 +238,11 @@ function palette(s: Spec): Record<string, string> {
     Z: '#c4545b',
     G: '#f2c14e',
     g: '#8a5a34',
+    C: '#d6262f',
   }
 }
 
-const SHADE = new Set('SHuJPBAXOG')
+const SHADE = new Set('SHuJPBAXOGC')
 
 // 색 격자(null = 투명). 순수 함수라 테스트에서 그대로 검증한다.
 export function build(
@@ -288,14 +289,21 @@ export function build(
   rect(16, 35 + L, 18, 41 + L, 'S')
   put(11, 38 + L, 's')
   put(18, 38 + L, 's')
+  if (acc.has('tights')) {
+    rect(9, 35 + L, 11, 39 + L, 'K')
+    rect(16, 35 + L, 18, 39 + L, 'K')
+  }
   if (acc.has('knee')) {
     rect(9, 36 + L, 11, 37 + L, 'K')
     rect(16, 36 + L, 18, 37 + L, 'K')
   }
   rect(9, 40 + L, 11, 41 + L, 'O')
   rect(16, 40 + L, 18, 41 + L, 'O')
-  draw(['.BBBB.', 'BBBBBB', 'BbbBBB', 'oooooo'], 7, 42 + L)
-  draw(['.BBBB.', 'BBBBBB', 'BBBbbB', 'oooooo'], 15, 42 + L)
+  // 시그니처 농구화는 금색
+  const sh = acc.has('goldShoes') ? 'G' : 'B'
+  const shoe = (rows: string[]) => rows.map((r) => r.replaceAll('B', sh))
+  draw(shoe(['.BBBB.', 'BBBBBB', 'BbbBBB', 'oooooo']), 7, 42 + L)
+  draw(shoe(['.BBBB.', 'BBBBBB', 'BBBbbB', 'oooooo']), 15, 42 + L)
 
   // 헐렁한 반바지
   rect(7, 28 + U, 20, 34 + U, 'P')
@@ -328,20 +336,36 @@ export function build(
     draw(DIGITS[+n[1]], 15, 20 + U, 'N')
   }
   rect(8, 27 + U, 19, 27 + U, 'N')
+  // 컴프레션 상의: 어깨·목선이 검게 보인다
+  const shirt = acc.has('undershirt')
+  if (shirt) {
+    rect(8, 16 + U, 8, 19 + U, 'K')
+    rect(19, 16 + U, 19, 19 + U, 'K')
+    rect(12, 16 + U, 15, 16 + U, 'K')
+    rect(13, 17 + U, 14, 17 + U, 'K')
+  }
 
   // 목
   rect(12, 14 + U, 15, 15 + U, 'S')
   put(15, 14 + U, 's')
   put(15, 15 + U, 's')
+  if (acc.has('chain')) {
+    put(11, 17 + U, 'G')
+    put(16, 17 + U, 'G')
+    put(12, 18 + U, 'G')
+    put(15, 18 + U, 'G')
+    rect(13, 19 + U, 14, 19 + U, 'G')
+  }
 
-  // 팔
+  // 팔 (암슬리브는 왼팔, 컴프레션 상의는 양팔)
+  const sleeveL = acc.has('sleeve') || shirt
   const armsDown = (side: 'L' | 'R') => {
     if (side === 'L') {
       rect(6, 16 + U, 7, 22 + U, 'S')
       rect(5, 23 + U, 6, 27 + U, 'S')
       rect(5, 28 + U, 6, 29 + U, 'S')
       if (acc.has('wrist')) rect(5, 26 + U, 6, 27 + U, 'X')
-      if (acc.has('sleeve')) {
+      if (sleeveL) {
         rect(6, 18 + U, 7, 22 + U, 'K')
         rect(5, 23 + U, 6, 25 + U, 'K')
       }
@@ -350,6 +374,10 @@ export function build(
       rect(21, 23 + U, 22, 27 + U, 'S')
       rect(21, 28 + U, 22, 29 + U, 'S')
       if (acc.has('wrist')) rect(21, 26 + U, 22, 27 + U, 'X')
+      if (shirt) {
+        rect(20, 18 + U, 21, 22 + U, 'K')
+        rect(21, 23 + U, 22, 25 + U, 'K')
+      }
     }
   }
   const dribbleR = () => {
@@ -357,6 +385,10 @@ export function build(
     rect(21, 23 + U, 22, 26 + U, 'S')
     rect(22, 27 + U, 23, 28 + U, 'S')
     if (acc.has('wrist')) rect(21, 25 + U, 22, 26 + U, 'X')
+    if (shirt) {
+      rect(20, 18 + U, 21, 22 + U, 'K')
+      rect(21, 23 + U, 22, 24 + U, 'K')
+    }
   }
   const upL = () => {
     rect(7, 16 + U, 8, 18 + U, 'S')
@@ -364,7 +396,7 @@ export function build(
     rect(7, 1 + U, 8, 7 + U, 'S')
     rect(8, -2 + U, 9, 0 + U, 'S')
     if (acc.has('wrist')) rect(7, 1 + U, 8, 2 + U, 'X')
-    if (acc.has('sleeve')) rect(6, 8 + U, 7, 14 + U, 'K')
+    if (sleeveL) rect(6, 8 + U, 7, 14 + U, 'K')
   }
   const upR = () => {
     rect(19, 16 + U, 20, 18 + U, 'S')
@@ -372,6 +404,7 @@ export function build(
     rect(19, 1 + U, 20, 7 + U, 'S')
     rect(18, -2 + U, 19, 0 + U, 'S')
     if (acc.has('wrist')) rect(19, 1 + U, 20, 2 + U, 'X')
+    if (shirt) rect(20, 8 + U, 21, 14 + U, 'K')
   }
   const fistR = () => {
     rect(19, 16 + U, 20, 18 + U, 'S')
@@ -379,6 +412,7 @@ export function build(
     rect(20, 3 + U, 22, 5 + U, 'S')
     put(22, 5 + U, 's')
     if (acc.has('wrist')) rect(20, 6 + U, 21, 7 + U, 'X')
+    if (shirt) rect(20, 8 + U, 21, 14 + U, 'K')
   }
 
   const up = pose === 'shoot' || pose === 'trophy'
@@ -467,6 +501,7 @@ export function build(
   if (acc.has('bandaid')) rect(16, 10 + y, 17, 10 + y, 'D')
   if (acc.has('glasses'))
     draw(['QQQQ.QQQQ', 'Q..QQQ..Q', 'QQQQ.QQQQ'], 9, 7 + y)
+  if (acc.has('shades')) draw(['QQQQQQQQQ', '.QQQ.QQQ.'], 9, 8 + y)
   if (pose === 'sad' || (pose === 'shoot' && !frame)) {
     put(20, 4 + y + frame, 'T')
     put(20, 5 + y + frame, 'T')
@@ -475,6 +510,20 @@ export function build(
   // 앞머리 + 헤드밴드
   draw(hair[0], hair[1], hair[2] + U)
   if (acc.has('headband')) rect(8, 4 + U, 19, 4 + U, 'X')
+  // 머리 위 치장: 모자·헤드폰·이어폰
+  if (acc.has('cap')) {
+    rect(8, -1 + U, 19, 3 + U, 'C')
+    rect(6, 4 + U, 20, 4 + U, 'C')
+  }
+  if (acc.has('headphones')) {
+    rect(10, 1 + U, 17, 1 + U, 'K')
+    rect(8, 7 + U, 9, 9 + U, 'K')
+    rect(18, 7 + U, 19, 9 + U, 'K')
+  }
+  if (acc.has('earbuds')) {
+    rect(8, 8 + U, 8, 9 + U, 'W')
+    rect(19, 8 + U, 19, 9 + U, 'W')
+  }
 
   if (up) {
     upL()
@@ -607,6 +656,69 @@ const ICONS = {
     '..BBBBB..',
     '..BBBBB..',
   ],
+  bag: [
+    '...BBB...',
+    '..B...B..',
+    '.YYYYYYY.',
+    '.YYYYYYY.',
+    '.YYBBBYY.',
+    '.YYYYYYY.',
+    '.YYYYYYY.',
+    '.YYYYYYY.',
+    '.........',
+  ],
+  // 상점 장식 아이템: 무대(히어로 카드)에 놓인다. 크기는 자유
+  rug: [
+    'RRRRRRRRRRRRRRRRRRRR',
+    'RYYYYYYYYYYYYYYYYYYR',
+    'RYRRRRRRRRRRRRRRRRYR',
+    'RYYYYYYYYYYYYYYYYYYR',
+    'RRRRRRRRRRRRRRRRRRRR',
+  ],
+  frame: [
+    'BBBBBBBBB',
+    'BTTTTTTTB',
+    'BTTTYTTTB',
+    'BTTTTTTTB',
+    'BgggggggB',
+    'BgggggggB',
+    'BBBBBBBBB',
+  ],
+  dog: [
+    '..DD......',
+    '.DDDD....D',
+    '.DEDDDDDDD',
+    '..DDDDDDD.',
+    '...DDDDD..',
+    '...D...D..',
+    '...D...D..',
+  ],
+  sofa: [
+    'LL..............LL',
+    'LLLLLLLLLLLLLLLLLL',
+    'LLLLLLLLLLLLLLLLLL',
+    'LLLLLLLLLLLLLLLLLL',
+    'LL.LLLLLLLLLLLL.LL',
+    '.B..............B.',
+  ],
+  barbell: [
+    'GG..........GG',
+    'GG..........GG',
+    'KKKKKKKKKKKKKK',
+    'GG..........GG',
+    'GG..........GG',
+  ],
+  car: [
+    '.......CCCCCCCCC........',
+    '......CTTTCTTTTCC.......',
+    '.....CTTTTCTTTTTCC......',
+    'CCCCCCCCCCCCCCCCCCCCCCC.',
+    'CCCCCCCCCCCCCCCCCCCCCCCC',
+    'CCCKKCCCCCCCCCCCCCKKCCCC',
+    '..KGGK..........KGGK....',
+    '..KGGK..........KGGK....',
+    '...KK............KK.....',
+  ],
 }
 export type IconName = keyof typeof ICONS
 const ICON_PAL: Record<string, string> = {
@@ -618,21 +730,35 @@ const ICON_PAL: Record<string, string> = {
   N: '#fbf7ee',
   Y: '#f2c14e',
   B: '#8a5a34',
+  T: '#8fd0f5',
+  g: '#3f9a4a',
+  D: '#a8743a',
+  E: '#1e1a1a',
+  L: '#4f7ad6',
+  K: '#2b2a2a',
+  G: '#9a9a9a',
+  C: '#d6262f',
+}
+
+// 아이콘 격자 크기(외곽선 1px 여백 포함). 화면에서 width/height 로 배율을 정한다
+export function iconSize(name: IconName): [w: number, h: number] {
+  const art = ICONS[name]
+  return [Math.max(...art.map((r) => r.length)) + 2, art.length + 2]
 }
 
 export function iconURL(name: IconName) {
   const key = `icon:${name}`
   let url = cache.get(key)
   if (url) return url
-  const n = 11
-  const g: (string | null)[][] = [...Array(n)].map(() => Array(n).fill(null))
+  const [w, h] = iconSize(name)
+  const g: (string | null)[][] = [...Array(h)].map(() => Array(w).fill(null))
   ICONS[name].forEach((r, y) =>
     [...r].forEach((ch, x) => {
       if (ch !== '.') g[y + 1][x + 1] = ch
     }),
   )
   const empty = (x: number, y: number) =>
-    x < 0 || y < 0 || x >= n || y >= n || !g[y][x]
+    x < 0 || y < 0 || x >= w || y >= h || !g[y][x]
   const px = g.map((row, y) =>
     row.map((k, x) => {
       if (k) {
@@ -652,7 +778,7 @@ export function iconURL(name: IconName) {
         : null
     }),
   )
-  cache.set(key, (url = paint(px, n, n)))
+  cache.set(key, (url = paint(px, w, h)))
   return url
 }
 

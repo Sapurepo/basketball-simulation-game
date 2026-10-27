@@ -1,6 +1,11 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { formatMoney, isDrill } from '../engine/events'
-import { advanceSeason, availableDrills, resolveEvent } from '../engine/game'
+import {
+  advanceSeason,
+  availableDrills,
+  buyItem,
+  resolveEvent,
+} from '../engine/game'
 import {
   ATTR_KEYS,
   ATTR_LABELS,
@@ -8,6 +13,7 @@ import {
   POSITION_LABELS,
   potentialGrade,
 } from '../engine/player'
+import { clamp } from '../engine/rng'
 import type { GameLog, GameState } from '../engine/types'
 import { AttrBars } from './attrBars'
 import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
@@ -16,6 +22,7 @@ import { GameCast } from './gameCast'
 import { DrillGame } from './drillGame'
 import { PixelPlayer } from './pixelPlayer'
 import { pickPose } from './pose'
+import { Decor, ShopDialog } from './shop'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
 import { TeamLogo } from './teamLogo'
 import { TrainingPanel } from './trainingPanel'
@@ -74,6 +81,9 @@ export function MainScreen({
   const { pose, kit } = pickPose(state)
   const drillsLeft = availableDrills(state).length
   const [training, setTraining] = useState(false)
+  const [shop, setShop] = useState(false)
+  const [editNum, setEditNum] = useState(false)
+  const look = p.look ?? DEFAULT_LOOK
   const recordsRef = useRef<HTMLElement>(null)
   // 커맨드로 기록 패널을 바꾸면 패널이 화면에 보이도록 스크롤
   const show = (t: Tab) => {
@@ -153,6 +163,23 @@ export function MainScreen({
       {highlight && (
         <Highlight game={highlight} onClose={() => setHighlight(null)} />
       )}
+      {shop && (
+        <ShopDialog
+          cash={state.cash ?? 0}
+          items={state.items}
+          onBuy={(id) => onChange(buyItem(state, id))}
+          onClose={() => setShop(false)}
+        />
+      )}
+      {editNum && (
+        <NumberDialog
+          num={look.num}
+          onSave={(num) =>
+            onChange({ ...state, player: { ...p, look: { ...look, num } } })
+          }
+          onClose={() => setEditNum(false)}
+        />
+      )}
       <section className="panel hero">
         <div className="status">
           <span className="row">
@@ -178,6 +205,7 @@ export function MainScreen({
               </>
             )}
           </div>
+          <Decor items={state.items} />
           <div className="ovr-shield">
             <div>
               <small>OVR</small>
@@ -207,7 +235,12 @@ export function MainScreen({
           <div className="plates">
             <Plate label="나이" v={`${state.age}`} />
             <Plate label="신장" v={`${p.height}`} />
-            <Plate label="등번호" v={`#${(p.look ?? DEFAULT_LOOK).num}`} />
+            <Plate label="체중" v={`${p.weight}`} />
+            <Plate
+              label="등번호"
+              v={`#${look.num}`}
+              onClick={() => setEditNum(true)}
+            />
             <Plate label="스타일" v={p.style} />
             <Plate label="잠재력" v={potentialGrade(p.potential)} />
             <Plate label="병역" v={serviceLabel(state.service)} />
@@ -279,6 +312,14 @@ export function MainScreen({
               sub="커리어 · 트로피"
               pressed={RECORDS.some(([id]) => id === tab)}
               onClick={() => show('career')}
+            />
+            <Command
+              icon="bag"
+              label="상점"
+              sub={formatMoney(state.cash ?? 0, 'KRW')}
+              pressed={shop}
+              disabled={playing}
+              onClick={() => setShop(true)}
             />
           </div>
           {last && last.featured.length > 0 && (
@@ -466,12 +507,81 @@ export function MainScreen({
   )
 }
 
-function Plate({ label, v }: { label: string; v: string }) {
-  return (
-    <span className="plate">
+// onClick 을 주면 누를 수 있는 플레이트(등번호 수정)
+function Plate({
+  label,
+  v,
+  onClick,
+}: {
+  label: string
+  v: string
+  onClick?: () => void
+}) {
+  const body = (
+    <>
       <b>{label}</b>
       <span>{v}</span>
-    </span>
+    </>
+  )
+  return onClick ? (
+    <button className="plate" onClick={onClick} title={`${label} 수정`}>
+      {body}
+    </button>
+  ) : (
+    <span className="plate">{body}</span>
+  )
+}
+
+// 등번호 수정 팝업 (0~99)
+function NumberDialog({
+  num,
+  onSave,
+  onClose,
+}: {
+  num: number
+  onSave: (num: number) => void
+  onClose: () => void
+}) {
+  const ref = useRef<HTMLDialogElement>(null)
+  const [value, setValue] = useState(num)
+  useEffect(() => {
+    ref.current?.showModal()
+  }, [])
+  return (
+    <dialog
+      ref={ref}
+      className="modal num-dialog"
+      onClose={() => setTimeout(onClose, 150)}
+    >
+      <p className="eyebrow">등번호</p>
+      <label className="field">
+        <span>0~99 사이 숫자</span>
+        <input
+          type="number"
+          min={0}
+          max={99}
+          value={value}
+          autoFocus
+          onChange={(e) =>
+            setValue(clamp(Math.round(+e.target.value) || 0, 0, 99))
+          }
+        />
+      </label>
+      <div className="row">
+        <button className="ghost" onClick={() => ref.current?.close()}>
+          취소
+        </button>
+        <button
+          className="primary grow"
+          onClick={() => {
+            onSave(value)
+            ref.current?.close()
+          }}
+        >
+          저장
+        </button>
+      </div>
+    </dialog>
   )
 }
 

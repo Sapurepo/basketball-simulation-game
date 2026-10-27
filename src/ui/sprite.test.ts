@@ -33,6 +33,27 @@ describe('픽셀 스프라이트 v2', () => {
     expect(build(spec({ acc: ['glasses'] }), 'idle', 0)).not.toEqual(base)
   })
 
+  test('상점 치장 8종은 모든 포즈에서 결과를 바꾼다', () => {
+    const wear = [
+      'cap',
+      'shades',
+      'chain',
+      'headphones',
+      'earbuds',
+      'goldShoes',
+      'undershirt',
+      'tights',
+    ] as const
+    for (const pose of DRAWN_POSES) {
+      const base = build(spec({ acc: [] }), pose, 0)
+      for (const a of wear)
+        expect(build(spec({ acc: [a] }), pose, 0)).not.toEqual(base)
+    }
+    // 금색 농구화: 신발 자리(x 8, y 42+6) 가 금색 계열
+    const g = build(spec({ acc: ['goldShoes'], trim: '#f7f3ea' }), 'guard', 0)
+    expect(g.flat()).toContain('#f2c14e')
+  })
+
   test('가드 포즈는 공 없이 서 있다 (수비수·패스 받는 동료)', () => {
     const ball = (g: (string | null)[][]) =>
       g.flat().filter((c) => c === '#e8792e').length

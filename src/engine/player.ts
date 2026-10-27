@@ -8,6 +8,7 @@ export const ATTR_KEYS: AttrKey[] = [
   'rebounding',
   'defense',
   'athleticism',
+  'speed',
 ]
 
 export const ATTR_LABELS: Record<AttrKey, string> = {
@@ -17,6 +18,7 @@ export const ATTR_LABELS: Record<AttrKey, string> = {
   rebounding: '리바운드',
   defense: '수비',
   athleticism: '운동능력',
+  speed: '스피드',
 }
 
 export const POSITION_LABELS: Record<Position, string> = {
@@ -32,42 +34,47 @@ const WEIGHTS: Record<Position, Attributes> = {
   PG: {
     shooting: 0.2,
     finishing: 0.15,
-    playmaking: 0.35,
+    playmaking: 0.3,
     rebounding: 0.05,
-    defense: 0.15,
+    defense: 0.1,
     athleticism: 0.1,
+    speed: 0.1,
   },
   SG: {
-    shooting: 0.35,
+    shooting: 0.3,
     finishing: 0.2,
-    playmaking: 0.15,
+    playmaking: 0.1,
     rebounding: 0.05,
     defense: 0.15,
     athleticism: 0.1,
+    speed: 0.1,
   },
   SF: {
-    shooting: 0.25,
+    shooting: 0.2,
     finishing: 0.2,
     playmaking: 0.1,
     rebounding: 0.1,
-    defense: 0.2,
+    defense: 0.15,
     athleticism: 0.15,
+    speed: 0.1,
   },
   PF: {
     shooting: 0.1,
     finishing: 0.2,
     playmaking: 0.05,
     rebounding: 0.3,
-    defense: 0.2,
+    defense: 0.15,
     athleticism: 0.15,
+    speed: 0.05,
   },
   C: {
     shooting: 0.05,
     finishing: 0.2,
     playmaking: 0.05,
     rebounding: 0.35,
-    defense: 0.25,
+    defense: 0.2,
     athleticism: 0.1,
+    speed: 0.05,
   },
 }
 
@@ -82,7 +89,7 @@ export const STYLES: Record<
   ],
   SG: [
     { name: '슈터', bonus: { shooting: 10 } },
-    { name: '슬래셔', bonus: { finishing: 7, athleticism: 4 } },
+    { name: '슬래셔', bonus: { finishing: 6, speed: 5 } },
     { name: '3&D', bonus: { shooting: 5, defense: 6 } },
   ],
   SF: [
@@ -109,8 +116,21 @@ const HEIGHT: Record<Position, [number, number]> = {
   PF: [195, 202],
   C: [198, 210],
 }
+// 생성 화면에서 고를 수 있는 신장: 포지션 범위 ±4cm
+export const heightRange = (p: Position): [number, number] => [
+  HEIGHT[p][0] - 4,
+  HEIGHT[p][1] + 4,
+]
+export const WEIGHT_RANGE: [number, number] = [60, 130]
+export const idealWeight = (height: number) => height - 100
+// 몸무게가 스피드에 주는 보정: 적정 체중보다 2.5kg 무거울 때마다 -1 (최대 -10), 가벼우면 최대 +4
+export const weightSpeedMod = (height: number, weight: number) =>
+  clamp(Math.round((idealWeight(height) - weight) / 2.5), -10, 4)
 
-export const START_TOTAL = 240
+// 생성 시 능력치 합계와 조정 범위
+export const START_TOTAL = 280
+export const ATTR_MIN = 25
+export const ATTR_MAX = 60
 
 export function overall(p: Pick<Player, 'attrs' | 'position'>): number {
   const w = WEIGHTS[p.position]
@@ -133,19 +153,25 @@ export function createPlayer(
 ): Player {
   const w = WEIGHTS[position]
   const bonus = STYLES[position].find((s) => s.name === styleName)?.bonus ?? {}
+  const n = ATTR_KEYS.length
   const raw = ATTR_KEYS.map(
-    (k) => 40 + (w[k] - 1 / 6) * 60 + (bonus[k] ?? 0) + rng.range(-3, 3),
+    (k) => 40 + (w[k] - 1 / n) * 60 + (bonus[k] ?? 0) + rng.range(-3, 3),
   )
   const scale = START_TOTAL / raw.reduce((a, b) => a + b, 0)
   const attrs = Object.fromEntries(
     ATTR_KEYS.map((k, i) => [k, Math.round(raw[i] * scale)]),
   ) as Attributes
+  // 반올림 오차는 주력 능력치에 몰아 합계를 정확히 START_TOTAL 로 맞춘다 (생성 화면의 포인트 풀 기준)
+  const main = ATTR_KEYS.reduce((a, b) => (w[b] > w[a] ? b : a))
+  attrs[main] += START_TOTAL - ATTR_KEYS.reduce((s, k) => s + attrs[k], 0)
   const [hMin, hMax] = HEIGHT[position]
+  const height = rng.int(hMin, hMax)
   return {
     name,
     position,
     style: styleName,
-    height: rng.int(hMin, hMax),
+    height,
+    weight: idealWeight(height) + rng.int(-5, 8),
     attrs,
     potential: Math.round(clamp(rng.normal(78, 7), 60, 97)),
     growthType: rng.pick<GrowthType>(['early', 'normal', 'normal', 'late']),
@@ -196,7 +222,7 @@ export function grow(
   const denom = ATTR_KEYS.reduce((s, k) => s + w[k] * b(k), 0)
   for (const k of ATTR_KEYS) {
     let d = (g * b(k)) / denom
-    if (k === 'athleticism' && age >= DECLINE_AGE) d -= 1
+    if ((k === 'athleticism' || k === 'speed') && age >= DECLINE_AGE) d -= 1
     p.attrs[k] = clamp(p.attrs[k] + d, 20, 99)
   }
 }

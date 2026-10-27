@@ -6,6 +6,7 @@ export type AttrKey =
   | 'rebounding'
   | 'defense'
   | 'athleticism'
+  | 'speed'
 export type Attributes = Record<AttrKey, number>
 export type Stage =
   'HS' | 'COLLEGE' | 'KBL' | 'NBA' | 'MILITARY' | 'FREE' | 'RETIRED'
@@ -23,8 +24,22 @@ export type HairStyle =
   | 'afro'
   | 'messy'
 export type Face = 'fierce' | 'calm' | 'grin'
+// 뒤 8종은 상점 치장 아이템이 입힌다
 export type Accessory =
-  'wrist' | 'knee' | 'sleeve' | 'headband' | 'bandaid' | 'glasses'
+  | 'wrist'
+  | 'knee'
+  | 'sleeve'
+  | 'headband'
+  | 'bandaid'
+  | 'glasses'
+  | 'cap'
+  | 'shades'
+  | 'chain'
+  | 'headphones'
+  | 'earbuds'
+  | 'goldShoes'
+  | 'undershirt'
+  | 'tights'
 export interface Look {
   // 피부 팔레트 인덱스 0~5
   skin: number
@@ -42,6 +57,8 @@ export interface Player {
   position: Position
   style: string
   height: number
+  // kg. 생성 때 스피드에 반영되고 이후에는 표시용
+  weight: number
   look?: Look
   attrs: Attributes
   potential: number
@@ -179,4 +196,7 @@ export interface GameState {
   honors: Honor[]
   // 이번 오프시즌에 마친 훈련 (시즌을 진행하면 비운다). 이전 저장 파일에는 없다
   drillsDone?: DrillKind[]
+  // 보유 자금(만원)과 상점에서 산 아이템 id. 이전 저장 파일에는 없다
+  cash?: number
+  items?: string[]
 }

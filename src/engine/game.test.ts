@@ -1,16 +1,26 @@
 import { describe, expect, test } from 'vitest'
 import { generatePbp } from './commentary'
 import { isDrill } from './events'
+import { buffed, itemEffects } from '../data/items'
 import {
   advanceSeason,
   availableDrills,
+  buyItem,
   newGame,
   playDrill,
   resolveEvent,
+  START_CASH,
 } from './game'
-import { createPlayer, START_TOTAL } from './player'
+import {
+  createPlayer,
+  overall,
+  START_TOTAL,
+  WEIGHT_RANGE,
+  weightSpeedMod,
+} from './player'
 import { Rng } from './rng'
 import { migrateLook, parseSave } from './save'
+import type { Look } from './types'
 import { botChoice, playCareer } from './testBot'
 
 const careers = Array.from({ length: 200 }, (_, i) =>
@@ -96,10 +106,19 @@ describe('병역', () => {
   })
 })
 
-test('선수 생성 시 능력치 합계는 기준값 근처다', () => {
-  const p = createPlayer(new Rng(1), 'a', 'PG', '플레이메이커')
-  const total = Object.values(p.attrs).reduce((a, b) => a + b, 0)
-  expect(Math.abs(total - START_TOTAL)).toBeLessThanOrEqual(3)
+test('선수 생성 시 능력치 합계는 정확히 기준값이고 몸무게가 스피드를 보정한다', () => {
+  for (let seed = 1; seed <= 20; seed++) {
+    const p = createPlayer(new Rng(seed), 'a', 'PG', '플레이메이커')
+    const total = Object.values(p.attrs).reduce((a, b) => a + b, 0)
+    expect(total).toBe(START_TOTAL)
+    expect(p.attrs.speed).toBeGreaterThan(0)
+    expect(p.weight).toBeGreaterThanOrEqual(WEIGHT_RANGE[0])
+    expect(p.weight).toBeLessThanOrEqual(WEIGHT_RANGE[1])
+  }
+  expect(weightSpeedMod(190, 90)).toBe(0)
+  expect(weightSpeedMod(190, 120)).toBe(-10)
+  expect(weightSpeedMod(190, 60)).toBe(4)
+  expect(weightSpeedMod(190, 95)).toBe(-2)
 })
 
 test('중계 로그의 최종 스코어가 박스스코어와 일치한다', () => {
@@ -230,5 +249,76 @@ describe('훈련 미니게임', () => {
     const next = resolveEvent(s, 'made:9')
     expect(next.player.attrs.playmaking).toBe(Math.min(99, before + 1))
     expect(next.events[0].title).toBe('10개 중 9개 성공')
+  })
+})
+
+describe('상점과 자금', () => {
+  const look = {
+    skin: 0,
+    hair: '#000000',
+    hairStyle: 'crew' as const,
+    face: 'calm' as const,
+    acc: [] as Look['acc'],
+    num: 7,
+  }
+  const base = () => {
+    const rng = new Rng(5)
+    const p = { ...createPlayer(rng, 'a', 'SG', '슈터'), look }
+    return newGame(5, p, 'yongsan')
+  }
+
+  test('새 게임은 시작 자금으로 시작하고, 구입하면 자금이 줄고 치장이 입혀진다', () => {
+    const s = base()
+    expect(s.cash).toBe(START_CASH)
+    const bought = buyItem(s, 'cap')
+    expect(bought.cash).toBe(START_CASH - 120)
+    expect(bought.items).toEqual(['cap'])
+    expect(bought.player.look?.acc).toContain('cap')
+    // 원본은 그대로, 중복·자금 부족은 거부
+    expect(s.items).toEqual([])
+    expect(buyItem(bought, 'cap')).toBe(bought)
+    expect(buyItem(s, 'car')).toBe(s)
+    expect(buyItem(s, 'nope')).toBe(s)
+  })
+
+  test('아이템 효과는 합산되고 99 를 넘지 않는다', () => {
+    const fx = itemEffects(['chain', 'headphones', 'dog', 'nope'])
+    expect(fx.attrs).toEqual({
+      finishing: 2,
+      rebounding: 1,
+      shooting: 1,
+      playmaking: 1,
+    })
+    expect(fx.growth).toBeCloseTo(0.3)
+    const b = buffed({ ...base().player.attrs, shooting: 99 }, fx.attrs)
+    expect(b.shooting).toBe(99)
+    expect(b.finishing).toBe(base().player.attrs.finishing + 2)
+  })
+
+  test('시즌을 진행하면 고교 용돈이 쌓이고 버프는 시즌 기록에만 반영된다', () => {
+    const s = buyItem({ ...base(), cash: 40000 }, 'chain')
+    const next = advanceSeason(s)
+    expect(next.cash).toBe(40000 - 30000 + 100)
+    expect(next.items).toEqual(['chain'])
+    // 시즌 OVR 은 버프가 얹힌 값, 선수 능력치에는 남지 않는다 (성장분만 반영)
+    expect(next.history[0].ovr).toBeGreaterThanOrEqual(overall(s.player))
+    for (const v of Object.values(next.player.attrs)) {
+      expect(v).toBeGreaterThanOrEqual(20)
+      expect(v).toBeLessThanOrEqual(99)
+    }
+  })
+
+  test('이전 저장 파일은 스피드·몸무게·자금을 기본값으로 채운다', () => {
+    // JSON 왕복으로 느슨한 객체를 만들어 새 필드를 지운다
+    const raw = JSON.parse(JSON.stringify(base()))
+    delete raw.cash
+    delete raw.items
+    delete raw.player.weight
+    delete raw.player.attrs.speed
+    const loaded = parseSave(JSON.stringify(raw))
+    expect(loaded.player.attrs.speed).toBe(loaded.player.attrs.athleticism)
+    expect(loaded.player.weight).toBe(loaded.player.height - 100)
+    expect(loaded.cash).toBe(START_CASH)
+    expect(loaded.items).toEqual([])
   })
 })

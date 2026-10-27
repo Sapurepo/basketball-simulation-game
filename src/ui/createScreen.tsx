@@ -4,14 +4,20 @@ import { newGame } from '../engine/game'
 import {
   ATTR_KEYS,
   ATTR_LABELS,
+  ATTR_MAX,
+  ATTR_MIN,
   createPlayer,
+  heightRange,
   overall,
   POSITION_LABELS,
   potentialGrade,
+  START_TOTAL,
   STYLES,
+  WEIGHT_RANGE,
+  weightSpeedMod,
 } from '../engine/player'
-import { Rng } from '../engine/rng'
-import type { AttrKey, GameState, Position } from '../engine/types'
+import { clamp, Rng } from '../engine/rng'
+import type { AttrKey, Attributes, GameState, Position } from '../engine/types'
 import { AttrBars } from './attrBars'
 import { PixelPlayer } from './pixelPlayer'
 import { type Pose, teamKit } from './pose'
@@ -41,19 +47,41 @@ export function CreateScreen({
   const [school, setSchool] = useState(HIGH_SCHOOLS[0].id)
   const [seed, setSeed] = useState(randomSeed)
   const [sel, setSel] = useState(0)
+  const [num, setNum] = useState<number | null>(null)
   const [focus, setFocus] = useState<AttrKey | undefined>()
+  // 스카우팅 리포트에서 손본 값. null 이면 뽑힌 값을 그대로 쓴다
+  const [custom, setCustom] = useState<Attributes | null>(null)
+  const [height, setHeight] = useState<number | null>(null)
+  const [weight, setWeight] = useState<number | null>(null)
 
   const rng = new Rng(seed)
-  const look = ROSTER[sel].look
+  const look = { ...ROSTER[sel].look, num: num ?? ROSTER[sel].look.num }
   const kit = teamKit(school)
+  const base = createPlayer(rng, name.trim() || '이름 없음', position, style)
+  const pool = custom ?? base.attrs
+  const h = height ?? base.height
+  const wt = weight ?? base.weight
+  const mod = weightSpeedMod(h, wt)
   const player = {
-    ...createPlayer(rng, name.trim() || '이름 없음', position, style),
+    ...base,
+    height: h,
+    weight: wt,
+    attrs: { ...pool, speed: clamp(pool.speed + mod, 20, 99) },
     look,
   }
+  const left = START_TOTAL - ATTR_KEYS.reduce((s, k) => s + pool[k], 0)
+  const [hMin, hMax] = heightRange(position)
 
   const choosePosition = (p: Position) => {
     setPosition(p)
     setStyle(STYLES[p][0].name)
+    setCustom(null)
+    setHeight(null)
+    setWeight(null)
+  }
+  const chooseStyle = (s: string) => {
+    setStyle(s)
+    setCustom(null)
   }
 
   const last = step === STEPS.length - 1
@@ -73,7 +101,20 @@ export function CreateScreen({
           <div className="pick-head">
             <span className="tag gold">P1 SELECT</span>
             <h2>
-              {ROSTER[sel].name} <small>#{look.num}</small>
+              {ROSTER[sel].name}{' '}
+              <label className="num-field">
+                #
+                <input
+                  type="number"
+                  min={0}
+                  max={99}
+                  value={look.num}
+                  aria-label="등번호"
+                  onChange={(e) =>
+                    setNum(clamp(Math.round(+e.target.value) || 0, 0, 99))
+                  }
+                />
+              </label>
             </h2>
             <div className="pose-strip">
               {POSE_STRIP.map(([pose, label]) => (
@@ -90,7 +131,10 @@ export function CreateScreen({
                 key={r.name}
                 className="roster-card"
                 aria-pressed={i === sel}
-                onClick={() => setSel(i)}
+                onClick={() => {
+                  setSel(i)
+                  setNum(null)
+                }}
               >
                 {i === sel && <span className="tag gold">P1</span>}
                 <PixelPlayer pose="idle" kit={kit} look={r.look} />
@@ -136,7 +180,7 @@ export function CreateScreen({
                 <button
                   key={s.name}
                   className={s.name === style ? 'chip on' : 'chip'}
-                  onClick={() => setStyle(s.name)}
+                  onClick={() => chooseStyle(s.name)}
                 >
                   {s.name}
                 </button>
@@ -165,19 +209,58 @@ export function CreateScreen({
               다시 뽑기
             </button>
           </div>
+          <label className="field">
+            <span>
+              신장 <b>{h}cm</b>
+            </span>
+            <input
+              type="range"
+              min={hMin}
+              max={hMax}
+              value={h}
+              onChange={(e) => setHeight(+e.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>
+              몸무게 <b>{wt}kg</b>
+              <small className="muted">
+                {' '}
+                · 스피드 {mod > 0 ? `+${mod}` : mod}
+              </small>
+            </span>
+            <input
+              type="range"
+              min={WEIGHT_RANGE[0]}
+              max={WEIGHT_RANGE[1]}
+              value={wt}
+              onChange={(e) => setWeight(+e.target.value)}
+            />
+          </label>
           <div className="kv">
-            <span>신장</span>
-            <b>{player.height}cm</b>
             <span>오버롤</span>
             <b>{overall(player)}</b>
             <span>잠재력 등급</span>
             <b>{potentialGrade(player.potential)}</b>
+            <span>남은 포인트</span>
+            <b>{left}</b>
           </div>
           <AttrBars
             attrs={player.attrs}
             keys={ATTR_KEYS}
             labels={ATTR_LABELS}
+            adjust={{
+              onChange: (k, d) => setCustom({ ...pool, [k]: pool[k] + d }),
+              limits: (k) => ({
+                up: left > 0 && pool[k] < ATTR_MAX,
+                down: pool[k] > ATTR_MIN,
+              }),
+            }}
           />
+          <p className="muted">
+            능력치는 {ATTR_MIN}~{ATTR_MAX} 사이에서 총합 {START_TOTAL}
+            포인트를 나눠 가져요. 몸무게는 스피드에 더해집니다.
+          </p>
         </section>
       )}
 

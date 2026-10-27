@@ -1,3 +1,5 @@
+import { START_CASH } from './game'
+import { idealWeight } from './player'
 import type {
   Accessory,
   GameState,
@@ -63,6 +65,11 @@ export function parseSave(raw: string): GameState {
   // 병역 시스템 이전 저장 파일 호환
   s.service ??= { status: 'pending' }
   s.honors ??= []
+  // 스피드·몸무게·자금·아이템 이전 저장 파일 호환
+  s.player.attrs.speed ??= s.player.attrs.athleticism
+  s.player.weight ??= idealWeight(s.player.height)
+  s.cash ??= START_CASH
+  s.items ??= []
   if (s.player.look) s.player.look = migrateLook(s.player.look, s.player.name)
   // 결과가 문자열이던 저장 파일 호환
   for (const h of s.history) {

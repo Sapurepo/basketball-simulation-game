@@ -70,7 +70,8 @@ export function playerBox(
     pts: twoM * 2 + tpm * 3 + ftm,
     reb: rng.poisson(f * rate(8, 1.035, a.rebounding, 2, 17)),
     ast: rng.poisson(f * rate(4.5, 1.03, a.playmaking, 1, 10)),
-    stl: rng.poisson(f * rate(1.2, 1.03, a.defense, 0.3, 3)),
+    // ponytail: 스피드는 스틸에만 반영. 속공 득점까지 넣으려면 fga 쪽도 손봐야 한다
+    stl: rng.poisson(f * rate(1.2, 1.03, (a.defense + a.speed) / 2, 0.3, 3)),
     blk: rng.poisson(f * rate(big ? 1.2 : 0.4, 1.04, a.defense, 0.1, 4)),
     fgm: twoM + tpm,
     fga,

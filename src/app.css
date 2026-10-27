@@ -691,6 +691,39 @@ select {
   background: var(--gold);
 }
 
+/* 선수 생성: 값 양옆 −/+ 버튼 */
+.bars.adjust li {
+  grid-template-columns: 72px minmax(0, 1fr) 30px 28px 30px;
+  gap: 6px;
+}
+
+.ghost.tiny {
+  padding: 4px 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+input[type='range'] {
+  padding: 0;
+  margin: 8px 2px;
+  background: transparent;
+  box-shadow: none;
+  accent-color: var(--accent);
+}
+
+/* 아바타 선택의 등번호 입력 */
+.num-field {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.num-field input {
+  width: 3.2em;
+  margin-left: 2px;
+  padding: 4px 6px;
+  font: 400 14px var(--font-pixel);
+}
+
 /* ── 메인 화면 히어로 카드 ───────────────── */
 
 .hero {
@@ -894,6 +927,57 @@ select {
   color: var(--ink);
   font: 12px var(--font-pixel);
   box-shadow: inset 0 -2px 0 0 var(--line);
+}
+
+button.plate {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.plate:hover > span {
+  background: var(--gold-hi);
+}
+
+/* 상점 장식: 무대 위 정해진 자리 */
+/* 바닥(::after)보다 위, 뒤에 오는 선수 스프라이트(z 1)보다는 아래 */
+.stage .decor {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.decor-rug {
+  left: 50%;
+  bottom: 10px;
+  translate: -50% 0;
+}
+
+.decor-dog {
+  left: calc(50% + 64px);
+  bottom: 24px;
+}
+
+.decor-sofa {
+  right: 10px;
+  bottom: 28px;
+}
+
+.decor-car {
+  left: 6px;
+  bottom: 26px;
+}
+
+.decor-frame {
+  left: 22px;
+  top: 64px;
+}
+
+.decor-barbell {
+  right: 18px;
+  bottom: 120px;
 }
 
 .contract {
@@ -1546,6 +1630,69 @@ tr.me td {
 
 .modal .primary {
   margin-top: 16px;
+}
+
+/* 상점 팝업 */
+.modal.shop[open] {
+  display: grid;
+  gap: 14px;
+}
+
+.modal.shop section {
+  display: grid;
+  gap: 6px;
+}
+
+.modal.shop h3 {
+  margin: 0;
+}
+
+.shop-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.shop-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--panel-sunk);
+}
+
+.shop-list li > span:first-child {
+  display: grid;
+  min-width: 0;
+}
+
+.shop-list b {
+  font-size: 14px;
+}
+
+.shop-list small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.shop-list .price {
+  font: 400 13px var(--font-pixel);
+}
+
+.shop-list .primary,
+.shop-list .ghost {
+  margin: 2px;
+  padding: 6px 12px;
+}
+
+/* 등번호 수정 팝업 */
+.num-dialog input {
+  width: 5em;
+  text-align: center;
+  font: 400 20px var(--font-pixel);
 }
 
 /* ── 랜딩 ───────────────────────────────── */
