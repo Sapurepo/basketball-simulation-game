@@ -110,6 +110,8 @@ export interface HallEntry {
   peakOvr: number
   stage: Stage
   trophies: number
+  // NBA 파이널 MVP 횟수. 이전 기록에는 없다
+  fmvp?: number
   year: number
 }
 
@@ -135,6 +137,7 @@ export function recordHall(s: GameState): HallEntry[] {
     stage: s.stage,
     trophies:
       s.history.reduce((n, h) => n + h.awards.length, 0) + s.honors.length,
+    fmvp: s.history.filter((h) => h.awards.includes('NBA 파이널 MVP')).length,
     year: s.year,
   }
   // ponytail: 최고 오버롤 순 상위 10명만 보관, 동률은 트로피 수

@@ -127,8 +127,13 @@ export function LandingScreen({
                   {e.name} <small className="muted">{e.position}</small>
                 </span>
                 <span className="row nowrap">
-                  <img className="px" src={iconURL('trophy')} alt="트로피" />
-                  {e.trophies}
+                  <img
+                    className="px"
+                    src={iconURL('trophy')}
+                    alt="NBA 파이널 MVP"
+                    title="NBA 파이널 MVP"
+                  />
+                  {e.fmvp ?? 0}
                 </span>
                 <b>OVR {e.peakOvr}</b>
               </li>
