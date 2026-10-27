@@ -32,7 +32,7 @@ Cloudflare Pages가 저장소를 직접 빌드한다. 게임은 정적 SPA이고
 
 | 항목 | 값 |
 | --- | --- |
-| 운영 브랜치 | `main` (베타 운영) — `dev` 와 PR 은 미리보기 배포 |
+| 운영 브랜치 | `dev` — push 하면 바로 운영 배포. 그 밖의 브랜치와 PR 은 미리보기 배포 |
 | 빌드 명령 / 출력 | `pnpm build` / `dist` |
 | Node / pnpm | `.nvmrc`(26) / `package.json` 의 `packageManager` |
 | 환경 변수 | `VITE_FEEDBACK_URL` (선택) — 있으면 푸터에 "피드백 보내기" 링크 |
@@ -41,7 +41,8 @@ Cloudflare Pages가 저장소를 직접 빌드한다. 게임은 정적 SPA이고
 | 헤더 | `public/_headers` — 에셋 1년 캐시, `index.html` no-cache, CSP 등 보안 헤더 |
 
 - 머지 전 확인: GitHub Actions(`.github/workflows/ci.yml`)가 lint → typecheck → test → build 를 돌린다.
-- 배포 흐름: `dev` 에서 작업 → 미리보기 URL 로 QA → `dev → main` PR 머지 → 운영 배포. 문제가 생기면 Cloudflare 대시보드에서 이전 배포로 롤백한다.
+- 배포 흐름: `dev` 에 push → 운영 배포. 큰 변경은 별도 브랜치의 미리보기 URL 로 먼저 QA 한다. 문제가 생기면 Cloudflare 대시보드에서 이전 배포로 롤백한다.
+- 저장소가 비공개면 Pages 가 저장소를 받지 못해 배포가 실패한다(`Repository not found`). 비공개로 돌리려면 Pages 프로젝트가 쓰는 GitHub 앱 설치(설정의 Git 저장소 옆 Manage)에 이 저장소 접근을 먼저 허용한다.
 - 외부 리소스를 추가하면 `public/_headers` 의 CSP 허용 목록도 함께 고친다 (현재: Google Fonts, jsDelivr, Turnstile).
 - 푸터에 `v<버전>` 이 표시된다. 버전은 `package.json`.
 
