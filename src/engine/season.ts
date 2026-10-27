@@ -203,8 +203,8 @@ class SeasonCtx {
     return this.rng.normal(mean, sd)
   }
 
-  finalsMvp(finals: StatLine, mean: number): boolean {
-    return finals.games > 0 && gameScoreAvg(finals) >= this.rival(mean, 5)
+  finalsMvp(finals: StatLine, mean: number, sd = 5): boolean {
+    return finals.games > 0 && gameScoreAvg(finals) >= this.rival(mean, sd)
   }
 }
 
@@ -426,7 +426,8 @@ function nba(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
       if (champ.id === c.team.id) {
         result.push('NBA 챔피언')
         c.awards.push('NBA 챔피언')
-        if (c.finalsMvp(finalsLine(c, 'NBA 파이널'), 26)) {
+        // N(24.7, 5.8): 게임스코어 16/20/23/26/29/32 → 약 7/21/38/59/77/90%
+        if (c.finalsMvp(finalsLine(c, 'NBA 파이널'), 24.7, 5.8)) {
           c.awards.push('NBA 파이널 MVP')
         }
       } else {
