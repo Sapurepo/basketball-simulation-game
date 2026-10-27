@@ -323,6 +323,7 @@ export function MainScreen({
                 kind={ev.kind}
                 kit={kit}
                 look={p.look}
+                attrs={p.attrs}
                 onDone={(n) => onChange(resolveEvent(state, `made:${n}`))}
               />
             )}

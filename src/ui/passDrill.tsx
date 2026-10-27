@@ -12,14 +12,18 @@ const CALL: Record<Verdict, string> = {
   good: '나이스 패스!',
   short: '짧아요',
   long: '너무 세요',
+  late: '너무 오래 잡았어요',
 }
 
-// 패스 훈련: 동료가 매번 다른 거리에 선다. 게이지 높이 = 공이 가는 거리
+// 패스 훈련: 동료가 매번 다른 거리에 선다. 게이지 높이 = 공이 가는 거리.
+// 구간 폭은 패스 능력치(skill)에 비례
 export function PassDrill({
   kit,
+  skill,
   onDone,
 }: {
   kit: Kit
+  skill: number
   onDone: (made: number) => void
 }) {
   const run = useDrillRun(onDone)
@@ -27,9 +31,9 @@ export function PassDrill({
   const [flight, setFlight] = useState<{ v: number; verdict: Verdict } | null>(
     null,
   )
-  const zone = passZone(dist)
-  const gauge = useHoldGauge(!!flight || run.done, (v) => {
-    const verdict = judge(v, zone)
+  const zone = passZone(dist, skill)
+  const gauge = useHoldGauge(!!flight || run.done, (v, late) => {
+    const verdict = late ? 'late' : judge(v, zone)
     setFlight({ v, verdict })
     run.later(() => {
       run.push(verdict === 'good')

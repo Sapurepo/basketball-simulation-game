@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DRILL_REPS } from '../engine/events'
-import { judge, SHOT_ZONE, type Verdict } from './drill'
+import { judge, shotZone, type Verdict } from './drill'
 import { useDrillRun, useHoldGauge } from './drillHooks'
 import { DrillDots, Gauge } from './drillParts'
 import { iconURL } from './sprite'
@@ -9,14 +9,23 @@ const CALL: Record<Verdict, string> = {
   good: '골인!',
   short: '짧아요',
   long: '길어요',
+  late: '너무 오래 잡았어요',
 }
 
-// 슈팅 훈련: 공은 화면 가운데, 골대는 앞(위). 게이지를 초록 구간에서 떼면 골인
-export function ShootDrill({ onDone }: { onDone: (made: number) => void }) {
+// 슈팅 훈련: 공은 화면 가운데, 골대는 앞(위). 게이지를 초록 구간에서 떼면 골인.
+// 구간 폭은 슈팅 능력치(skill)에 비례
+export function ShootDrill({
+  skill,
+  onDone,
+}: {
+  skill: number
+  onDone: (made: number) => void
+}) {
   const run = useDrillRun(onDone)
+  const zone = shotZone(skill)
   const [flight, setFlight] = useState<Verdict | null>(null)
-  const gauge = useHoldGauge(!!flight || run.done, (v) => {
-    const verdict = judge(v, SHOT_ZONE)
+  const gauge = useHoldGauge(!!flight || run.done, (v, late) => {
+    const verdict = late ? 'late' : judge(v, zone)
     setFlight(verdict)
     run.later(() => {
       run.push(verdict === 'good')
@@ -41,7 +50,7 @@ export function ShootDrill({ onDone }: { onDone: (made: number) => void }) {
             </p>
           )}
         </div>
-        <Gauge zone={SHOT_ZONE} fillRef={gauge.fillRef} />
+        <Gauge zone={zone} fillRef={gauge.fillRef} />
       </div>
       <DrillDots results={run.results} />
       <button

@@ -68,6 +68,7 @@ export function TrainingPanel({
             kind={playing}
             kit={kit}
             look={state.player.look}
+            attrs={state.player.attrs}
             onDone={(n) => finish(playing, `made:${n}`)}
           />
         </>

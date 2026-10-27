@@ -1215,7 +1215,8 @@ tr.me td {
   animation: fly-short 850ms ease-in-out forwards;
 }
 
-.court.shoot .ball.fly-long {
+.court.shoot .ball.fly-long,
+.court.shoot .ball.fly-late {
   animation: fly-long 850ms ease-in-out forwards;
 }
 

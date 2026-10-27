@@ -8,19 +8,20 @@ import {
   useState,
 } from 'react'
 import { DRILL_REPS } from '../engine/events'
-import { gaugeAt, OVERFILL } from './drill'
+import { gaugeAt, MAX_HOLD_MS } from './drill'
 
 const paint = (el: HTMLDivElement | null, v: number) => {
   if (el) el.style.transform = `scaleY(${Math.min(v, 1)})`
 }
 const isKey = (e: KeyboardEvent) => e.key === ' ' || e.key === 'Enter'
 
-// 누르고 있는 동안 게이지가 차고, 떼는 순간 값을 넘긴다 (포인터·스페이스·엔터)
+// 누르고 있는 동안 게이지가 오르내리고, 떼는 순간 값을 넘긴다 (포인터·스페이스·엔터)
+// 너무 오래 잡고 있으면(MAX_HOLD_MS) late=true 로 자동으로 놓는다.
 // 값은 매 프레임 바뀌므로 리렌더 없이 ref 로 transform 만 갱신한다.
 // 다시 쓸 수 있게 되면(disabled 해제) 게이지를 비운다.
 export function useHoldGauge(
   disabled: boolean,
-  onRelease: (v: number) => void,
+  onRelease: (v: number, late: boolean) => void,
 ) {
   const fillRef = useRef<HTMLDivElement>(null)
   const start = useRef(0)
@@ -36,14 +37,14 @@ export function useHoldGauge(
   }, [disabled])
   useEffect(() => () => cancelAnimationFrame(raf.current), [])
 
-  const release = useCallback(() => {
+  const release = useCallback((late = false) => {
     if (!holdingRef.current) return
     holdingRef.current = false
     setHolding(false)
     cancelAnimationFrame(raf.current)
     const v = gaugeAt(performance.now() - start.current)
     paint(fillRef.current, v)
-    releaseRef.current(Math.min(v, OVERFILL))
+    releaseRef.current(v, late)
   }, [])
   const press = () => {
     if (disabled || holdingRef.current) return
@@ -51,22 +52,23 @@ export function useHoldGauge(
     setHolding(true)
     start.current = performance.now()
     const tick = () => {
-      const v = gaugeAt(performance.now() - start.current)
-      paint(fillRef.current, v)
-      if (v >= OVERFILL) release()
-      else raf.current = requestAnimationFrame(tick)
+      const held = performance.now() - start.current
+      if (held >= MAX_HOLD_MS) return release(true)
+      paint(fillRef.current, gaugeAt(held))
+      raf.current = requestAnimationFrame(tick)
     }
     raf.current = requestAnimationFrame(tick)
   }
+  const letGo = () => release()
 
   return {
     fillRef,
     holding,
     bind: {
       onPointerDown: press,
-      onPointerUp: release,
-      onPointerLeave: release,
-      onPointerCancel: release,
+      onPointerUp: letGo,
+      onPointerLeave: letGo,
+      onPointerCancel: letGo,
       onContextMenu: (e: MouseEvent) => e.preventDefault(),
       onKeyDown: (e: KeyboardEvent) => {
         if (!isKey(e)) return
@@ -74,7 +76,7 @@ export function useHoldGauge(
         if (!e.repeat) press()
       },
       onKeyUp: (e: KeyboardEvent) => {
-        if (isKey(e)) release()
+        if (isKey(e)) letGo()
       },
     },
   }
