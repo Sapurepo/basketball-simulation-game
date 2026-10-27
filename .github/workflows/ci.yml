@@ -1,0 +1,24 @@
+# PR·푸시마다 lint → typecheck → test → build. 실패하면 머지하지 않는다.
+# 배포는 Cloudflare Pages 가 저장소를 직접 빌드한다 (main = 베타 운영, 그 외 브랜치 = 미리보기).
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build

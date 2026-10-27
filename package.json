@@ -1,8 +1,12 @@
 {
   "name": "basketball-simulation-game",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0-beta",
   "type": "module",
+  "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": ">=26"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
