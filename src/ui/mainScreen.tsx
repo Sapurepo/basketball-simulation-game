@@ -575,9 +575,12 @@ function NumberDialog({
           max={99}
           value={value}
           autoFocus
-          onChange={(e) =>
-            setValue(clamp(Math.round(+e.target.value) || 0, 0, 99))
-          }
+          onChange={(e) => {
+            const n = clamp(Math.round(+e.target.value) || 0, 0, 99)
+            // "07"처럼 숫자로는 같은 값이면 React 가 화면을 고치지 않아 앞자리 0이 남는다
+            e.target.value = String(n)
+            setValue(n)
+          }}
         />
       </label>
       <div className="row">

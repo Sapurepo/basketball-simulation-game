@@ -113,9 +113,12 @@ export function CreateScreen({
                   max={99}
                   value={look.num}
                   aria-label="등번호"
-                  onChange={(e) =>
-                    setNum(clamp(Math.round(+e.target.value) || 0, 0, 99))
-                  }
+                  onChange={(e) => {
+                    const n = clamp(Math.round(+e.target.value) || 0, 0, 99)
+                    // "07"처럼 숫자로는 같은 값이면 React 가 화면을 고치지 않아 앞자리 0이 남는다
+                    e.target.value = String(n)
+                    setNum(n)
+                  }}
                 />
               </label>
             </h2>
