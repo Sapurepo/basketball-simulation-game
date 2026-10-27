@@ -10,6 +10,10 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+# 미리보기 배포(커밋·브랜치별 하위 도메인)는 검색에 노출하지 않는다. 운영 주소만 색인
+https://:version.bench-to-mvp.pages.dev/*
+  X-Robots-Tag: noindex
+
 # 파일명에 해시가 붙은 빌드 에셋은 1년 캐시, 진입 HTML 은 매번 확인
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

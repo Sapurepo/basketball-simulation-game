@@ -46,6 +46,13 @@ Cloudflare Pages가 저장소를 직접 빌드한다. 게임은 정적 SPA이고
 - 외부 리소스를 추가하면 `public/_headers` 의 CSP 허용 목록도 함께 고친다 (현재: Google Fonts, jsDelivr, Turnstile).
 - 푸터에 `v<버전>` 이 표시된다. 버전은 `package.json`.
 
+### 검색엔진·공유 미리보기
+
+- 대표 주소는 `https://bench-to-mvp.pages.dev/`. `index.html` 의 canonical·og:url·JSON-LD 와 `public/robots.txt`·`public/sitemap.xml` 에 같은 주소를 쓴다. 도메인을 바꾸면 이 다섯 곳을 함께 고친다.
+- 미리보기 배포 주소는 `public/_headers` 의 `X-Robots-Tag: noindex` 로 검색에서 뺀다.
+- OG 이미지(`public/og.png`, 1200×630)와 홈 화면 아이콘(`public/apple-touch-icon.png`)은 `scripts/og/` 의 장면을 캡처해 만든다. `pnpm dev` 를 띄운 뒤 `scripts/og/render.sh http://localhost:5173` 를 실행한다 (Playwright 의 헤드리스 Chromium 사용, 다른 경로는 `CHROME=` 으로 지정).
+- Google Search Console·네이버 서치어드바이저 소유 확인 메타 태그는 `index.html` 의 표시된 자리에 넣고, 등록 후 sitemap 을 제출한다.
+
 ### 공용 명예의 전당 (D1 + Turnstile)
 
 - 스키마는 `migrations/` 에 둔다. 새 마이그레이션은 `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --remote` 로 운영 DB 에 적용한다.
