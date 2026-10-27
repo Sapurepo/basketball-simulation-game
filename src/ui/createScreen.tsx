@@ -269,7 +269,7 @@ export function CreateScreen({
           />
           <p className="muted">
             능력치는 {ATTR_MIN}~{ATTR_MAX} 사이에서 총합 {START_TOTAL}
-            포인트를 나눠 가져요. 몸무게는 스피드에 더해집니다.
+            포인트를 나눠 가져요.
           </p>
         </section>
       )}

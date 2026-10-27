@@ -276,7 +276,7 @@ export function MainScreen({
                   retired
                     ? '커리어 종료'
                     : ev
-                      ? '오프시즌 결정이 먼저예요'
+                      ? '비시즌'
                       : `${seasonLabel(state)} 시즌`
                 }
                 primary
