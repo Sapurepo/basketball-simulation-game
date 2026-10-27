@@ -72,13 +72,25 @@ export function parseSave(raw: string): GameState {
   return s
 }
 
-export function exportSave(s: GameState) {
-  const blob = new Blob([JSON.stringify(s)], { type: 'application/json' })
+function download(json: string, filename: string) {
+  const blob = new Blob([json], { type: 'application/json' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `career-${s.player.name}-${s.year}.json`
+  a.download = filename
   a.click()
   URL.revokeObjectURL(a.href)
+}
+
+export function exportSave(s: GameState) {
+  download(JSON.stringify(s), `career-${s.player.name}-${s.year}.json`)
+}
+
+// 오류 화면용: 해석이 안 되는 세이브라도 저장된 그대로 내려받는다. 저장된 게 없으면 false
+export function exportRawSave(): boolean {
+  const raw = localStorage.getItem(KEY)
+  if (!raw) return false
+  download(raw, 'career-backup.json')
+  return true
 }
 
 // 명예의 전당: 끝났거나 버린 커리어의 요약. 랜딩 랭킹에 쓴다.
