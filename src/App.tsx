@@ -13,6 +13,7 @@ import { CreateScreen } from './ui/createScreen'
 import { LandingScreen } from './ui/landingScreen'
 import { LegalDialog } from './ui/legalDialog'
 import { MainScreen } from './ui/mainScreen'
+import { MoveBanner } from './ui/moveBanner'
 import { RankingScreen } from './ui/rankingScreen'
 import { SitemapDialog } from './ui/sitemapDialog'
 import './app.css'
@@ -84,6 +85,7 @@ export default function App() {
   return (
     <div className="shell">
       <div ref={screenRef} className="screen">
+        <MoveBanner />
         {/* 헤더는 랜딩 화면에서만 */}
         {screen === 'landing' && (
           <div className="brand">

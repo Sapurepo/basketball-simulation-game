@@ -10,7 +10,11 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
-# 미리보기 배포(커밋·브랜치별 하위 도메인)는 검색에 노출하지 않는다. 운영 주소만 색인
+# 검색에는 운영 주소(imthefinalmvp.app)만 노출한다.
+# 이전 주소(pages.dev)는 세이브 이사 안내 때문에 남겨 두되 색인하지 않는다. 미리보기 하위 도메인도 마찬가지
+https://bench-to-mvp.pages.dev/*
+  X-Robots-Tag: noindex
+
 https://:version.bench-to-mvp.pages.dev/*
   X-Robots-Tag: noindex
 

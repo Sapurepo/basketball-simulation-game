@@ -48,8 +48,10 @@ Cloudflare Pages가 저장소를 직접 빌드한다. 게임은 정적 SPA이고
 
 ### 검색엔진·공유 미리보기
 
-- 대표 주소는 `https://bench-to-mvp.pages.dev/`. `index.html` 의 canonical·og:url·JSON-LD 와 `public/robots.txt`·`public/sitemap.xml` 에 같은 주소를 쓴다. 도메인을 바꾸면 이 다섯 곳을 함께 고친다.
-- 미리보기 배포 주소는 `public/_headers` 의 `X-Robots-Tag: noindex` 로 검색에서 뺀다.
+- 대표 주소는 `https://imthefinalmvp.app/` (Pages 커스텀 도메인). `index.html` 의 canonical·og:url·JSON-LD 와 `public/robots.txt`·`public/sitemap.xml`, `src/ui/domainMove.ts` 의 `SITE` 에 같은 주소를 쓴다. 도메인을 바꾸면 이 곳들을 함께 고친다.
+- 이전 주소 `bench-to-mvp.pages.dev` 와 미리보기 주소는 `public/_headers` 의 `X-Robots-Tag: noindex` 로 검색에서 뺀다.
+- 이전 주소는 리디렉션하지 않는다. 세이브가 주소별 localStorage 에 있어서, 이전 주소 상단 배너의 '새 주소로 이동'이 세이브와 내 기록을 gzip 으로 묶어 새 주소의 `#move=` 해시로 넘긴다 (`src/ui/domainMove.ts`, 새 주소는 `main.tsx` 에서 그리기 전에 받는다).
+- Turnstile 위젯 호스트에 새 도메인과 이전 주소를 모두 둔다.
 - OG 이미지(`public/og.png`, 1200×630)와 홈 화면 아이콘(`public/apple-touch-icon.png`)은 `scripts/og/` 의 장면을 캡처해 만든다. `pnpm dev` 를 띄운 뒤 `scripts/og/render.sh http://localhost:5173` 를 실행한다 (Playwright 의 헤드리스 Chromium 사용, 다른 경로는 `CHROME=` 으로 지정).
 - Google Search Console·네이버 서치어드바이저 소유 확인 메타 태그는 `index.html` 의 표시된 자리에 넣고, 등록 후 sitemap 을 제출한다.
 

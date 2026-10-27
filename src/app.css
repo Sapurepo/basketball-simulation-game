@@ -200,6 +200,26 @@ footer .link {
   text-underline-offset: 2px;
 }
 
+.move-banner {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  margin: 3px;
+  padding: 12px 14px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 14px;
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink);
+}
+
+.move-banner p {
+  margin: 0;
+}
+
 .error {
   justify-self: start;
   margin: 3px;
