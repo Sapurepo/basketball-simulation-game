@@ -127,6 +127,19 @@ export function buyItem(state: GameState, id: string): GameState {
   return s
 }
 
+// 치장 착용·해제: 외형(look.acc)에서만 넣고 뺀다. 버프는 보유 기준이라 그대로
+export function toggleAccessory(state: GameState, id: string): GameState {
+  const acc = itemById(id)?.acc
+  const look = state.player.look
+  if (!acc || !look || !state.items?.includes(id)) return state
+  const s = structuredClone(state)
+  const worn = look.acc.includes(acc)
+  s.player.look!.acc = worn
+    ? look.acc.filter((a) => a !== acc)
+    : [...look.acc, acc]
+  return s
+}
+
 // 훈련 결과 반영: optionId 는 'made:N' 또는 'auto'. 이미 한 훈련이면 그대로 돌려준다
 export function playDrill(
   state: GameState,

@@ -367,8 +367,8 @@ const text: Record<string, string> = {
   // ── 상점 ──
   '보유 자금 {money}': 'Cash: {money}',
   사치품: 'Luxury',
-  '착용하면 시즌 능력치 버프, 선수에게 입혀져요':
-    'Worn by the player, with a season attribute buff',
+  '보유하면 시즌 능력치 버프. 선수에게 입히고 벗을 수 있어요':
+    'Season attribute buff while owned. Put it on or take it off the player',
   장식: 'Decor',
   '무대를 꾸미고 시즌 성장 보너스. 벽지와 바닥은 하나만 적용':
     'Decorates the stage with a season growth bonus. One wallpaper and one floor at a time',
@@ -382,6 +382,8 @@ const text: Record<string, string> = {
   '적용 중': 'Applied',
   적용: 'Apply',
   보유: 'Owned',
+  착용: 'Wear',
+  해제: 'Remove',
   구입: 'Buy',
   창문: 'Window',
   '팀 우승 트로피 {n}개': '{n} team trophies',

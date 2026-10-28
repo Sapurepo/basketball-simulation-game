@@ -15,7 +15,11 @@ const effectText = (it: Item) =>
     : tr('시즌 성장 +{n}', { n: it.growth ?? 0 })
 
 const KINDS: [Item['kind'], string, string][] = [
-  ['luxury', '사치품', '착용하면 시즌 능력치 버프, 선수에게 입혀져요'],
+  [
+    'luxury',
+    '사치품',
+    '보유하면 시즌 능력치 버프. 선수에게 입히고 벗을 수 있어요',
+  ],
   [
     'decor',
     '장식',
@@ -30,15 +34,19 @@ export function ShopDialog({
   cash,
   items = [],
   applied,
+  worn = [],
   onBuy,
   onApply,
+  onWear,
   onClose,
 }: {
   cash: number
   items?: string[]
   applied: (string | undefined)[]
+  worn?: string[]
   onBuy: (id: string) => void
   onApply: (it: Item) => void
+  onWear: (id: string) => void
   onClose: () => void
 }) {
   const ref = useRef<HTMLDialogElement>(null)
@@ -96,6 +104,10 @@ export function ShopDialog({
                     onClick={() => onApply(it)}
                   >
                     {on ? tr('적용 중') : tr('적용')}
+                  </button>
+                ) : owned && it.acc ? (
+                  <button className="ghost" onClick={() => onWear(it.id)}>
+                    {worn.includes(it.acc) ? tr('해제') : tr('착용')}
                   </button>
                 ) : (
                   <button

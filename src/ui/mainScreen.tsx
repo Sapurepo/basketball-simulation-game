@@ -6,6 +6,7 @@ import {
   advanceSeason,
   availableDrills,
   buyItem,
+  toggleAccessory,
   resolveEvent,
 } from '../engine/game'
 import {
@@ -216,8 +217,10 @@ export function MainScreen({
           cash={state.cash ?? 0}
           items={state.items}
           applied={[state.wall, state.floor]}
+          worn={p.look?.acc}
           onBuy={(id) => onChange(buyItem(state, id))}
           onApply={(it) => it.slot && onChange({ ...state, [it.slot]: it.id })}
+          onWear={(id) => onChange(toggleAccessory(state, id))}
           onClose={() => setShop(false)}
         />
       )}

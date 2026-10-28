@@ -10,6 +10,7 @@ import {
   playDrill,
   resolveEvent,
   START_CASH,
+  toggleAccessory,
 } from './game'
 import {
   createPlayer,
@@ -286,6 +287,18 @@ describe('상점과 자금', () => {
     expect(buyItem(bought, 'cap')).toBe(bought)
     expect(buyItem(s, 'car')).toBe(s)
     expect(buyItem(s, 'nope')).toBe(s)
+  })
+
+  test('치장은 벗었다 다시 입을 수 있고, 보유와 버프는 그대로다', () => {
+    const s = buyItem({ ...base(), cash: price('cap') }, 'cap')
+    const off = toggleAccessory(s, 'cap')
+    expect(off.player.look?.acc).not.toContain('cap')
+    expect(off.items).toEqual(['cap'])
+    expect(itemEffects(off.items).attrs.defense).toBe(1)
+    expect(toggleAccessory(off, 'cap').player.look?.acc).toContain('cap')
+    // 보유하지 않았거나 치장이 아닌 아이템은 그대로
+    expect(toggleAccessory(base(), 'cap')).toEqual(base())
+    expect(toggleAccessory(s, 'car')).toBe(s)
   })
 
   test('아이템 효과는 합산되고 99 를 넘지 않는다', () => {
