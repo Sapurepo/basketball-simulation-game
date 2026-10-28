@@ -1,5 +1,6 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { itemById } from '../data/items'
+import { isUsCollege } from '../data/schools'
 import { formatMoney, isDrill } from '../engine/events'
 import {
   advanceSeason,
@@ -33,10 +34,11 @@ import { WinLoss } from './winLoss'
 // 시즌 진행 로딩에 보여줄 단계 (무대별)
 const STEP_MS = 800
 // 하이라이트 팝업으로 보여줄 주요 경기
-const KEY_GAME = /챔피언결정전|컨퍼런스 파이널|NBA 파이널/
-const LOAD_STEPS: Record<GameState['stage'], string[]> = {
+const KEY_GAME = /챔피언결정전|컨퍼런스 파이널|NBA 파이널|NCAA 토너먼트 결승/
+const LOAD_STEPS: Record<GameState['stage'] | 'NCAA', string[]> = {
   HS: ['동계 훈련', '주말리그', '전국대회', '시즌 결산'],
   COLLEGE: ['동계 훈련', 'U-리그', '대학농구 플레이오프', '시즌 결산'],
+  NCAA: ['동계 훈련', 'NCAA 정규시즌', 'NCAA 토너먼트', '시즌 결산'],
   KBL: ['프리시즌', '정규리그', '플레이오프', '시상 및 결산'],
   NBA: ['트레이닝 캠프', '정규 시즌', '플레이오프', '시상 및 결산'],
   MILITARY: ['기초군사훈련', '상무 시즌', '복무 결산'],
@@ -112,7 +114,12 @@ export function MainScreen({
         : `${seasonLabel(state)} 시즌 대기`
 
   // 시즌 진행: 단계 로딩을 보여준 뒤 결과 반영 (시뮬레이션 자체는 즉시 끝난다)
-  const steps = LOAD_STEPS[state.stage]
+  const steps =
+    LOAD_STEPS[
+      state.stage === 'COLLEGE' && isUsCollege(state.teamId)
+        ? 'NCAA'
+        : state.stage
+    ]
   const advance = () => {
     const apply = () => {
       const next = advanceSeason(state)

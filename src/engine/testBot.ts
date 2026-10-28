@@ -9,6 +9,10 @@ export function botChoice(s: GameState): string {
   const ids = ev.options.map((o) => o.id)
   const has = (id: string) => ids.includes(id)
   switch (ev.kind) {
+    case 'hsGraduate': {
+      const us = ids.find((id) => id.startsWith('us:'))
+      return us ?? ids[0]
+    }
     case 'collegeChoice':
       if (has('nba')) return 'nba'
       return overall(s.player) >= 66 || !has('stay') ? 'kbl' : 'stay'
@@ -20,7 +24,7 @@ export function botChoice(s: GameState): string {
     case 'free':
       return has('draft') ? 'draft' : 'tryout'
     case 'retire':
-      return s.age >= 37 ? 'retire' : 'stay'
+      return s.age >= 41 ? 'retire' : 'stay'
     case 'military':
       return 'sangmu'
     case 'asianGames':

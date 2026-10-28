@@ -10,11 +10,13 @@ export interface LeagueConfig {
 }
 
 export const LEAGUES: Record<
-  Exclude<Stage, 'FREE' | 'RETIRED'> | 'NATIONAL',
+  Exclude<Stage, 'FREE' | 'RETIRED'> | 'NATIONAL' | 'NCAA',
   LeagueConfig
 > = {
   HS: { label: '고교', quarterMinutes: 8, level: 50, avgScore: 72 },
   COLLEGE: { label: '대학', quarterMinutes: 10, level: 60, avgScore: 76 },
+  // ponytail: 실제는 20분 전후반이지만 10분×4 로 근사. 중계 생성기가 쿼터 기준이라 그대로 둔다
+  NCAA: { label: 'NCAA', quarterMinutes: 10, level: 68, avgScore: 75 },
   KBL: { label: 'KBL', quarterMinutes: 10, level: 66, avgScore: 80 },
   NBA: { label: 'NBA', quarterMinutes: 12, level: 85, avgScore: 114 },
   MILITARY: { label: '상무', quarterMinutes: 10, level: 62, avgScore: 78 },
@@ -24,6 +26,11 @@ export const LEAGUES: Record<
 export const KBL_GAMES = 54
 export const NBA_GAMES = 82
 export const UNIV_LEAGUE_GAMES = 20 // 11개 팀 더블 라운드로빈
+export const NCAA_GAMES = 30
+// 미국 대학 재학 중 NBA 드래프트 선택지: 리그 평균 OVR 보다 이만큼 높아야 (상위권)
+export const NBA_DRAFT_MARGIN = 10
+// 미국 대학 출신의 NBA 드래프트 점수 가산 (스카우트 노출). 없으면 문턱 78 에서 미지명이 90% 를 넘는다
+export const NCAA_DRAFT_BONUS = 4
 export const TWO_WAY_GAME_LIMIT = 50
 export const D_LEAGUE_GAMES = 18
 
