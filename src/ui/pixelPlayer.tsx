@@ -1,6 +1,6 @@
 import { tr } from '../i18n'
-import { useSyncExternalStore } from 'react'
 import type { Look } from '../engine/types'
+import { useFrame } from './frame'
 import type { Kit, Pose } from './pose'
 import { DEFAULT_LOOK, type DrawnPose, H, spriteURL, W } from './sprite'
 
@@ -17,31 +17,6 @@ const DRAWN: Record<Pose, DrawnPose> = {
   guard: 'guard',
   trophy: 'trophy',
 }
-
-// 화면의 모든 선수가 한 타이머로 같은 박자(380ms)에 프레임을 넘긴다
-let tick = 0
-let timer: ReturnType<typeof setInterval> | undefined
-const subs = new Set<() => void>()
-function subscribe(cb: () => void) {
-  subs.add(cb)
-  const reduced =
-    typeof matchMedia !== 'undefined' &&
-    matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (!timer && !reduced) {
-    timer = setInterval(() => {
-      tick++
-      subs.forEach((f) => f())
-    }, 380)
-  }
-  return () => {
-    subs.delete(cb)
-    if (!subs.size) {
-      clearInterval(timer)
-      timer = undefined
-    }
-  }
-}
-const useFrame = () => useSyncExternalStore(subscribe, () => tick % 2)
 
 export function PixelPlayer({
   pose,

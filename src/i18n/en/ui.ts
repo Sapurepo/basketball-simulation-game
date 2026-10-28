@@ -365,24 +365,65 @@ const text: Record<string, string> = {
   골대: 'Hoop',
   '선수 캐릭터': 'Player character',
   // ── 상점 ──
-  '보유 자금 {money}': 'Cash: {money}',
+  '보유 자금': 'Cash',
   사치품: 'Luxury',
-  '착용하면 시즌 능력치 버프, 선수에게 입혀져요':
-    'Worn by the player, with a season attribute buff',
   장식: 'Decor',
-  '무대를 꾸미고 시즌 성장 보너스. 벽지와 바닥은 하나만 적용':
-    'Decorates the stage with a season growth bonus. One wallpaper and one floor at a time',
   가구: 'Furniture',
-  '무대를 꾸미고 시즌 성장 보너스':
-    'Decorates the stage with a season growth bonus',
   펫: 'Pets',
-  '무대에서 함께 지내고 시즌 성장 보너스':
-    'Lives on the stage with a season growth bonus',
+  '착용하면 시즌 능력치 버프. 탈것은 무대 앞에 세워져요.':
+    'Worn for a season attribute buff. Rides park in front of the stage.',
+  '무대를 꾸미고 시즌 성장 보너스. 벽지와 바닥은 하나만 적용돼요.':
+    'Decorates the stage with a season growth bonus. One wallpaper and one floor at a time.',
+  '무대를 꾸미고 시즌 성장 보너스. 놓을 자리가 정해져 있어요.':
+    'Decorates the stage with a season growth bonus. Each piece has its own spot.',
+  '무대에서 함께 지내고 시즌 성장 보너스. 눌러서 쓰다듬어 주세요.':
+    'Lives on the stage with a season growth bonus. Tap to pet.',
   '시즌 성장 +{n}': 'Season growth +{n}',
+  '시즌 성장 보너스': 'Season growth bonus',
+  일반: 'Common',
+  레어: 'Rare',
+  에픽: 'Epic',
+  레전드: 'Legend',
+  '착용 아이템': 'Wearable',
+  '탈것 · 무대 배치': 'Ride · on the stage',
+  '펫 · 무대에서 함께': 'Pet · lives on the stage',
+  '벽지 · 하나만 적용': 'Wallpaper · one at a time',
+  '바닥 · 하나만 적용': 'Floor · one at a time',
+  '장식 · 무대 배치': 'Decor · on the stage',
+  '가구 · 무대 배치': 'Furniture · on the stage',
+  '효과 · 선수에게 착용': 'Effect · worn by the player',
+  '효과 · 무대에서 함께 지내기': 'Effect · lives on the stage',
+  '효과 · 무대 벽에 적용': 'Effect · applied to the stage wall',
+  '효과 · 무대 바닥에 적용': 'Effect · applied to the stage floor',
+  '효과 · 무대에 배치': 'Effect · placed on the stage',
+  '착용 중': 'Wearing',
+  '함께 지내는 중': 'Living together',
   '적용 중': 'Applied',
-  적용: 'Apply',
+  '보유 · 미적용': 'Owned · not applied',
+  '배치 중': 'On the stage',
   보유: 'Owned',
-  구입: 'Buy',
+  부족: 'Short',
+  미리보기: 'Preview',
+  '착용 미리보기': 'Try-on preview',
+  '벽지 미리보기 · {name}': 'Wallpaper preview · {name}',
+  '바닥 미리보기 · {name}': 'Floor preview · {name}',
+  '내 무대': 'My stage',
+  '수집 {n}': 'Collected {n}',
+  '성장 {n}': 'Growth {n}',
+  '구매 완료! 바로 착용했어요': 'Bought! Wearing it now',
+  '구매 완료! 바로 적용했어요': 'Bought! Applied right away',
+  '구매 완료! 무대에 들어왔어요': 'Bought! It moved onto the stage',
+  '구매 완료! 무대에 놓았어요': 'Bought! Placed on the stage',
+  '구매 후 잔액 {money}': 'Balance after purchase: {money}',
+  '{money} 더 모으면 살 수 있어요': 'Save {money} more to buy it',
+  구매하기: 'Buy',
+  '자금 부족 · {money}': 'Not enough cash · {money}',
+  '보유 중 · {status}': 'Owned · {status}',
+  착용됨: 'Worn',
+  미적용: 'Not applied',
+  '무대에 배치됨': 'On the stage',
+  적용하기: 'Apply',
+  '기본으로 되돌리기': 'Reset to default',
   창문: 'Window',
   '팀 우승 트로피 {n}개': '{n} team trophies',
   '{name} 쓰다듬기': 'Pet {name}',
@@ -419,6 +460,87 @@ const text: Record<string, string> = {
   코리안숏헤어: 'Korean Shorthair',
   페르시안: 'Persian cat',
   스코티시폴드: 'Scottish Fold',
+  // ── 무대 배치 편집 ──
+  '벽 · 창문과 커튼은 함께 움직여요':
+    'Wall · the window and curtain move together',
+  '벽에 걸기': 'Hang on the wall',
+  '바닥에 놓기': 'Set on the floor',
+  '배치 편집': 'Arrange',
+  '무대 꾸미기': 'Decorate the stage',
+  '무대 위 아이템을 끌어서 옮기세요. 가구·탈것은 바닥에, 창문·시계는 벽에만 놓여요. 보관해도 성장 보너스는 그대로예요.':
+    'Drag items on the stage to move them. Furniture and rides go on the floor, windows and clocks only on the wall. Stored items keep their growth bonus.',
+  '좌우 반전': 'Flip',
+  제자리로: 'Reset spot',
+  보관하기: 'Store',
+  '무대 위 아이템을 눌러 선택하세요.': 'Tap an item on the stage to select it.',
+  '내 아이템 · 무대 위 {n}': 'My items · on stage {n}',
+  '무대에 놓을 아이템이 아직 없어요. 가구나 탈것을 구매해 보세요.':
+    'Nothing to place yet. Try buying furniture or a ride.',
+  '보관 중': 'Stored',
+  '무대 위 · 선택됨': 'On stage · selected',
+  벽: 'Wall',
+  바닥: 'Floor',
+  꺼내기: 'Take out',
+  선택: 'Select',
+  보관: 'Store',
+  '기본 배치로': 'Default layout',
+  완료: 'Done',
+  '배치 편집 중 · 끌어서 옮기기 · 방향키로 1칸씩':
+    'Arranging · drag to move · arrow keys for 1 step',
+  '배치 옮기기': 'Move it',
+  // 아이템 소개
+  '챙을 꾹 눌러쓰면 수비 집중력이 올라간다.':
+    'Pull the brim down tight and your defensive focus sharpens.',
+  '노이즈 캔슬링 ON. 코트 위 시야가 넓어진다.':
+    'Noise canceling on. Your court vision opens up.',
+  '골드 프레임 에비에이터. 림이 더 선명하게 보인다.':
+    'Gold-frame aviators. The rim looks sharper.',
+  '근육을 꽉 잡아주는 두 번째 피부.':
+    'A second skin that holds every muscle tight.',
+  '첫 스텝이 반 박자 빨라진다.': 'Your first step gets half a beat quicker.',
+  '입장할 때 쓰는 그것. 집중력 두 배.':
+    'The pair you wear for the walk-in. Double the focus.',
+  '내 이름이 새겨진 골드 에디션 하이탑.':
+    'Gold-edition high-tops with your name on them.',
+  '훈련장까지 바람처럼. 무대 앞에 세워 둔다.':
+    'Ride to practice like the wind. Parked in front of the stage.',
+  'MVP의 상징. 덩크할 때마다 번쩍인다.':
+    'The mark of an MVP. It flashes with every dunk.',
+  '주차장에서부터 이미 슈퍼스타.':
+    'A superstar before you even leave the parking lot.',
+  '발밑이 폭신해지면 마음도 느긋해진다.': 'Soft underfoot, easy in the mind.',
+  '크림 스트라이프로 방이 한층 밝아진다.':
+    'Cream stripes brighten up the whole room.',
+  '노을 진 산 그림. 매일 보면 꿈이 커진다.':
+    'A mountain at sunset. Look at it daily and your dreams grow.',
+  '레트로 다이너 감성의 흑백 체커.':
+    'Black-and-white checks with a retro diner feel.',
+  '뉴욕 로프트 같은 붉은 벽돌.': 'Red brick straight out of a New York loft.',
+  '상큼한 민트 체크. 아침 루틴이 가벼워진다.':
+    'Fresh mint checks. Morning routines feel lighter.',
+  '팀 컬러 같은 깊은 네이비 체크.': 'Deep navy checks like team colors.',
+  '호텔 로비 같은 매끈한 대리석.': 'Sleek marble like a hotel lobby.',
+  '추가 흔들리는 원목 괘종시계. 루틴은 시간에서 시작된다.':
+    'A wooden pendulum clock. Every routine starts on time.',
+  '금색 커튼봉에 벨벳 드레이프. 창가가 확 산다.':
+    'Velvet drapes on a gold rod. The window really comes alive.',
+  '경기 하이라이트는 여기서 돌려본다.': 'Where you replay the game highlights.',
+  '잘 자는 것도 훈련이다. 네이비 호텔 침구.':
+    'Sleeping well is training too. Navy hotel bedding.',
+  '스쿼트 랙에 덤벨까지. 성장 보너스 최대.':
+    'A squat rack and dumbbells. The biggest growth bonus.',
+  '치즈 줄무늬 동네 스타.': 'The orange-striped star of the neighborhood.',
+  '솜뭉치가 발밑을 졸졸 따라다닌다.': 'A ball of fluff trotting at your heels.',
+  '지칠 줄 모르는 에너지. 같이 뛰면 체력이 붙는다.':
+    'Endless energy. Run together and your stamina builds.',
+  '파란 눈으로 경기 영상을 같이 본다.':
+    'Watches game film with you through blue eyes.',
+  '영리한 곱슬머리 룸메이트.': 'A clever, curly-haired roommate.',
+  '하얀 털뭉치의 무한 애교.': 'A white furball of endless charm.',
+  '조용하고 우아한 은회색 고양이.': 'A quiet, elegant silver-gray cat.',
+  '듬직한 얼굴의 경호원.': 'A bodyguard with a sturdy face.',
+  '소파 위 왕좌의 주인.': 'Ruler of the throne on the sofa.',
+  '접힌 귀로 고개를 갸웃.': 'Tilts its head with folded ears.',
   // ── 명예의 전당 서버 검증 ──
   '형식 오류': 'Invalid format',
   '커리어 id 오류': 'Invalid career id',

@@ -4,10 +4,11 @@ import type { Item } from '../data/items'
 import { clamp } from '../engine/rng'
 import { type IconName, iconSize, iconURL } from './sprite'
 
-const SCALE = 3
+// 무대 아이템(×4)보다 1.5배 큰 픽셀로 그린다
+const SCALE = 6
 // 바닥 영역 안에서의 이동 범위: x 는 무대 폭 %, y 는 바닥에서 px
 const X_MAX = 92
-const Y_MAX = 36
+const Y_MAX = 18
 
 const reducedMotion = () =>
   typeof matchMedia !== 'undefined' &&
@@ -16,7 +17,16 @@ const reducedMotion = () =>
 const rand = (n: number) => Math.floor(Math.random() * n)
 
 // 무대 바닥을 몇 픽셀씩 돌아다니는 펫. 누르면 머리 위로 하트가 떠오른다
-export function Pet({ it, start }: { it: Item; start: number }) {
+export function Pet({
+  it,
+  start,
+  preview,
+}: {
+  it: Item
+  start: number
+  // 상점에서 사기 전에 놓아 본 펫
+  preview?: boolean
+}) {
   const [pos, setPos] = useState({
     x: start,
     y: (start * 7) % Y_MAX,
@@ -58,7 +68,7 @@ export function Pet({ it, start }: { it: Item; start: number }) {
   const [w, h] = iconSize(name)
   return (
     <button
-      className="pet"
+      className={preview ? 'pet preview' : 'pet'}
       style={{ left: `${pos.x}%`, bottom: pos.y, zIndex: 40 - pos.y }}
       aria-label={tr('{name} 쓰다듬기', { name: T(it.name) })}
       onClick={pat}
@@ -89,6 +99,7 @@ export function Pet({ it, start }: { it: Item; start: number }) {
           }
         />
       ))}
+      {preview && <b className="preview-tag">{tr('미리보기')}</b>}
     </button>
   )
 }
