@@ -135,7 +135,7 @@ const text: Record<string, string> = {
   병역: 'Service',
   '{team} 계약, 연봉 {money}': '{team} contract, {money}/yr',
   '{team} 투웨이 계약, 연봉 {money}': '{team} two-way contract, {money}/yr',
-  '시즌 진행': 'Play season',
+  '시즌 진행': 'Play',
   비시즌: 'Offseason',
   '{season} 시즌': '{season} season',
   훈련하기: 'Train',
@@ -169,7 +169,7 @@ const text: Record<string, string> = {
   '플레이오프 {g}경기 평균 {pts}득점 {reb}리바운드 {ast}어시스트':
     'Playoffs: {g} games, {pts} pts, {reb} reb, {ast} ast per game',
   '시즌 진행 버튼을 눌러 첫 시즌을 시작하세요.':
-    'Press Play season to start your first season.',
+    'Press Play to start your first season.',
   '시즌 베스트 팀': 'Season best team',
   '베스트 팀은 대학·KBL·NBA 시즌이 끝나면 발표됩니다.':
     'Best teams are announced after college, KBL and NBA seasons.',
