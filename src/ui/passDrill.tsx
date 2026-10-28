@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import { type CSSProperties, useState } from 'react'
 import { DRILL_REPS } from '../engine/events'
 import type { Look } from '../engine/types'
@@ -64,7 +65,7 @@ export function PassDrill({
           />
           {flight && (
             <p className={flight.verdict === 'good' ? 'call good' : 'call'}>
-              {CALL[flight.verdict]}
+              {tr(CALL[flight.verdict])}
             </p>
           )}
         </div>
@@ -77,8 +78,11 @@ export function PassDrill({
         {...gauge.bind}
       >
         {run.done
-          ? `${run.made}개 성공!`
-          : `누르고 있다가 떼서 패스 (${run.results.length + 1}/${DRILL_REPS})`}
+          ? tr('{n}개 성공!', { n: run.made })
+          : tr('누르고 있다가 떼서 패스 ({i}/{n})', {
+              i: run.results.length + 1,
+              n: DRILL_REPS,
+            })}
       </button>
     </div>
   )

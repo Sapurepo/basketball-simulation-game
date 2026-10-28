@@ -3,6 +3,7 @@ import type { HallEntry } from '../engine/save'
 import type { Look, Position } from '../engine/types'
 import { fetchHall, type HallSort, SORTS } from './hallApi'
 import { PixelPlayer } from './pixelPlayer'
+import { tr } from '../i18n'
 import { teamKit } from './pose'
 import { iconURL } from './sprite'
 
@@ -33,17 +34,17 @@ export function HallItem({
       </span>
       {detail && (
         <span className="hall-detail muted">
-          <span>트로피 {detail.trophies}</span>
-          <span>{detail.seasons}시즌</span>
-          <span>{detail.retiredYear}년 은퇴</span>
+          <span>{tr('트로피 {n}', { n: detail.trophies })}</span>
+          <span>{tr('{n}시즌', { n: detail.seasons })}</span>
+          <span>{tr('{year}년 은퇴', { year: detail.retiredYear })}</span>
         </span>
       )}
       <span className="row nowrap">
         <img
           className="px"
           src={iconURL('trophy')}
-          alt="NBA 파이널 MVP"
-          title="NBA 파이널 MVP"
+          alt={tr('NBA 파이널 MVP')}
+          title={tr('NBA 파이널 MVP')}
         />
         {fmvp}
       </span>
@@ -86,7 +87,7 @@ export function HallBoard({
   return (
     <section className="panel">
       <div className="panel-head">
-        <h2>명예의 전당</h2>
+        <h2>{tr('명예의 전당')}</h2>
         <div className="tabs" role="tablist">
           {(
             [
@@ -100,7 +101,7 @@ export function HallBoard({
               aria-selected={tab === id}
               onClick={() => setTab(id)}
             >
-              {label}
+              {tr(label)}
             </button>
           ))}
         </div>
@@ -112,7 +113,7 @@ export function HallBoard({
             className={sort === id ? 'chip on' : 'chip'}
             onClick={() => setSort(id)}
           >
-            {label}
+            {tr(label)}
           </button>
         ))}
       </div>
@@ -120,10 +121,12 @@ export function HallBoard({
       {tab === 'all' ? (
         error ? (
           <p className="muted">
-            지금은 전체 기록을 불러오지 못했어요. 잠시 후 다시 열어 주세요.
+            {tr(
+              '지금은 전체 기록을 불러오지 못했어요. 잠시 후 다시 열어 주세요.',
+            )}
           </p>
         ) : !all ? (
-          <p className="muted">불러오는 중…</p>
+          <p className="muted">{tr('불러오는 중…')}</p>
         ) : all.rows.length ? (
           <ol className="hall">
             {all.rows.map((r) => (
@@ -132,7 +135,9 @@ export function HallBoard({
           </ol>
         ) : (
           <p className="muted">
-            아직 등록된 선수가 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.
+            {tr(
+              '아직 등록된 선수가 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.',
+            )}
           </p>
         )
       ) : mineSorted.length ? (
@@ -151,12 +156,15 @@ export function HallBoard({
         </ol>
       ) : (
         <p className="muted">
-          아직 기록이 없어요. 커리어를 마치고 은퇴하면 이 브라우저에 남습니다.
+          {tr(
+            '아직 기록이 없어요. 커리어를 마치고 은퇴하면 이 브라우저에 남습니다.',
+          )}
         </p>
       )}
       {tab === 'all' && (
         <button className="ghost" onClick={onOpenRanking}>
-          전체 랭킹 보기{all ? ` (${all.total}명)` : ''}
+          {tr('전체 랭킹 보기')}
+          {all ? ` ${tr('({n}명)', { n: all.total })}` : ''}
         </button>
       )}
     </section>

@@ -26,7 +26,8 @@ export const SEEN_VERSION_KEY = 'seenVersion'
 
 export const CHANGELOG_DOC: LegalDoc = {
   title: '업데이트 소식',
-  subtitle: `현재 버전 ${CHANGELOG[0].version}`,
+  translated: true,
+  subtitle: `현재 버전 ${CHANGELOG[0].version}`, // tr 패턴으로 번역
   intro: '배포할 때마다 바뀐 점을 여기에 적어요.',
   sections: CHANGELOG.map((r) => ({
     title: `v${r.version} · ${r.date}`,

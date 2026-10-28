@@ -17,6 +17,7 @@ import {
 } from './data/legal'
 import { CHANGELOG, CHANGELOG_DOC, SEEN_VERSION_KEY } from './data/changelog'
 import { ODDS } from './data/odds'
+import { LANGS, setLang, tr, useLang } from './i18n'
 import { CreateScreen } from './ui/createScreen'
 import { LandingScreen } from './ui/landingScreen'
 import { LegalDialog } from './ui/legalDialog'
@@ -29,6 +30,7 @@ import './app.css'
 type Screen = 'landing' | 'create' | 'game' | 'ranking'
 
 export default function App() {
+  const lang = useLang()
   const [state, setState] = useState<GameState | null>(loadGame)
   // 은퇴한 커리어는 이 브라우저의 명예의 전당(내 기록)에 남긴다. 커리어 id 로 한 번만
   const [hall, setHall] = useState(() =>
@@ -81,13 +83,13 @@ export default function App() {
       setScreen('game')
       setError('')
     } catch (e) {
-      setError(e instanceof Error ? e.message : '불러오기 실패')
+      setError(e instanceof Error ? e.message : tr('불러오기 실패'))
     }
   }
 
   // 새 커리어: 생성 화면으로. 은퇴하지 않은 커리어는 기록에 남지 않는다
   const reset = () => {
-    if (state && !window.confirm('현재 커리어를 끝내고 새로 시작할까요?'))
+    if (state && !window.confirm(tr('현재 커리어를 끝내고 새로 시작할까요?')))
       return
     setState(null)
     setScreen('create')
@@ -117,9 +119,13 @@ export default function App() {
         {/* 헤더는 랜딩 화면에서만 */}
         {screen === 'landing' && (
           <div className="brand">
-            <b>벤치에서 파엠까지</b>
-            <small className="muted">나만의 농구 인생</small>
-            <p className="donate">서버비 후원하기: 토스뱅크 {DONATE_ACCOUNT}</p>
+            <b>{tr('벤치에서 파엠까지')}</b>
+            <small className="muted">{tr('나만의 농구 인생')}</small>
+            <p className="donate">
+              {tr('서버비 후원하기: 토스뱅크 {account}', {
+                account: DONATE_ACCOUNT,
+              })}
+            </p>
           </div>
         )}
         {error && <p className="error">{error}</p>}
@@ -147,18 +153,18 @@ export default function App() {
           <div className="row">
             {state && (
               <button className="ghost" onClick={() => exportSave(state)}>
-                저장 파일 내보내기
+                {tr('저장 파일 내보내기')}
               </button>
             )}
             <button className="ghost" onClick={() => fileRef.current?.click()}>
-              가져오기
+              {tr('가져오기')}
             </button>
             <button className="ghost" onClick={openRanking}>
-              랭킹
+              {tr('랭킹')}
             </button>
             {state && (
               <button className="ghost" onClick={() => setScreen('landing')}>
-                처음으로
+                {tr('처음으로')}
               </button>
             )}
             <input
@@ -174,45 +180,59 @@ export default function App() {
             />
           </div>
           <div className="site-info">
-            <b>벤치에서 파엠까지</b>
+            <b>{tr('벤치에서 파엠까지')}</b>
+            <div className="row lang" role="group" aria-label="Language">
+              {LANGS.map((l) => (
+                <button
+                  key={l.id}
+                  className={l.id === lang ? 'link current' : 'link'}
+                  lang={l.id}
+                  aria-pressed={l.id === lang}
+                  onClick={() => setLang(l.id)}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
             <div className="row build">
               v{__APP_VERSION__}
               <button
                 className={unseen ? 'link unseen' : 'link'}
                 onClick={openChangelog}
               >
-                공지사항
+                {tr('공지사항')}
               </button>
               <button className="link" onClick={() => setLegal(PRIVACY)}>
-                개인정보처리방침
+                {tr('개인정보처리방침')}
               </button>
               <button className="link" onClick={() => setLegal(TERMS)}>
-                이용약관
+                {tr('이용약관')}
               </button>
               <button className="link" onClick={() => setLegal(ODDS)}>
-                게임 확률표
+                {tr('게임 확률표')}
               </button>
               <button className="link" onClick={() => setSitemap(true)}>
-                사이트맵
+                {tr('사이트맵')}
               </button>
-              <a href={`mailto:${CONTACT_EMAIL}`}>문의하기</a>
+              <a href={`mailto:${CONTACT_EMAIL}`}>{tr('문의하기')}</a>
               {import.meta.env.VITE_FEEDBACK_URL && (
                 <a
                   href={import.meta.env.VITE_FEEDBACK_URL}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  피드백 보내기
+                  {tr('피드백 보내기')}
                 </a>
               )}
             </div>
             <span>
-              광고 문의: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+              {tr('광고 문의:')}{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             </span>
             <small>
-              © 2026 imhyun. 학교, 구단, 대회 명칭과 로고에 대한 권리는 각
-              권리자에게 있으며, 서비스는 해당 권리자와 제휴하거나 후원을 받지
-              않습니다.
+              {tr(
+                '© 2026 imhyun. 학교, 구단, 대회 명칭과 로고에 대한 권리는 각 권리자에게 있으며, 서비스는 해당 권리자와 제휴하거나 후원을 받지 않습니다.',
+              )}
             </small>
           </div>
         </footer>
@@ -222,80 +242,84 @@ export default function App() {
             onClose={() => setSitemap(false)}
             groups={[
               {
-                title: '게임',
+                title: tr('게임'),
                 links: [
                   {
-                    label: '처음 화면',
-                    desc: '게임 소개와 명예의 전당 미리보기',
+                    label: tr('처음 화면'),
+                    desc: tr('게임 소개와 명예의 전당 미리보기'),
                     onSelect: () => setScreen('landing'),
                   },
                   ...(state
                     ? [
                         {
-                          label: '이어하기',
-                          desc: `${state.player.name} 선수의 커리어로 돌아가기`,
+                          label: tr('이어하기'),
+                          desc: tr('{name} 선수의 커리어로 돌아가기', {
+                            name: state.player.name,
+                          }),
                           onSelect: () => setScreen('game'),
                         },
                       ]
                     : []),
                   {
-                    label: '새 커리어 만들기',
-                    desc: '선수를 만들고 고1 시즌부터 시작',
+                    label: tr('새 커리어 만들기'),
+                    desc: tr('선수를 만들고 고1 시즌부터 시작'),
                     onSelect: reset,
                   },
                 ],
               },
               {
-                title: '명예의 전당',
+                title: tr('명예의 전당'),
                 links: [
                   {
-                    label: '전체 랭킹',
-                    desc: '포지션별 베스트 5와 상위 100명',
+                    label: tr('전체 랭킹'),
+                    desc: tr('포지션별 베스트 5와 상위 100명'),
                     onSelect: openRanking,
                   },
                 ],
               },
               {
-                title: '안내',
+                title: tr('안내'),
                 links: [
                   {
-                    label: '개인정보처리방침',
-                    desc: '수집하는 정보와 보관 기간',
+                    label: tr('개인정보처리방침'),
+                    desc: tr('수집하는 정보와 보관 기간'),
                     onSelect: () => setLegal(PRIVACY),
                   },
                   {
-                    label: '이용약관',
-                    desc: '서비스 이용 조건',
+                    label: tr('이용약관'),
+                    desc: tr('서비스 이용 조건'),
                     onSelect: () => setLegal(TERMS),
                   },
                   {
-                    label: '게임 확률표',
-                    desc: '성장·수상·NBA 진출 등 주요 판정의 확률',
+                    label: tr('게임 확률표'),
+                    desc: tr('성장·수상·NBA 진출 등 주요 판정의 확률'),
                     onSelect: () => setLegal(ODDS),
                   },
                   {
-                    label: '업데이트 소식',
-                    desc: `v${CHANGELOG[0].version} 까지의 바뀐 점`,
+                    label: tr('업데이트 소식'),
+                    desc: tr('v{version} 까지의 바뀐 점', {
+                      version: CHANGELOG[0].version,
+                    }),
                     onSelect: openChangelog,
                   },
                   {
-                    label: '문의하기',
+                    label: tr('문의하기'),
                     desc: CONTACT_EMAIL,
                     href: `mailto:${CONTACT_EMAIL}`,
                   },
                 ],
               },
               {
-                title: '검색엔진용 파일',
+                title: tr('검색엔진용 파일'),
                 links: [
                   {
                     label: 'sitemap.xml',
-                    desc: '검색엔진에 알려주는 페이지 목록',
+                    desc: tr('검색엔진에 알려주는 페이지 목록'),
                     file: 'sitemap.xml',
                   },
                   {
                     label: 'robots.txt',
-                    desc: '검색엔진 수집 허용 규칙',
+                    desc: tr('검색엔진 수집 허용 규칙'),
                     file: 'robots.txt',
                   },
                 ],

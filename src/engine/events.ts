@@ -17,6 +17,7 @@ import {
 } from './nationalTeam'
 import { ATTR_KEYS, ATTR_LABELS, overall } from './player'
 import { clamp, sigmoid, type Rng } from './rng'
+import { getLang, T, type Text } from '../i18n'
 import type {
   AttrKey,
   Contract,
@@ -45,16 +46,39 @@ export function interp(table: [number, number][], ovr: number): number {
   return table.at(-1)![1]
 }
 
+// ponytail: 현재 언어로 포맷한 문자열을 이벤트에 박는다. 생성 뒤 언어를 바꾸면 그 문장만 이전 언어다
 export function formatMoney(amount: number, currency: 'KRW' | 'USD') {
   if (currency === 'USD') return `$${(amount / 1_000_000).toFixed(2)}M`
   // KRW 는 만원 단위로 저장
+  const lang = getLang()
+  if (lang === 'ja') {
+    // 소수 한 자리, .0 은 뗀다 (₩8500万 · ₩18億 · ₩1.3兆)
+    const n = (x: number) => String(Math.round(x * 10) / 10)
+    if (amount >= 100_000_000) return `₩${n(amount / 100_000_000)}兆`
+    return amount >= 10000
+      ? `₩${n(amount / 10000)}億`
+      : `₩${Math.round(amount)}万`
+  }
+  if (lang === 'en') {
+    // 만원 → 원. 반올림한 값이 1000 이 되면 다음 단위로 올린다
+    const won = amount * 10000
+    if (won < 1e6) return `₩${Math.round(won / 1e3)}K`
+    for (const [u, s] of [
+      [1e6, 'M'],
+      [1e9, 'B'],
+      [1e12, 'T'],
+    ] as const) {
+      const x = Math.round((won / u) * 10) / 10
+      if (x < 1000 || s === 'T') return `₩${x.toFixed(1)}${s}`
+    }
+  }
   if (amount >= 100_000_000) return `${(amount / 100_000_000).toFixed(1)}조 원`
   return amount >= 10000
     ? `${(amount / 10000).toFixed(1)}억 원`
     : `${Math.round(amount)}만 원`
 }
 
-const notice = (title: string, body: string): GameEvent => ({
+const notice = (title: Text, body: Text): GameEvent => ({
   kind: 'notice',
   title,
   body,
@@ -84,8 +108,14 @@ function offerOption(o: Offer, i: number): EventOption {
   return {
     id: `offer:${i}`,
     teamId: o.teamId,
-    label: `${o.teamName}${o.twoWay ? ' (투웨이)' : ''}`,
-    desc: `연봉 ${formatMoney(o.salary, o.currency)}, ${o.yearsLeft}년 계약`,
+    label: {
+      k: o.twoWay ? '{team} (투웨이)' : '{team}',
+      v: { team: T(o.teamName) },
+    },
+    desc: {
+      k: '연봉 {money}, {years}년 계약',
+      v: { money: formatMoney(o.salary, o.currency), years: o.yearsLeft },
+    },
   }
 }
 
@@ -134,8 +164,8 @@ function twoWay(rng: Rng): Offer {
 
 function offersEvent(
   kind: string,
-  title: string,
-  body: string,
+  title: Text,
+  body: Text,
   offers: Offer[],
   extra: EventOption[] = [],
 ): GameEvent {
@@ -175,8 +205,15 @@ function kblDraft(rng: Rng, s: GameState): GameEvent {
     yearsLeft: 3,
   })
   return notice(
-    `KBL 신인 드래프트 ${round}라운드 ${pick}순위!`,
-    `${t.name}이(가) ${s.player.name}을(를) 지명했습니다. 연봉 ${formatMoney(salary, 'KRW')}에 3년 계약입니다.`,
+    { k: 'KBL 신인 드래프트 {round}라운드 {pick}순위!', v: { round, pick } },
+    {
+      k: '{team}이(가) {name}을(를) 지명했습니다. 연봉 {money}에 3년 계약입니다.',
+      v: {
+        team: T(t.name),
+        name: s.player.name,
+        money: formatMoney(salary, 'KRW'),
+      },
+    },
   )
 }
 
@@ -212,8 +249,16 @@ function nbaDraft(rng: Rng, s: GameState): GameEvent[] {
   sign(s, 'NBA', c)
   return [
     notice(
-      `NBA 드래프트 ${firstRound ? 1 : 2}라운드 ${pick}순위!`,
-      `${t.name}의 지명을 받았습니다. ${formatMoney(c.salary, 'USD')}에 ${firstRound ? '루키 스케일' : '투웨이'} 계약입니다.`,
+      {
+        k: 'NBA 드래프트 {round}라운드 {pick}순위!',
+        v: { round: firstRound ? 1 : 2, pick },
+      },
+      {
+        k: firstRound
+          ? '{team}의 지명을 받았습니다. {money}에 루키 스케일 계약입니다.'
+          : '{team}의 지명을 받았습니다. {money}에 투웨이 계약입니다.',
+        v: { team: T(t.name), money: formatMoney(c.salary, 'USD') },
+      },
     ),
   ]
 }
@@ -230,10 +275,12 @@ function nbaTryout(rng: Rng, s: GameState): GameEvent {
   const c =
     ovr >= 86 ? { ...nbaOffers(rng, s, 1)[0], yearsLeft: 2 } : twoWay(rng)
   sign(s, 'NBA', c)
-  return notice(
-    'NBA 계약 성공!',
-    `${c.teamName}와(과) ${formatMoney(c.salary, 'USD')}에 ${c.twoWay ? '투웨이' : '정식'} 계약을 맺었습니다.`,
-  )
+  return notice('NBA 계약 성공!', {
+    k: c.twoWay
+      ? '{team}와(과) {money}에 투웨이 계약을 맺었습니다.'
+      : '{team}와(과) {money}에 정식 계약을 맺었습니다.',
+    v: { team: T(c.teamName), money: formatMoney(c.salary, 'USD') },
+  })
 }
 
 // ── 오프시즌 이벤트 생성 ───────────────────────────────
@@ -247,7 +294,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       {
         kind: 'forceRetire',
         title: '은퇴',
-        body: `${s.age}세, 이제 코트를 떠날 시간입니다.`,
+        body: { k: '{age}세, 이제 코트를 떠날 시간입니다.', v: { age: s.age } },
         options: [{ id: 'ok', label: '은퇴식 진행' }],
       },
     ]
@@ -268,7 +315,10 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
     ev.push({
       kind: 'retire',
       title: '은퇴 고민',
-      body: `${s.age}세, 몸이 예전 같지 않습니다. 현역을 이어갈까요?`,
+      body: {
+        k: '{age}세, 몸이 예전 같지 않습니다. 현역을 이어갈까요?',
+        v: { age: s.age },
+      },
       options: [
         { id: 'stay', label: '현역 연장' },
         { id: 'retire', label: '은퇴한다' },
@@ -287,12 +337,18 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
     ev.push({
       kind: 'hsGraduate',
       title: '고교 졸업 — 진로 선택',
-      body: `현재 오버롤은 ${ovr}입니다. 스카우트 제안이 도착했습니다.`,
+      body: {
+        k: '현재 오버롤은 {ovr}입니다. 스카우트 제안이 도착했습니다.',
+        v: { ovr },
+      },
       options: [
-        ...list.map((u) => ({ id: `univ:${u.id}`, label: `${u.name} 진학` })),
+        ...list.map((u) => ({
+          id: `univ:${u.id}`,
+          label: { k: '{school} 진학', v: { school: T(u.name) } },
+        })),
         ...us.map((u) => ({
           id: `us:${u.id}`,
-          label: `${u.name} 진학`,
+          label: { k: '{school} 진학', v: { school: T(u.name) } },
           desc: '미국 NCAA. NBA 드래프트로 가는 길',
         })),
         {
@@ -310,7 +366,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
           {
             id: 'stay',
             label: '학교 잔류',
-            desc: `${s.stageYear + 1}학년 진급`,
+            desc: { k: '{year}학년 진급', v: { year: s.stageYear + 1 } },
           },
         ]
     options.push({
@@ -328,7 +384,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       ev.push({
         kind: 'collegeChoice',
         title: last ? '대학 졸업 — 드래프트' : '얼리 엔트리 결정',
-        body: `현재 오버롤 ${ovr}`,
+        body: { k: '현재 오버롤 {ovr}', v: { ovr } },
         options,
       })
     }
@@ -349,7 +405,10 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
           offersEvent(
             'kblFA',
             'KBL FA 시장',
-            `현재 오버롤은 ${ovr}입니다. 영입 제안이 왔습니다.`,
+            {
+              k: '현재 오버롤은 {ovr}입니다. 영입 제안이 왔습니다.',
+              v: { ovr },
+            },
             kblOffers(rng, s),
             nbaOpt,
           ),
@@ -374,8 +433,14 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
         'nbaFA',
         'NBA FA 시장',
         offers.length
-          ? `현재 오버롤은 ${ovr}입니다. 계약 제안이 도착했습니다.`
-          : `현재 오버롤은 ${ovr}입니다. NBA 팀들의 제안은 없습니다.`,
+          ? {
+              k: '현재 오버롤은 {ovr}입니다. 계약 제안이 도착했습니다.',
+              v: { ovr },
+            }
+          : {
+              k: '현재 오버롤은 {ovr}입니다. NBA 팀들의 제안은 없습니다.',
+              v: { ovr },
+            },
         offers,
         extra,
       ),
@@ -391,7 +456,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
   ) {
     ev.push({
       kind: 'asianGames',
-      title: `${s.year} 아시안게임 국가대표 발탁`,
+      title: { k: '{year} 아시안게임 국가대표 발탁', v: { year: s.year } },
       body: '태극마크를 달 기회입니다. 금메달을 따면 병역특례(예술체육요원)를 받습니다.',
       options: [
         { id: 'go', label: '출전한다' },
@@ -432,17 +497,17 @@ export const DRILLS: Record<
 > = {
   shootout: {
     title: '슈팅 훈련',
-    body: `게이지를 정확히 채워 골대에 ${DRILL_REPS}번 슛을 던지세요.`,
+    body: '게이지를 정확히 채워 골대에 {reps}번 슛을 던지세요.',
     attr: 'shooting',
   },
   passDrill: {
     title: '패스 훈련',
-    body: `동료까지의 거리에 맞춰 게이지를 채워 ${DRILL_REPS}번 패스하세요.`,
+    body: '동료까지의 거리에 맞춰 게이지를 채워 {reps}번 패스하세요.',
     attr: 'playmaking',
   },
   dribbleDrill: {
     title: '드리블 훈련',
-    body: `수비가 기우는 반대쪽으로 ${DRILL_REPS}번 돌파하세요.`,
+    body: '수비가 기우는 반대쪽으로 {reps}번 돌파하세요.',
     attr: 'finishing',
   },
 }
@@ -453,11 +518,11 @@ export const drillOutcome = (
   attr: AttrKey,
   success: boolean,
   raised: boolean,
-) =>
+): Text =>
   raised
-    ? `${ATTR_LABELS[attr]} +1`
+    ? { k: '{attr} +1', v: { attr: T(ATTR_LABELS[attr]) } }
     : success
-      ? `${ATTR_LABELS[attr]} 이미 최고치예요`
+      ? { k: '{attr} 이미 최고치예요', v: { attr: T(ATTR_LABELS[attr]) } }
       : '아쉽지만 감각은 익혔습니다.'
 
 // 'made:N' 또는 'auto'(코치에게 맡김: 3~7개). 6개 이상이면 해당 능력치 +1 (99 상한).
@@ -560,7 +625,7 @@ export function applyEvent(
         setStage(s, 'COLLEGE', u.id, u.name)
         return front(
           notice(
-            `${u.name} 입학`,
+            { k: '{school} 입학', v: { school: T(u.name) } },
             us
               ? '미국 대학 무대에서 NBA 를 향한 도전을 시작합니다.'
               : '대학 무대에서 새로운 도전을 시작합니다.',
@@ -613,10 +678,10 @@ export function applyEvent(
             yearsLeft: 1,
           })
           return front(
-            notice(
-              '입단 테스트 합격',
-              `${t.name}와(과) 1년 계약을 맺었습니다.`,
-            ),
+            notice('입단 테스트 합격', {
+              k: '{team}와(과) 1년 계약을 맺었습니다.',
+              v: { team: T(t.name) },
+            }),
           )
         }
         setStage(s, 'FREE', '', '무소속')
@@ -668,8 +733,11 @@ export function applyEvent(
       return front(
         {
           ...notice(
-            `아시안게임 ${r.finish}`,
-            `대한민국 ${r.finish}. ${s.player.name}의 평균 득점은 ${ppg}점입니다.`,
+            { k: '아시안게임 {finish}', v: { finish: T(r.finish) } },
+            {
+              k: '대한민국 {finish}. {name}의 평균 득점은 {ppg}점입니다.',
+              v: { finish: T(r.finish), name: s.player.name, ppg },
+            },
           ),
           data: { game: r.last },
         },
@@ -686,7 +754,12 @@ export function applyEvent(
       if (optionId === 'yes') {
         const k = rng.pick(ATTR_KEYS)
         s.player.attrs[k] = Math.min(99, s.player.attrs[k] + 2)
-        return front(notice('캠프 성과', `${ATTR_LABELS[k]} +2`))
+        return front(
+          notice('캠프 성과', {
+            k: '{attr} +2',
+            v: { attr: T(ATTR_LABELS[k]) },
+          }),
+        )
       }
       s.mods.growthBonus += 0.5
       return
@@ -703,7 +776,7 @@ export function applyEvent(
       const { made, raised } = applyDrill(rng, s, kind, optionId)
       return front(
         notice(
-          `${DRILL_REPS}개 중 ${made}개 성공`,
+          { k: '{reps}개 중 {made}개 성공', v: { reps: DRILL_REPS, made } },
           drillOutcome(attr, made >= 6, raised),
         ),
       )
@@ -735,8 +808,11 @@ function signOffer(
   sign(s, stage, o)
   front(
     notice(
-      `${o.teamName} 계약`,
-      `연봉 ${formatMoney(o.salary, o.currency)}에 ${o.yearsLeft}년 계약을 맺었습니다.`,
+      { k: '{team} 계약', v: { team: T(o.teamName) } },
+      {
+        k: '연봉 {money}에 {years}년 계약을 맺었습니다.',
+        v: { money: formatMoney(o.salary, o.currency), years: o.yearsLeft },
+      },
     ),
   )
 }
@@ -750,7 +826,7 @@ function enlistEvent(s: GameState): GameEvent {
     kind: 'military',
     title: forced ? '입영 통지서' : '병역 의무',
     body: forced
-      ? `${s.age}세, 더는 입대를 미룰 수 없습니다.`
+      ? { k: '{age}세, 더는 입대를 미룰 수 없습니다.', v: { age: s.age } }
       : '상무에 합격하면 복무 중에도 D리그에서 뛸 수 있습니다. 아시안게임 금메달을 따면 병역특례를 받습니다.',
     options: [
       {
@@ -800,14 +876,22 @@ function leaveService(rng: Rng, s: GameState, late: boolean): GameEvent[] {
       ...back.contract,
       yearsLeft: Math.max(1, back.contract.yearsLeft),
     })
-    return [notice('전역', `${back.teamName}로 복귀합니다. ${when}`)]
+    return [
+      notice('전역', {
+        k: '{team}로 복귀합니다. {when}',
+        v: { team: T(back.teamName), when: T(when) },
+      }),
+    ]
   }
   setStage(s, 'FREE', '', '무소속')
   s.contract = undefined
   const ovr = overall(s.player)
   const offers = back?.stage === 'NBA' && ovr >= 83 ? nbaOffers(rng, s) : []
   return [
-    notice('전역', `소속팀 없이 전역합니다. ${when}`),
+    notice('전역', {
+      k: '소속팀 없이 전역합니다. {when}',
+      v: { when: T(when) },
+    }),
     offersEvent(
       'nbaFA',
       '전역 후 진로',

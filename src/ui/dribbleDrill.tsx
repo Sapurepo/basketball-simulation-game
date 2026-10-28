@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { tr } from '../i18n'
 import { DRILL_REPS } from '../engine/events'
 import type { Look } from '../engine/types'
 import { beatDefender, reactionMs, type Side } from './drill'
@@ -52,7 +53,7 @@ export function DribbleDrill({
               lean,
               go: null,
               ok: false,
-              call: '늦었어요',
+              call: tr('늦었어요'),
             }),
           reactionMs(round),
         )
@@ -77,7 +78,13 @@ export function DribbleDrill({
     if (run.done || phase.at === 'result') return
     clearTimeout(timeout.current)
     if (phase.at === 'wait') {
-      setPhase({ at: 'result', lean: null, go, ok: false, call: '너무 빨라요' })
+      setPhase({
+        at: 'result',
+        lean: null,
+        go,
+        ok: false,
+        call: tr('너무 빨라요'),
+      })
       return
     }
     const ok = beatDefender(go, phase.lean)
@@ -86,7 +93,7 @@ export function DribbleDrill({
       lean: phase.lean,
       go,
       ok,
-      call: ok ? '돌파 성공!' : '막혔어요',
+      call: ok ? tr('돌파 성공!') : tr('막혔어요'),
     })
   }
 
@@ -127,20 +134,23 @@ export function DribbleDrill({
           disabled={run.done}
           onClick={() => choose('left')}
         >
-          ← 왼쪽
+          ← {tr('왼쪽')}
         </button>
         <button
           className="primary big"
           disabled={run.done}
           onClick={() => choose('right')}
         >
-          오른쪽 →
+          {tr('오른쪽')} →
         </button>
       </div>
       <p className="muted drill-hint">
         {run.done
-          ? `${run.made}개 성공!`
-          : `수비가 기우는 반대쪽으로! (${round + 1}/${DRILL_REPS})`}
+          ? tr('{n}개 성공!', { n: run.made })
+          : tr('수비가 기우는 반대쪽으로! ({i}/{n})', {
+              i: round + 1,
+              n: DRILL_REPS,
+            })}
       </p>
     </div>
   )

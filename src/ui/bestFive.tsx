@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import type { Position } from '../engine/types'
 import type { HallRow } from './hallApi'
 import { PixelPlayer } from './pixelPlayer'
@@ -41,7 +42,7 @@ function Court() {
 // 랭킹 화면 맨 위: 포지션별 1위로 짠 베스트 5 라인업
 export function BestFive({ rows }: { rows: HallRow[] }) {
   return (
-    <div className="best-five" aria-label="포지션별 베스트 5">
+    <div className="best-five" aria-label={tr('포지션별 베스트 5')}>
       <Court />
       {SPOTS.map(({ pos, x, y }) => {
         const p = rows.find((r) => r.position === pos)
@@ -64,13 +65,13 @@ export function BestFive({ rows }: { rows: HallRow[] }) {
                   <span>{p.name}</span>
                 </span>
                 <small>
-                  {p.rank}위 OVR {p.peakOvr}
+                  {tr('{n}위', { n: p.rank })} OVR {p.peakOvr}
                   <img
                     className="px"
                     src={iconURL('trophy')}
                     width={14}
                     height={14}
-                    alt="NBA 파이널 MVP"
+                    alt={tr('NBA 파이널 MVP')}
                   />
                   {p.fmvp}
                 </small>
@@ -78,7 +79,7 @@ export function BestFive({ rows }: { rows: HallRow[] }) {
             ) : (
               <>
                 <span className="vacant">{pos}</span>
-                <small>비어 있음</small>
+                <small>{tr('비어 있음')}</small>
               </>
             )}
           </div>

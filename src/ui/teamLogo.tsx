@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { tr } from '../i18n'
 import { KBL_TEAMS, NBA_TEAMS } from '../data/teams'
 import { teamKit } from './pose'
 
@@ -48,7 +49,7 @@ export function TeamLogo({
       }}
       aria-hidden
     >
-      {(name || (teamId && NAME.get(teamId)) || '').trim().charAt(0)}
+      {tr((name || (teamId && NAME.get(teamId)) || '').trim()).charAt(0)}
     </span>
   )
 }

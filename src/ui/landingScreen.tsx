@@ -3,6 +3,7 @@ import type { HallEntry } from '../engine/save'
 import type { GameState } from '../engine/types'
 import { HallBoard } from './hallBoard'
 import { PixelPlayer } from './pixelPlayer'
+import { tr } from '../i18n'
 import { type Kit, type Pose, teamKit } from './pose'
 
 // 벤치 → 파엠: 마일스톤마다 포즈·유니폼·캡션을 바꿔가며 순환 재생
@@ -79,17 +80,17 @@ export function LandingScreen({
     <main className="landing">
       <section className="panel">
         <p className="eyebrow">
-          국내 고교 유망주가 꿈꾸는 NBA 입성, 그리고 파이널 MVP.
+          {tr('국내 고교 유망주가 꿈꾸는 NBA 입성, 그리고 파이널 MVP.')}
         </p>
         <h1 className="title">
-          벤치에서
+          {tr('벤치에서')}
           <br />
-          파엠까지
+          {tr('파엠까지')}
         </h1>
         <p className="muted">
-          한 시즌의 활약과 선택이 쌓여 커리어가 돼요.
+          {tr('한 시즌의 활약과 선택이 쌓여 커리어가 돼요.')}
           <br />
-          KBL 데뷔, 국가대표, NBA 파이널 MVP까지 도전해 보세요.
+          {tr('KBL 데뷔, 국가대표, NBA 파이널 MVP까지 도전해 보세요.')}
         </p>
       </section>
 
@@ -101,12 +102,12 @@ export function LandingScreen({
           look={state?.player.look}
         />
         <p className="muted caption" key={`c${step}`}>
-          {m.caption}
+          {tr(m.caption)}
         </p>
         <ol className="milestones">
           {MILESTONES.map((x, i) => (
             <li key={x.label} className={i <= step ? 'on' : undefined}>
-              {x.label}
+              {tr(x.label)}
             </li>
           ))}
         </ol>
@@ -117,11 +118,11 @@ export function LandingScreen({
       <div className="cta">
         {state && (
           <button className="ghost big" onClick={onContinue}>
-            이어하기
+            {tr('이어하기')}
           </button>
         )}
         <button className="primary big" onClick={onNew}>
-          새로운 인생 시작하기
+          {tr('새로운 인생 시작하기')}
         </button>
       </div>
     </main>

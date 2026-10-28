@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { tr } from '../i18n'
 import { toHallPayload } from '../engine/hallEntry'
 import type { GameState } from '../engine/types'
 
@@ -28,7 +29,7 @@ const loadTurnstile = () =>
     s.onload = () => resolve()
     s.onerror = () => {
       loading = null
-      reject(new Error('봇 확인을 불러오지 못했어요'))
+      reject(new Error(tr('봇 확인을 불러오지 못했어요')))
     }
     document.head.append(s)
   }))
@@ -75,7 +76,7 @@ export function HallSubmit({
   const [attempt, setAttempt] = useState(0)
 
   if (state.hallPosted)
-    return <p className="muted">공용 명예의 전당에 이름을 올렸어요.</p>
+    return <p className="muted">{tr('공용 명예의 전당에 이름을 올렸어요.')}</p>
 
   const submit = async () => {
     setBusy(true)
@@ -87,10 +88,10 @@ export function HallSubmit({
         body: JSON.stringify({ entry: toHallPayload(state), token }),
       })
       const data = (await res.json().catch(() => ({}))) as { error?: string }
-      if (!res.ok) throw new Error(data.error ?? '등록하지 못했어요')
+      if (!res.ok) throw new Error(tr(data.error ?? '등록하지 못했어요'))
       onPosted()
     } catch (e) {
-      setError(e instanceof Error ? e.message : '등록하지 못했어요')
+      setError(e instanceof Error ? e.message : tr('등록하지 못했어요'))
       setToken('')
       setAttempt((n) => n + 1)
     } finally {
@@ -100,11 +101,11 @@ export function HallSubmit({
 
   return (
     <div className="hall-submit">
-      <h3>공용 명예의 전당 등록</h3>
+      <h3>{tr('공용 명예의 전당 등록')}</h3>
       <p className="muted">
-        선수 이름, 포지션, 외형, 최고 OVR, 파이널 MVP 횟수, 트로피 수, 시즌 수,
-        은퇴 연도가 모든 플레이어에게 공개됩니다. 자세한 내용은
-        개인정보처리방침을 확인해 주세요.
+        {tr(
+          '선수 이름, 포지션, 외형, 최고 OVR, 파이널 MVP 횟수, 트로피 수, 시즌 수, 은퇴 연도가 모든 플레이어에게 공개됩니다. 자세한 내용은 개인정보처리방침을 확인해 주세요.',
+        )}
       </p>
       <label className="row">
         <input
@@ -112,7 +113,7 @@ export function HallSubmit({
           checked={agree}
           onChange={(e) => setAgree(e.target.checked)}
         />
-        위 기록을 공개 등록하는 데 동의합니다.
+        {tr('위 기록을 공개 등록하는 데 동의합니다.')}
       </label>
       {agree && <Turnstile key={attempt} onToken={setToken} />}
       {error && <p className="error">{error}</p>}
@@ -121,7 +122,7 @@ export function HallSubmit({
         disabled={!agree || !token || busy}
         onClick={submit}
       >
-        {busy ? '등록 중…' : '명예의 전당에 등록'}
+        {busy ? tr('등록 중…') : tr('명예의 전당에 등록')}
       </button>
     </div>
   )

@@ -1,3 +1,5 @@
+import type { Text } from '../i18n'
+
 export type Position = 'PG' | 'SG' | 'SF' | 'PF' | 'C'
 export type AttrKey =
   | 'shooting'
@@ -99,7 +101,7 @@ export interface GameLog {
   myScore: number
   oppScore: number
   box: StatLine
-  pbp: string[]
+  pbp: Text[]
 }
 
 // 리그 베스트 팀(퍼스트~서드)의 한 자리
@@ -136,16 +138,16 @@ export interface SeasonRecord {
 
 export interface EventOption {
   id: string
-  label: string
-  desc?: string
+  label: Text
+  desc?: Text
   // 구단 제안이면 로고 표시용
   teamId?: string
 }
 
 export interface GameEvent {
   kind: string
-  title: string
-  body: string
+  title: Text
+  body: Text
   options: EventOption[]
   data?: Record<string, unknown>
 }

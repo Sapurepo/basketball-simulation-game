@@ -476,6 +476,7 @@ footer .link {
 .btn-cmd .label {
   font-size: 16px;
   line-height: 1.2;
+  overflow-wrap: break-word;
 }
 
 .btn-cmd .sub {
@@ -523,7 +524,7 @@ footer .link {
 
 .split-cmd:not(.solo) > .btn-cmd:first-child {
   margin-right: -12px;
-  padding-right: 24px;
+  padding-right: 36px;
   clip-path: polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%);
 }
 
@@ -708,7 +709,7 @@ select {
 
 .bars li {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) 28px;
+  grid-template-columns: var(--bar-label) minmax(0, 1fr) 28px;
   align-items: center;
   gap: 10px;
 }
@@ -743,7 +744,7 @@ select {
 
 /* 선수 생성: 값 양옆 −/+ 버튼 */
 .bars.adjust li {
-  grid-template-columns: 72px minmax(0, 1fr) 30px 28px 30px;
+  grid-template-columns: var(--bar-label) minmax(0, 1fr) 30px 28px 30px;
   gap: 6px;
 }
 
@@ -845,6 +846,17 @@ input[type='range'] {
   color: var(--panel);
   font: 13px var(--font-pixel);
   clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%);
+  /* 오른쪽 트로피 진열대(right 74px + 최소 폭 132px)와 겹치지 않게. 긴 팀명은 두 줄 */
+  max-width: calc(100% - 214px);
+  min-width: 96px;
+}
+
+/* 긴 팀명(번역 포함)은 한 줄 말줄임, 전체 이름은 툴팁 */
+.pennant-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ovr-shield {
@@ -2326,7 +2338,7 @@ tr.me td {
 
 /* 시즌 증감: 능력치·스탯 값 옆 작은 +n. 능력치는 값 칸을 넓혀 넘치지 않게 */
 .bars.with-delta li {
-  grid-template-columns: 72px minmax(0, 1fr) 46px;
+  grid-template-columns: var(--bar-label) minmax(0, 1fr) 46px;
 }
 
 .bars b {
@@ -2512,4 +2524,44 @@ tr.me td {
   .fmvp .sprite {
     animation: none;
   }
+}
+
+/* 푸터 언어 토글 */
+footer .row.lang {
+  gap: 10px;
+  font-size: 12px;
+}
+
+footer .row.lang .link {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+footer .row.lang .link.current {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* 일본어는 Noto Sans JP 로 (한국어 글꼴엔 가나가 없다).
+   keep-all 은 띄어쓰기 없는 일본어 문장을 한 줄로 묶어 화면을 밀어내므로 일본어에선 끈다 */
+:root:lang(ja) {
+  word-break: normal;
+}
+
+:root:lang(ja) body {
+  font-family: 'Noto Sans JP', 'Noto Sans KR', system-ui, sans-serif;
+}
+
+/* 능력치 라벨 칸: 영어는 Rebounding·Athleticism 이 길어 넓힌다 */
+:root {
+  --bar-label: 72px;
+}
+
+:root:lang(en) {
+  --bar-label: 92px;
+}
+
+:root:lang(ja) {
+  --bar-label: 84px;
 }

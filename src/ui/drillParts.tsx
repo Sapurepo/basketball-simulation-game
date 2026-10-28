@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import type { RefObject } from 'react'
 import { DRILL_REPS } from '../engine/events'
 import type { Zone } from './drill'
@@ -26,7 +27,7 @@ export function Gauge({
 
 export function DrillDots({ results }: { results: boolean[] }) {
   return (
-    <ol className="shots" aria-label="훈련 결과">
+    <ol className="shots" aria-label={tr('훈련 결과')}>
       {Array.from({ length: DRILL_REPS }, (_, i) => (
         <li
           key={i}

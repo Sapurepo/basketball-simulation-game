@@ -1,3 +1,4 @@
+import { T, tr } from '../i18n'
 import type { AttrKey, Attributes } from '../engine/types'
 import { fmtDelta } from './delta'
 
@@ -28,11 +29,11 @@ export function AttrBars({
         const d = delta ? fmtDelta(delta[k], 0) : ''
         return (
           <li key={k}>
-            <span>{labels[k]}</span>
+            <span>{tr(labels[k])}</span>
             <div
               className={v >= 70 ? 'seg-bar elite' : 'seg-bar'}
               role="meter"
-              aria-label={labels[k]}
+              aria-label={tr(labels[k])}
               aria-valuenow={v}
               aria-valuemin={0}
               aria-valuemax={100}
@@ -47,7 +48,7 @@ export function AttrBars({
             {adjust && (
               <button
                 className="ghost tiny"
-                aria-label={`${labels[k]} 내리기`}
+                aria-label={tr('{attr} 내리기', { attr: T(labels[k]) })}
                 disabled={!lim?.down}
                 onClick={() => adjust.onChange(k, -1)}
               >
@@ -65,7 +66,7 @@ export function AttrBars({
             {adjust && (
               <button
                 className="ghost tiny"
-                aria-label={`${labels[k]} 올리기`}
+                aria-label={tr('{attr} 올리기', { attr: T(labels[k]) })}
                 disabled={!lim?.up}
                 onClick={() => adjust.onChange(k, 1)}
               >

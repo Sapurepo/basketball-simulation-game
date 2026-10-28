@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { tr } from '../i18n'
 
 export interface SitemapLink {
   label: string
@@ -26,10 +27,10 @@ export function SitemapDialog({
   const select = (l: SitemapLink) => {
     if (l.file) {
       const file = l.file
-      setView({ file, text: '불러오는 중…' })
+      setView({ file, text: tr('불러오는 중…') })
       fetch(`/${file}`)
         .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
-        .catch(() => '파일을 불러오지 못했어요.')
+        .catch(() => tr('파일을 불러오지 못했어요.'))
         // 그사이 목록으로 돌아갔으면 덮어쓰지 않는다
         .then((text) => setView((v) => (v?.file === file ? { file, text } : v)))
       return
@@ -41,16 +42,16 @@ export function SitemapDialog({
     <dialog
       ref={ref}
       className="modal sitemap"
-      aria-label="사이트맵"
+      aria-label={tr('사이트맵')}
       onClose={() => setTimeout(onClose, 150)}
     >
       <div className="panel-head">
         <div>
-          <p className="eyebrow">벤치에서 파엠까지</p>
-          <h2>사이트맵</h2>
+          <p className="eyebrow">{tr('벤치에서 파엠까지')}</p>
+          <h2>{tr('사이트맵')}</h2>
         </div>
         <button className="ghost" onClick={() => ref.current?.close()}>
-          닫기
+          {tr('닫기')}
         </button>
       </div>
       {view ? (
@@ -59,10 +60,10 @@ export function SitemapDialog({
             <h3>{view.file}</h3>
             <span className="row">
               <a href={`/${view.file}`} target="_blank" rel="noreferrer">
-                새 탭에서 열기
+                {tr('새 탭에서 열기')}
               </a>
               <button className="ghost" onClick={() => setView(undefined)}>
-                목록으로
+                {tr('목록으로')}
               </button>
             </span>
           </div>

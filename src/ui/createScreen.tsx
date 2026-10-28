@@ -22,6 +22,7 @@ import { AttrBars } from './attrBars'
 import { PixelPlayer } from './pixelPlayer'
 import { type Pose, teamKit } from './pose'
 import { ROSTER } from './sprite'
+import { tr } from '../i18n'
 
 const POSITIONS = Object.keys(POSITION_LABELS) as Position[]
 const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
@@ -57,7 +58,12 @@ export function CreateScreen({
   const rng = new Rng(seed)
   const look = { ...ROSTER[sel].look, num: num ?? ROSTER[sel].look.num }
   const kit = teamKit(school)
-  const base = createPlayer(rng, name.trim() || '이름 없음', position, style)
+  const base = createPlayer(
+    rng,
+    name.trim() || tr('이름 없음'),
+    position,
+    style,
+  )
   const pool = custom ?? base.attrs
   const h = height ?? base.height
   const wt = weight ?? base.weight
@@ -93,7 +99,7 @@ export function CreateScreen({
         <p className="eyebrow">
           {step + 1} / {STEPS.length}
         </p>
-        <h1>{STEPS[step]}</h1>
+        <h1>{tr(STEPS[step])}</h1>
       </header>
 
       {step === 0 && (
@@ -109,7 +115,7 @@ export function CreateScreen({
                   min={0}
                   max={99}
                   value={look.num}
-                  aria-label="등번호"
+                  aria-label={tr('등번호')}
                   onChange={(e) => {
                     const n = clamp(Math.round(+e.target.value) || 0, 0, 99)
                     // "07"처럼 숫자로는 같은 값이면 React 가 화면을 고치지 않아 앞자리 0이 남는다
@@ -123,12 +129,12 @@ export function CreateScreen({
               {POSE_STRIP.map(([pose, label]) => (
                 <figure key={pose}>
                   <PixelPlayer pose={pose} kit={kit} look={look} scale={2} />
-                  <figcaption>{label}</figcaption>
+                  <figcaption>{tr(label)}</figcaption>
                 </figure>
               ))}
             </div>
           </div>
-          <div className="roster" role="group" aria-label="외형 선택">
+          <div className="roster" role="group" aria-label={tr('외형 선택')}>
             {ROSTER.map((r, i) => (
               <button
                 key={r.name}
@@ -152,17 +158,17 @@ export function CreateScreen({
       {step === 1 && (
         <section className="panel">
           <label className="field">
-            <span>선수 이름</span>
+            <span>{tr('선수 이름')}</span>
             <input
               value={name}
               maxLength={10}
-              placeholder="예: 김코트"
+              placeholder={tr('예: 김코트')}
               onChange={(e) => setName(e.target.value)}
             />
           </label>
 
           <div className="field">
-            <span>포지션</span>
+            <span>{tr('포지션')}</span>
             <div className="chips">
               {POSITIONS.map((p) => (
                 <button
@@ -170,14 +176,14 @@ export function CreateScreen({
                   className={p === position ? 'chip on' : 'chip'}
                   onClick={() => choosePosition(p)}
                 >
-                  {p} <small>{POSITION_LABELS[p]}</small>
+                  {p} <small>{tr(POSITION_LABELS[p])}</small>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="field">
-            <span>플레이 스타일</span>
+            <span>{tr('플레이 스타일')}</span>
             <div className="chips">
               {STYLES[position].map((s) => (
                 <button
@@ -185,18 +191,18 @@ export function CreateScreen({
                   className={s.name === style ? 'chip on' : 'chip'}
                   onClick={() => chooseStyle(s.name)}
                 >
-                  {s.name}
+                  {tr(s.name)}
                 </button>
               ))}
             </div>
           </div>
 
           <label className="field">
-            <span>고등학교</span>
+            <span>{tr('고등학교')}</span>
             <select value={school} onChange={(e) => setSchool(e.target.value)}>
               {HIGH_SCHOOLS.map((h) => (
                 <option key={h.id} value={h.id}>
-                  {h.name} ({h.region})
+                  {tr(h.name)} ({tr(h.region === '경기' ? '경기도' : h.region)})
                 </option>
               ))}
             </select>
@@ -209,12 +215,12 @@ export function CreateScreen({
           <div className="row between">
             <h2>{player.name}</h2>
             <button className="ghost" onClick={() => setSeed(randomSeed())}>
-              다시 뽑기
+              {tr('다시 뽑기')}
             </button>
           </div>
           <label className="field">
             <span>
-              신장 <b>{h}cm</b>
+              {tr('신장')} <b>{h}cm</b>
             </span>
             <input
               type="range"
@@ -226,10 +232,10 @@ export function CreateScreen({
           </label>
           <label className="field">
             <span>
-              몸무게 <b>{wt}kg</b>
+              {tr('몸무게')} <b>{wt}kg</b>
               <small className="muted">
                 {' '}
-                · 스피드 {mod > 0 ? `+${mod}` : mod}
+                · {tr('스피드')} {mod > 0 ? `+${mod}` : mod}
               </small>
             </span>
             <input
@@ -241,14 +247,17 @@ export function CreateScreen({
             />
           </label>
           <div className="kv">
-            <span>오버롤</span>
+            <span>{tr('오버롤')}</span>
             <b>{overall(player)}</b>
-            <span>잠재력 등급</span>
+            <span>{tr('잠재력 등급')}</span>
             <b>
               {potentialGrade(player.potential)}
-              <small className="muted"> · 잠재 오버롤 {player.potential}</small>
+              <small className="muted">
+                {' '}
+                · {tr('잠재 오버롤')} {player.potential}
+              </small>
             </b>
-            <span>남은 포인트</span>
+            <span>{tr('남은 포인트')}</span>
             <b>{left}</b>
           </div>
           <AttrBars
@@ -264,8 +273,14 @@ export function CreateScreen({
             }}
           />
           <p className="muted">
-            능력치는 {ATTR_MIN}~{ATTR_MAX} 사이에서 총합 {START_TOTAL}
-            포인트를 나눠 가져요.
+            {tr(
+              '능력치는 {min}~{max} 사이에서 총합 {total} 포인트를 나눠 가져요.',
+              {
+                min: ATTR_MIN,
+                max: ATTR_MAX,
+                total: START_TOTAL,
+              },
+            )}
           </p>
         </section>
       )}
@@ -273,16 +288,17 @@ export function CreateScreen({
       {step === 3 && (
         <section className="panel">
           <p className="muted">
-            첫 시즌에 집중해서 키울 능력치예요. 이후에는 매년 오프시즌에 다시
-            고를 수 있어요.
+            {tr(
+              '첫 시즌에 집중해서 키울 능력치예요. 이후에는 매년 오프시즌에 다시 고를 수 있어요.',
+            )}
           </p>
           <div className="options">
             <button
               className={focus ? 'option' : 'option on'}
               onClick={() => setFocus(undefined)}
             >
-              <b>균형 성장</b>
-              <small>모든 능력치를 고르게</small>
+              <b>{tr('균형 성장')}</b>
+              <small>{tr('모든 능력치를 고르게')}</small>
             </button>
             {ATTR_KEYS.map((k) => (
               <button
@@ -290,8 +306,10 @@ export function CreateScreen({
                 className={k === focus ? 'option on' : 'option'}
                 onClick={() => setFocus(k)}
               >
-                <b>{ATTR_LABELS[k]}</b>
-                <small>현재 {Math.round(player.attrs[k])}</small>
+                <b>{tr(ATTR_LABELS[k])}</b>
+                <small>
+                  {tr('현재')} {Math.round(player.attrs[k])}
+                </small>
               </button>
             ))}
           </div>
@@ -303,7 +321,7 @@ export function CreateScreen({
           className="ghost"
           onClick={() => (step ? setStep(step - 1) : onBack())}
         >
-          이전
+          {tr('이전')}
         </button>
         <button
           className="primary grow"
@@ -314,7 +332,7 @@ export function CreateScreen({
               : setStep(step + 1)
           }
         >
-          {last ? '고1 시즌 시작' : '다음'}
+          {last ? tr('고1 시즌 시작') : tr('다음')}
         </button>
       </div>
     </main>

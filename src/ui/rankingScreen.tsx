@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { tr } from '../i18n'
 import { HALL_TOP } from '../engine/hallEntry'
 import { BestFive } from './bestFive'
 import { fetchHall, type HallSort, SORTS } from './hallApi'
@@ -41,9 +42,10 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
         <div className="panel-head">
           <div>
             <p className="eyebrow">
-              명예의 전당{data ? ` (총 ${data.top.total}명)` : ''}
+              {tr('명예의 전당')}
+              {data ? ` ${tr('(총 {n}명)', { n: data.top.total })}` : ''}
             </p>
-            <h1>전체 랭킹</h1>
+            <h1>{tr('전체 랭킹')}</h1>
           </div>
           <div className="row">
             <button
@@ -51,10 +53,10 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
               onClick={refresh}
               disabled={!data && !error}
             >
-              새로고침
+              {tr('새로고침')}
             </button>
             <button className="ghost" onClick={onBack}>
-              뒤로
+              {tr('뒤로')}
             </button>
           </div>
         </div>
@@ -65,29 +67,29 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
               className={sort === id ? 'chip on' : 'chip'}
               onClick={() => setSort(id)}
             >
-              {label}
+              {tr(label)}
             </button>
           ))}
         </div>
 
         {error ? (
           <p className="muted">
-            랭킹을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+            {tr('랭킹을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.')}
           </p>
         ) : !data ? (
-          <p className="muted">불러오는 중…</p>
+          <p className="muted">{tr('불러오는 중…')}</p>
         ) : data.top.rows.length ? (
           <>
-            <h2>베스트 5</h2>
+            <h2>{tr('베스트 5')}</h2>
             <p className="muted">
-              포지션마다{' '}
-              {sort === 'fmvp'
-                ? '파이널 MVP를 가장 많이 받은'
-                : '최고 OVR이 가장 높은'}{' '}
-              선수로 짠 라인업이에요.
+              {tr(
+                sort === 'fmvp'
+                  ? '포지션마다 파이널 MVP를 가장 많이 받은 선수로 짠 라인업이에요.'
+                  : '포지션마다 최고 OVR이 가장 높은 선수로 짠 라인업이에요.',
+              )}
             </p>
             <BestFive rows={data.best.rows} />
-            <h2>상위 {HALL_TOP}명</h2>
+            <h2>{tr('상위 {n}명', { n: HALL_TOP })}</h2>
             <ol className="hall">
               {data.top.rows.map((r) => (
                 <HallItem key={r.id} {...r} detail={r} />
@@ -96,7 +98,9 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
           </>
         ) : (
           <p className="muted">
-            아직 등록된 선수가 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.
+            {tr(
+              '아직 등록된 선수가 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.',
+            )}
           </p>
         )}
       </section>
