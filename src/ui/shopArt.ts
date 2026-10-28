@@ -39,7 +39,7 @@ const PAL: Record<string, string> = {
 const FLAT = new Set('KEh')
 
 type Grid = (string | null)[][]
-interface Canvas {
+export interface Canvas {
   w: number
   h: number
   g: Grid
@@ -51,7 +51,7 @@ interface Canvas {
   flip(): Canvas
 }
 
-function canvas(w: number, h: number): Canvas {
+export function canvas(w: number, h: number): Canvas {
   const g: Grid = [...Array(h)].map(() => Array(w).fill(null))
   const inside = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h
   const o: Canvas = {
@@ -96,7 +96,7 @@ function canvas(w: number, h: number): Canvas {
   }
   return o
 }
-const fromRows = (lines: string[]) =>
+export const fromRows = (lines: string[]) =>
   canvas(Math.max(...lines.map((r) => r.length)), lines.length).rows(lines)
 
 const WHEEL = [
@@ -493,7 +493,16 @@ export function artURL(name: ArtName, frame = 0) {
   const key = `${name}:${frame}`
   let url = cache.get(key)
   if (url) return url
-  const c = ART[name](frame)
+  cache.set(key, (url = shadeURL(ART[name](frame), PAL, FLAT)))
+  return url
+}
+
+// 키 격자 → 셰이딩·외곽선 PNG. 팔레트를 받아 랜딩 소품도 같은 규칙으로 그린다
+export function shadeURL(
+  c: Canvas,
+  pal: Record<string, string>,
+  flat: Set<string>,
+) {
   const w = c.w + 2
   const h = c.h + 2
   const g: Grid = [...Array(h)].map((_, y) =>
@@ -513,13 +522,12 @@ export function artURL(name: ArtName, frame = 0) {
           !empty(x, y + 1)
         return edge ? OUT : null
       }
-      const col = PAL[k]
-      if (FLAT.has(k)) return col
+      const col = pal[k]
+      if (flat.has(k)) return col
       if (empty(x + 1, y) || empty(x, y + 1)) return adj(col, 0.76)
       if (empty(x, y - 1) || empty(x - 1, y)) return adj(col, 1.22)
       return col
     }),
   )
-  cache.set(key, (url = paint(px, w, h)))
-  return url
+  return paint(px, w, h)
 }

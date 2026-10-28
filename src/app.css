@@ -138,6 +138,9 @@ img.px {
   gap: 24px;
   padding: 20px 16px 28px;
   overflow-y: auto;
+  /* 스크롤 앵커링 끔: 장면·타이핑·스프라이트가 계속 다시 그려질 때마다
+     브라우저가 앵커를 다시 잡으며 사용자 스크롤을 수십 px씩 되돌린다 */
+  overflow-anchor: none;
   scrollbar-width: thin;
   scrollbar-color: var(--ink) transparent;
 }
@@ -2530,72 +2533,204 @@ tr.me td {
   font-size: clamp(2rem, 7vw, 2.6rem);
 }
 
-.caption {
-  animation: fade-up 400ms ease-out;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-@keyframes fade-up {
+/* 마일스톤 카드: 장면(110×72 논리 픽셀) + 태그·캡션·단계 */
+.milestone {
+  gap: 0;
+  padding: 0;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 110 / 72;
+  container-type: inline-size;
+  overflow: hidden;
+  border-bottom: 3px solid var(--ink);
+  animation: scene-in 0.4s steps(4) both;
+}
+
+.milestone-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+}
+
+.caption {
+  margin: 0;
+  min-height: 2.9em;
+  font: 18px/1.45 var(--font-pixel);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.caption .cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: var(--accent);
+}
+
+.milestones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.milestones li {
+  position: relative;
+  display: grid;
+}
+
+/* 앞 단계와 잇는 선: 지나온 구간은 주황 */
+.milestones li + li::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: -50%;
+  right: 50%;
+  height: 3px;
+  background: var(--line);
+}
+
+.milestones li:is(.done, .now)::before {
+  background: var(--accent);
+}
+
+.milestones button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted-on-dark);
+  font: 12px var(--font-pixel);
+  text-align: center;
+}
+
+.milestones button::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  margin: 4px;
+  background: var(--panel-sunk);
+  box-shadow: 0 0 0 3px #bdb29a;
+}
+
+.milestones :is(.done, .now) button {
+  color: var(--ink);
+}
+
+.milestones .done button::before {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--ink);
+}
+
+.milestones .now button::before {
+  width: 16px;
+  height: 16px;
+  margin: 2px;
+  background: var(--gold);
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink),
+    inset 0 3px 0 0 var(--gold-hi),
+    inset 0 -3px 0 0 var(--gold-lo);
+}
+
+@keyframes scene-in {
   from {
     opacity: 0;
     transform: translateY(6px);
   }
 }
 
-.milestones {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  width: 100%;
-  color: var(--muted);
-  font: 12px var(--font-pixel);
+@keyframes landing-flash {
+  0%,
+  82% {
+    opacity: 0;
+  }
+  84%,
+  92% {
+    opacity: 1;
+  }
+  94%,
+  100% {
+    opacity: 0;
+  }
 }
 
-.milestones li {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  padding-top: 22px;
+@keyframes landing-fall {
+  from {
+    top: -6%;
+  }
+  to {
+    top: 104%;
+  }
 }
 
-.milestones li::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: 50%;
-  z-index: 1;
-  width: 12px;
-  height: 12px;
-  margin-left: -6px;
-  background: var(--panel-sunk);
-  box-shadow: 0 0 0 2px var(--ink);
+@keyframes landing-scroll {
+  to {
+    transform: translateX(-50%);
+  }
 }
 
-.milestones li + li::after {
-  content: '';
-  position: absolute;
-  top: 9px;
-  right: 50%;
-  width: 100%;
-  height: 3px;
-  background: var(--line);
+@keyframes landing-speed {
+  to {
+    transform: translateX(-60%);
+    opacity: 0;
+  }
 }
 
-.milestones li::before,
-.milestones li::after {
-  transition-property: background-color;
-  transition-duration: 400ms;
-  transition-timing-function: ease-out;
-}
-
-.milestones li.on {
-  color: var(--text);
-}
-
-.milestones li.on::before,
-.milestones li.on::after {
-  background: var(--accent);
+/* 슛 궤적: 손(38,10)에서 림(87,24)까지 포물선. 좌표는 장면 논리 픽셀 */
+@keyframes landing-ball {
+  0% {
+    left: calc(100cqw * 38 / 110);
+    top: calc(100cqw * 10 / 110);
+    opacity: 1;
+  }
+  18% {
+    left: calc(100cqw * 50 / 110);
+    top: calc(100cqw * 1 / 110);
+  }
+  36% {
+    left: calc(100cqw * 62 / 110);
+    top: calc(100cqw * -3 / 110);
+  }
+  54% {
+    left: calc(100cqw * 74 / 110);
+    top: calc(100cqw * -1 / 110);
+  }
+  72% {
+    left: calc(100cqw * 84 / 110);
+    top: calc(100cqw * 7 / 110);
+  }
+  86% {
+    left: calc(100cqw * 87 / 110);
+    top: calc(100cqw * 15 / 110);
+    opacity: 1;
+  }
+  100% {
+    left: calc(100cqw * 87 / 110);
+    top: calc(100cqw * 24 / 110);
+    opacity: 0;
+  }
 }
 
 .league {
@@ -2605,11 +2740,6 @@ tr.me td {
   transition-property: filter, opacity;
   transition-duration: 400ms;
   transition-timing-function: ease-out;
-}
-
-.milestones li.on .league {
-  filter: none;
-  opacity: 1;
 }
 
 .hall {
@@ -2888,7 +3018,7 @@ tr.me td {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .caption,
+  .scene,
   .steps .now::before {
     animation: none;
   }
@@ -2897,8 +3027,6 @@ tr.me td {
     background: var(--gold-ink);
   }
 
-  .milestones li::before,
-  .milestones li::after,
   .overlay,
   .loading,
   .modal,
