@@ -250,7 +250,7 @@ export function MainScreen({
               </>
             )}
           </div>
-          <Decor items={state.items} />
+          <Decor items={state.items} layout={state.layout} />
           <TrophyShelf state={state} />
           <div className="ovr-shield">
             <div>

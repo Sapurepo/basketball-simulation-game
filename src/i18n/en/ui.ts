@@ -460,6 +460,34 @@ const text: Record<string, string> = {
   코리안숏헤어: 'Korean Shorthair',
   페르시안: 'Persian cat',
   스코티시폴드: 'Scottish Fold',
+  // ── 무대 배치 편집 ──
+  '벽 · 창문과 커튼은 함께 움직여요':
+    'Wall · the window and curtain move together',
+  '벽에 걸기': 'Hang on the wall',
+  '바닥에 놓기': 'Set on the floor',
+  '배치 편집': 'Arrange',
+  '무대 꾸미기': 'Decorate the stage',
+  '무대 위 아이템을 끌어서 옮기세요. 가구·탈것은 바닥에, 창문·시계는 벽에만 놓여요. 보관해도 성장 보너스는 그대로예요.':
+    'Drag items on the stage to move them. Furniture and rides go on the floor, windows and clocks only on the wall. Stored items keep their growth bonus.',
+  '좌우 반전': 'Flip',
+  제자리로: 'Reset spot',
+  보관하기: 'Store',
+  '무대 위 아이템을 눌러 선택하세요.': 'Tap an item on the stage to select it.',
+  '내 아이템 · 무대 위 {n}': 'My items · on stage {n}',
+  '무대에 놓을 아이템이 아직 없어요. 가구나 탈것을 구매해 보세요.':
+    'Nothing to place yet. Try buying furniture or a ride.',
+  '보관 중': 'Stored',
+  '무대 위 · 선택됨': 'On stage · selected',
+  벽: 'Wall',
+  바닥: 'Floor',
+  꺼내기: 'Take out',
+  선택: 'Select',
+  보관: 'Store',
+  '기본 배치로': 'Default layout',
+  완료: 'Done',
+  '배치 편집 중 · 끌어서 옮기기 · 방향키로 1칸씩':
+    'Arranging · drag to move · arrow keys for 1 step',
+  '배치 옮기기': 'Move it',
   // 아이템 소개
   '챙을 꾹 눌러쓰면 수비 집중력이 올라간다.':
     'Pull the brim down tight and your defensive focus sharpens.',
