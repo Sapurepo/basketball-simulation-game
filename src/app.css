@@ -138,6 +138,9 @@ img.px {
   gap: 24px;
   padding: 20px 16px 28px;
   overflow-y: auto;
+  /* 스크롤 앵커링 끔: 장면·타이핑·스프라이트가 계속 다시 그려질 때마다
+     브라우저가 앵커를 다시 잡으며 사용자 스크롤을 수십 px씩 되돌린다 */
+  overflow-anchor: none;
   scrollbar-width: thin;
   scrollbar-color: var(--ink) transparent;
 }
