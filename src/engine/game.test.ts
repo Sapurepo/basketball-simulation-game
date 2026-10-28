@@ -21,7 +21,7 @@ import {
 } from './player'
 import { Rng } from './rng'
 import { migrateLook, parseSave } from './save'
-import type { Look } from './types'
+import type { Look, Player } from './types'
 import { botChoice, playCareer } from './testBot'
 
 const careers = Array.from({ length: 200 }, (_, i) =>
@@ -452,4 +452,29 @@ describe('미국 대학 경로', () => {
     expect(h.featured.every((g) => /NCAA/.test(g.label))).toBe(true)
     expect(h.bestTeams?.[0]).toHaveLength(5)
   })
+})
+
+test('성장 분배: 99 능력치는 제외돼 오버롤 변화량이 줄지 않는다', () => {
+  const rng = new Rng(7)
+  const mk = (): Player => ({
+    ...createPlayer(rng, 'x', 'C', '림 프로텍터'),
+    potential: 99,
+    growthType: 'normal',
+  })
+  const capped = mk()
+  capped.attrs.rebounding = 99
+  const free = mk()
+  free.attrs = { ...capped.attrs, rebounding: 60 }
+  const beforeCapped = overall(capped)
+  const beforeFree = overall(free)
+  grow(new Rng(1), capped, 20, 0.7, undefined, 0)
+  grow(new Rng(1), free, 20, 0.7, undefined, 0)
+  // gap 이 다르니 g 도 다르지만, 상한에 막힌 쪽도 gap 에 비례한 만큼은 그대로 오른다
+  const gainCapped = overall(capped) - beforeCapped
+  const gainFree = overall(free) - beforeFree
+  expect(gainCapped / (99 - beforeCapped)).toBeCloseTo(
+    gainFree / (99 - beforeFree),
+    1,
+  )
+  expect(capped.attrs.rebounding).toBe(99)
 })

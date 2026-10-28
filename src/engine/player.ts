@@ -223,9 +223,11 @@ export function grow(
 
   // s_i = b_i / Σ w_j·b_j (b = w + 0.1 + 집중 보너스) → 오버롤 변화량이 정확히 g 가 된다.
   // 0.1 은 주력 능력치 하나만 99 로 치솟지 않도록 성장을 고르게 퍼뜨린다.
+  // 이미 99 인 능력치는 분배에서 빼서 성장이 증발하지 않게 한다 (가중치가 몰린 포지션이 손해 보던 문제)
   const w = WEIGHTS[p.position]
-  const b = (k: AttrKey) => w[k] + 0.1 + (k === focus ? 0.2 : 0)
-  const denom = ATTR_KEYS.reduce((s, k) => s + w[k] * b(k), 0)
+  const b = (k: AttrKey) =>
+    g > 0 && p.attrs[k] >= 99 ? 0 : w[k] + 0.1 + (k === focus ? 0.2 : 0)
+  const denom = ATTR_KEYS.reduce((s, k) => s + w[k] * b(k), 0) || 1
   for (const k of ATTR_KEYS) {
     let d = (g * b(k)) / denom
     if ((k === 'athleticism' || k === 'speed') && age >= DECLINE_AGE) d -= 1

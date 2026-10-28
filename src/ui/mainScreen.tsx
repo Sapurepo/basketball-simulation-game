@@ -16,15 +16,16 @@ import {
   potentialGrade,
 } from '../engine/player'
 import { clamp } from '../engine/rng'
-import type { GameLog, GameState } from '../engine/types'
+import type { Attributes, GameLog, GameState, Look } from '../engine/types'
 import { AttrBars } from './attrBars'
 import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
+import { attrDelta, fmtDelta, statDelta } from './delta'
 import { avg, pct, seasonLabel, serviceLabel, STAGE_LABEL } from './format'
 import { GameCast } from './gameCast'
 import { HallSubmit } from './hallSubmit'
 import { DrillGame } from './drillGame'
 import { PixelPlayer } from './pixelPlayer'
-import { pickPose } from './pose'
+import { type Kit, pickPose } from './pose'
 import { Decor, ShopDialog, TrophyShelf } from './shop'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
 import { TeamLogo } from './teamLogo'
@@ -84,10 +85,21 @@ export function MainScreen({
   const [castIdx, setCastIdx] = useState(0)
   const [loadStep, setLoadStep] = useState(-1)
   const [highlight, setHighlight] = useState<GameLog | null>(null)
+  // 파이널 MVP 축하 오버레이(NBA 파엠·KBL 챔결 MVP). 닫으면 보류해 둔 하이라이트(key)를 이어서 띄운다
+  const [fmvp, setFmvp] = useState<{
+    key: GameLog | null
+    award: keyof typeof MVP_SHOW
+  } | null>(null)
+  // 방금 진행한 시즌의 능력치 증감. 다음 진행 때 교체되고 새로고침하면 사라진다
+  const [delta, setDelta] = useState<Attributes | null>(null)
   const [leaving, setLeaving] = useState(false)
   const playing = loadStep >= 0
   const p = state.player
   const last = state.history.at(-1)
+  // 시즌 결과 칸의 경기당 평균 증감은 직전 시즌과 비교한다
+  const prev = state.history.at(-2)
+  const sd = (k: 'minutes' | 'pts' | 'reb' | 'ast' | 'stl' | 'blk') =>
+    prev && last ? statDelta(prev.stats, last.stats, k) : undefined
   const ev = state.events[0]
   const retired = state.stage === 'RETIRED'
 
@@ -123,19 +135,23 @@ export function MainScreen({
   const advance = () => {
     const apply = () => {
       const next = advanceSeason(state)
+      setDelta(attrDelta(state.player.attrs, next.player.attrs))
       onChange(next)
       setTab('season')
       setCastIdx(0)
       setTraining(false)
-      const key = next.history
-        .at(-1)
-        ?.featured.find((g) => KEY_GAME.test(g.label))
+      const season = next.history.at(-1)
+      const key = season?.featured.find((g) => KEY_GAME.test(g.label)) ?? null
+      const won = (Object.keys(MVP_SHOW) as (keyof typeof MVP_SHOW)[]).find(
+        (a) => season?.awards.includes(a),
+      )
       // 결과를 먼저 반영하고 오버레이는 페이드아웃(150ms) 뒤 내린다
       setLeaving(true)
       setTimeout(() => {
         setLoadStep(-1)
         setLeaving(false)
-        if (key) setHighlight(key)
+        if (won) setFmvp({ key, award: won })
+        else if (key) setHighlight(key)
       }, 150)
     }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return apply()
@@ -177,6 +193,17 @@ export function MainScreen({
             </ol>
           </div>
         </div>
+      )}
+      {fmvp && (
+        <FmvpCelebration
+          kit={kit}
+          look={p.look}
+          award={fmvp.award}
+          onClose={() => {
+            setHighlight(fmvp.key)
+            setFmvp(null)
+          }}
+        />
       )}
       {highlight && (
         <Highlight game={highlight} onClose={() => setHighlight(null)} />
@@ -273,7 +300,12 @@ export function MainScreen({
               {formatMoney(state.contract.salary, state.contract.currency)}
             </p>
           )}
-          <AttrBars attrs={p.attrs} keys={ATTR_KEYS} labels={ATTR_LABELS} />
+          <AttrBars
+            attrs={p.attrs}
+            keys={ATTR_KEYS}
+            labels={ATTR_LABELS}
+            delta={delta ?? undefined}
+          />
           <div className="cmds">
             {/* 남은 훈련이 있으면 대각선으로 나눠 오른쪽에 훈련하기 */}
             <div className={drillsLeft ? 'split-cmd' : 'split-cmd solo'}>
@@ -448,12 +480,24 @@ export function MainScreen({
               </ul>
               <div className="stats">
                 <Stat label="경기" v={String(last.stats.games)} />
-                <Stat label="출전시간" v={avg(last.stats, 'minutes')} />
-                <Stat label="득점" v={avg(last.stats, 'pts')} />
-                <Stat label="리바운드" v={avg(last.stats, 'reb')} />
-                <Stat label="어시스트" v={avg(last.stats, 'ast')} />
-                <Stat label="스틸" v={avg(last.stats, 'stl')} />
-                <Stat label="블록" v={avg(last.stats, 'blk')} />
+                <Stat
+                  label="출전시간"
+                  v={avg(last.stats, 'minutes')}
+                  d={sd('minutes')}
+                />
+                <Stat label="득점" v={avg(last.stats, 'pts')} d={sd('pts')} />
+                <Stat
+                  label="리바운드"
+                  v={avg(last.stats, 'reb')}
+                  d={sd('reb')}
+                />
+                <Stat
+                  label="어시스트"
+                  v={avg(last.stats, 'ast')}
+                  d={sd('ast')}
+                />
+                <Stat label="스틸" v={avg(last.stats, 'stl')} d={sd('stl')} />
+                <Stat label="블록" v={avg(last.stats, 'blk')} d={sd('blk')} />
                 <Stat label="야투율" v={pct(last.stats.fgm, last.stats.fga)} />
                 <Stat label="3점" v={pct(last.stats.tpm, last.stats.tpa)} />
               </div>
@@ -645,12 +689,76 @@ function Command({
   )
 }
 
-function Stat({ label, v }: { label: string; v: string }) {
+// d 가 있으면 값 옆에 직전 시즌 대비 증감 (+ 초록, − 회색)
+function Stat({ label, v, d }: { label: string; v: string; d?: number }) {
+  const txt = d === undefined ? '' : fmtDelta(d)
   return (
     <div className="stat">
       <small>{label}</small>
-      <b>{v}</b>
+      <b>
+        {v}
+        {txt && <em className={d! > 0 ? 'delta up' : 'delta down'}>{txt}</em>}
+      </b>
     </div>
+  )
+}
+
+// 색종이 40장: 위치·색·박자를 인덱스에서 결정적으로 뽑는다 (렌더마다 같다)
+const CONFETTI = Array.from({ length: 40 }, (_, i) => ({
+  '--x': `${(i * 37) % 100}%`,
+  '--y': `${(i * 53) % 90}%`,
+  '--d': `${((i * 7) % 20) / 10}s`,
+  '--t': `${2.2 + ((i * 11) % 10) / 10}s`,
+  '--c': ['#f2c14e', '#f07a2b', '#1d8a57', '#cc3049', '#3b7dd8'][i % 5],
+})) as CSSProperties[]
+
+// 축하 연출을 띄우는 수상과 문구 (수상명은 엔진 식별자라 그대로 쓴다)
+const MVP_SHOW = {
+  'NBA 파이널 MVP': { eyebrow: 'NBA 파이널', title: '파이널 MVP!' },
+  'KBL 챔피언결정전 MVP': { eyebrow: 'KBL 챔피언결정전', title: '챔프전 MVP!' },
+} as const
+
+// 파이널 MVP 축하: 코트 위에서 트로피를 들고, 색종이·폭죽이 흩날린다
+function FmvpCelebration({
+  kit,
+  look,
+  award,
+  onClose,
+}: {
+  kit: Kit
+  look?: Look
+  award: keyof typeof MVP_SHOW
+  onClose: () => void
+}) {
+  const ref = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    ref.current?.showModal()
+  }, [])
+  return (
+    <dialog
+      ref={ref}
+      className="modal fmvp"
+      aria-label={award}
+      onClose={() => setTimeout(onClose, 150)}
+    >
+      <div className="court">
+        <i className="burst" />
+        <i className="burst two" />
+        <div className="confetti" aria-hidden="true">
+          {CONFETTI.map((style, i) => (
+            <i key={i} style={style} />
+          ))}
+        </div>
+        <div className="sprite">
+          <PixelPlayer pose="trophy" kit={kit} look={look} scale={4} />
+        </div>
+      </div>
+      <p className="eyebrow">{MVP_SHOW[award].eyebrow}</p>
+      <h2>{MVP_SHOW[award].title}</h2>
+      <button className="primary big" onClick={() => ref.current?.close()}>
+        계속
+      </button>
+    </dialog>
   )
 }
 

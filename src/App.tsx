@@ -15,6 +15,7 @@ import {
   PRIVACY,
   TERMS,
 } from './data/legal'
+import { CHANGELOG, CHANGELOG_DOC, SEEN_VERSION_KEY } from './data/changelog'
 import { ODDS } from './data/odds'
 import { CreateScreen } from './ui/createScreen'
 import { LandingScreen } from './ui/landingScreen'
@@ -41,6 +42,25 @@ export default function App() {
   const [error, setError] = useState('')
   const [legal, setLegal] = useState<LegalDoc | null>(null)
   const [sitemap, setSitemap] = useState(false)
+  // 세이브를 가져올 때마다 올라간다. MainScreen 의 key 에 넣어 화면 상태(시즌 증감 등)를 새로 시작
+  const [loadCount, setLoadCount] = useState(0)
+  // 아직 안 본 새 버전이면 푸터 버전 옆에 점. 공지를 열면 사라진다
+  const [unseen, setUnseen] = useState(() => {
+    try {
+      return localStorage.getItem(SEEN_VERSION_KEY) !== __APP_VERSION__
+    } catch {
+      return false
+    }
+  })
+  const openChangelog = () => {
+    setLegal(CHANGELOG_DOC)
+    setUnseen(false)
+    try {
+      localStorage.setItem(SEEN_VERSION_KEY, __APP_VERSION__)
+    } catch {
+      // 저장 못 해도 팝업은 연다
+    }
+  }
   const fileRef = useRef<HTMLInputElement>(null)
   const screenRef = useRef<HTMLDivElement>(null)
 
@@ -57,6 +77,7 @@ export default function App() {
   const importFile = async (file: File) => {
     try {
       change(parseSave(await file.text()))
+      setLoadCount((n) => n + 1)
       setScreen('game')
       setError('')
     } catch (e) {
@@ -116,7 +137,11 @@ export default function App() {
         )}
         {screen === 'ranking' && <RankingScreen onBack={closeRanking} />}
         {screen === 'game' && state && (
-          <MainScreen state={state} onChange={change} />
+          <MainScreen
+            key={`${state.careerId}-${loadCount}`}
+            state={state}
+            onChange={change}
+          />
         )}
         <footer>
           <div className="row">
@@ -152,6 +177,12 @@ export default function App() {
             <b>벤치에서 파엠까지</b>
             <div className="row build">
               v{__APP_VERSION__}
+              <button
+                className={unseen ? 'link unseen' : 'link'}
+                onClick={openChangelog}
+              >
+                공지사항
+              </button>
               <button className="link" onClick={() => setLegal(PRIVACY)}>
                 개인정보처리방침
               </button>
@@ -241,6 +272,11 @@ export default function App() {
                     label: '게임 확률표',
                     desc: '성장·수상·NBA 진출 등 주요 판정의 확률',
                     onSelect: () => setLegal(ODDS),
+                  },
+                  {
+                    label: '업데이트 소식',
+                    desc: `v${CHANGELOG[0].version} 까지의 바뀐 점`,
+                    onSelect: openChangelog,
                   },
                   {
                     label: '문의하기',

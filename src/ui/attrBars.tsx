@@ -1,26 +1,31 @@
 import type { AttrKey, Attributes } from '../engine/types'
+import { fmtDelta } from './delta'
 
 // 10칸 세그먼트 막대: (i+1)*10-5 이상이면 칸이 켜지고, 70 이상은 금색
 // adjust 를 주면 값 양옆에 −/+ 버튼이 붙는다 (선수 생성의 포인트 배분)
+// delta 를 주면 값 옆에 시즌 증감 (+ 초록, − 회색)
 export function AttrBars({
   attrs,
   keys,
   labels,
   adjust,
+  delta,
 }: {
   attrs: Attributes
   keys: AttrKey[]
   labels: Record<AttrKey, string>
+  delta?: Attributes
   adjust?: {
     onChange: (k: AttrKey, d: number) => void
     limits: (k: AttrKey) => { up: boolean; down: boolean }
   }
 }) {
   return (
-    <ul className={adjust ? 'bars adjust' : 'bars'}>
+    <ul className={adjust ? 'bars adjust' : delta ? 'bars with-delta' : 'bars'}>
       {keys.map((k) => {
         const v = Math.round(attrs[k])
         const lim = adjust?.limits(k)
+        const d = delta ? fmtDelta(delta[k], 0) : ''
         return (
           <li key={k}>
             <span>{labels[k]}</span>
@@ -49,7 +54,14 @@ export function AttrBars({
                 −
               </button>
             )}
-            <b>{v}</b>
+            <b>
+              {v}
+              {d && (
+                <em className={delta![k] > 0 ? 'delta up' : 'delta down'}>
+                  {d}
+                </em>
+              )}
+            </b>
             {adjust && (
               <button
                 className="ghost tiny"
