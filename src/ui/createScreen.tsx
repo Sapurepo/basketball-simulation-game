@@ -250,13 +250,7 @@ export function CreateScreen({
             <span>{tr('오버롤')}</span>
             <b>{overall(player)}</b>
             <span>{tr('잠재력 등급')}</span>
-            <b>
-              {potentialGrade(player.potential)}
-              <small className="muted">
-                {' '}
-                · {tr('잠재 오버롤')} {player.potential}
-              </small>
-            </b>
+            <b>{potentialGrade(player.potential)}</b>
             <span>{tr('남은 포인트')}</span>
             <b>{left}</b>
           </div>

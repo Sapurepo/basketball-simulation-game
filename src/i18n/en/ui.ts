@@ -215,7 +215,6 @@ const text: Record<string, string> = {
   몸무게: 'Weight',
   오버롤: 'Overall',
   '잠재력 등급': 'Potential grade',
-  '잠재 오버롤': 'potential OVR',
   '남은 포인트': 'Points left',
   '능력치는 {min}~{max} 사이에서 총합 {total} 포인트를 나눠 가져요.':
     'Attributes range from {min} to {max} and share {total} points in total.',
