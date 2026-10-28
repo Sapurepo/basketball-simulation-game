@@ -589,6 +589,30 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.1.0 ──
+  '상점이 새로워졌어요. 아이템을 고르면 내 무대에 미리 놓아 보고 살 수 있어요.':
+    'The shop is redesigned. Pick an item to try it on your stage before you buy.',
+  '아이템마다 등급과 소개가 생겼고, 효과를 구매 전후 값으로 비교할 수 있어요.':
+    'Every item now has a tier and a description, and shows its effect as before → after values.',
+  '상점의 배치 편집에서 가구와 탈것을 끌어 옮기고, 뒤집거나 보관할 수 있어요.':
+    'Use Arrange in the shop to drag furniture and rides around, flip them or put them away.',
+  '벽지와 바닥을 기본으로 되돌릴 수 있어요.':
+    'Wallpaper and floors can be reset to the default.',
+  '사치품을 입은 모습과 펫이 더 크고 또렷하게 보여요.':
+    'Worn luxury items and pets now look bigger and clearer.',
+  '사치품을 벗었다가 다시 입을 수 있어요. 벗어도 능력치 버프는 그대로예요.':
+    'You can take luxury items off and put them back on. The attribute buff stays either way.',
+  'OVR 95를 넘기면 성장이 느려져 99까지 가기가 더 어려워졌어요.':
+    'Growth slows above OVR 95, so reaching 99 is harder.',
+  '아시안게임에서 금메달을 따기 쉬워졌어요.':
+    'Winning Asian Games gold is easier.',
+  'FA 때 지금 팀에 남는 선택지가 항상 나와요.':
+    'In free agency, staying with your current team is always an option.',
+  '계약이 1년 남으면 연장 계약 제안을 받을 수 있어요.':
+    'With one year left on your contract, you may get an extension offer.',
+  'KBL 신인 드래프트에서 실력이 좋을수록 더 높은 순위로 뽑혀요.':
+    'In the KBL draft, stronger players get picked higher.',
+  '시즌이 끝나면 SNS 팬 반응을 볼 수 있어요.':
+    'After each season you can see how fans reacted on social media.',
   '영어·일본어를 지원해요. 푸터에서 언어를 바꿀 수 있어요.':
     'English and Japanese are supported. Switch languages in the footer.',
   '푸터 공지사항 버튼에서 업데이트 소식을 볼 수 있어요.':

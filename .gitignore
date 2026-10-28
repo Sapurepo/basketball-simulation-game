@@ -27,6 +27,9 @@ dist-ssr
 *.sln
 *.sw?
 
+# Claude
+.claude/
+
 # design-sync
 .design-sync/
 .ds-sync/
