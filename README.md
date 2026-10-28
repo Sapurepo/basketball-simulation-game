@@ -1,4 +1,4 @@
-# basketball-simulation-game
+# bench-to-mvp
 
 **벤치에서 파엠까지** — 한국 고교 농구부에서 시작해 대학, KBL, NBA를 거쳐 파이널 MVP를 노리는 브라우저 농구 커리어 시뮬레이션.
 
