@@ -211,6 +211,8 @@ const BALL = [
 function palette(s: Spec): Record<string, string> {
   const skin = SKINS[s.skin] ?? SKINS[0]
   const shorts = s.shorts ?? s.jersey
+  // 시그니처 농구화: 금색 몸체에 빨간 포인트
+  const gold = s.acc.includes('goldShoes')
   return {
     S: skin,
     s: adj(skin, 0.8),
@@ -225,8 +227,8 @@ function palette(s: Spec): Record<string, string> {
     P: shorts,
     p: adj(shorts, 0.82),
     O: '#f4f0e6',
-    B: '#f4f0e6',
-    b: s.trim === '#f7f3ea' ? s.jersey : s.trim,
+    B: gold ? '#f2c14e' : '#f4f0e6',
+    b: gold ? '#d8433a' : s.trim === '#f7f3ea' ? s.jersey : s.trim,
     o: '#d9d3c4',
     A: '#e8792e',
     a: '#5a2a12',
@@ -238,11 +240,20 @@ function palette(s: Spec): Record<string, string> {
     Z: '#c4545b',
     G: '#f2c14e',
     g: '#8a5a34',
-    C: '#d6262f',
+    // 상점 치장: 스냅백(C·c), 목걸이 펜던트(j), 선글라스(V·v), 헤드폰(Y·y), 컴프레션(M), 이어폰(L)
+    C: '#d8433a',
+    c: '#9e2a24',
+    j: '#c99a25',
+    V: '#1e1a1a',
+    v: '#8fd0f5',
+    Y: '#2b2a2a',
+    y: '#d8433a',
+    M: '#2a2c33',
+    L: '#fbf7ee',
   }
 }
 
-const SHADE = new Set('SHuJPBAXOGC')
+const SHADE = new Set('SHuJPBAXOGCMy')
 
 // 색 격자(null = 투명). 순수 함수라 테스트에서 그대로 검증한다.
 export function build(
@@ -289,21 +300,14 @@ export function build(
   rect(16, 35 + L, 18, 41 + L, 'S')
   put(11, 38 + L, 's')
   put(18, 38 + L, 's')
-  if (acc.has('tights')) {
-    rect(9, 35 + L, 11, 39 + L, 'K')
-    rect(16, 35 + L, 18, 39 + L, 'K')
-  }
   if (acc.has('knee')) {
     rect(9, 36 + L, 11, 37 + L, 'K')
     rect(16, 36 + L, 18, 37 + L, 'K')
   }
   rect(9, 40 + L, 11, 41 + L, 'O')
   rect(16, 40 + L, 18, 41 + L, 'O')
-  // 시그니처 농구화는 금색
-  const sh = acc.has('goldShoes') ? 'G' : 'B'
-  const shoe = (rows: string[]) => rows.map((r) => r.replaceAll('B', sh))
-  draw(shoe(['.BBBB.', 'BBBBBB', 'BbbBBB', 'oooooo']), 7, 42 + L)
-  draw(shoe(['.BBBB.', 'BBBBBB', 'BBBbbB', 'oooooo']), 15, 42 + L)
+  draw(['.BBBB.', 'BBBBBB', 'BbbBBB', 'oooooo'], 7, 42 + L)
+  draw(['.BBBB.', 'BBBBBB', 'BBBbbB', 'oooooo'], 15, 42 + L)
 
   // 헐렁한 반바지
   rect(7, 28 + U, 20, 34 + U, 'P')
@@ -336,29 +340,31 @@ export function build(
     draw(DIGITS[+n[1]], 15, 20 + U, 'N')
   }
   rect(8, 27 + U, 19, 27 + U, 'N')
-  // 컴프레션 상의: 어깨·목선이 검게 보인다
-  const shirt = acc.has('undershirt')
-  if (shirt) {
-    rect(8, 16 + U, 8, 19 + U, 'K')
-    rect(19, 16 + U, 19, 19 + U, 'K')
-    rect(12, 16 + U, 15, 16 + U, 'K')
-    rect(13, 17 + U, 14, 17 + U, 'K')
-  }
 
   // 목
   rect(12, 14 + U, 15, 15 + U, 'S')
   put(15, 14 + U, 's')
   put(15, 15 + U, 's')
+  // 금목걸이: 쇄골에서 가슴까지 늘어진 체인과 펜던트
   if (acc.has('chain')) {
-    put(11, 17 + U, 'G')
-    put(16, 17 + U, 'G')
-    put(12, 18 + U, 'G')
-    put(15, 18 + U, 'G')
-    rect(13, 19 + U, 14, 19 + U, 'G')
+    for (const [x, y0] of [
+      [11, 16],
+      [16, 16],
+      [11, 17],
+      [16, 17],
+      [12, 18],
+      [15, 18],
+      [12, 19],
+      [15, 19],
+      [13, 20],
+      [14, 20],
+    ])
+      put(x, y0 + U, 'G')
+    rect(13, 21 + U, 14, 22 + U, 'j')
   }
 
-  // 팔 (암슬리브는 왼팔, 컴프레션 상의는 양팔)
-  const sleeveL = acc.has('sleeve') || shirt
+  // 팔 (암슬리브는 왼팔. 컴프레션 상의는 마지막에 피부를 덮는다)
+  const sleeveL = acc.has('sleeve')
   const armsDown = (side: 'L' | 'R') => {
     if (side === 'L') {
       rect(6, 16 + U, 7, 22 + U, 'S')
@@ -374,10 +380,6 @@ export function build(
       rect(21, 23 + U, 22, 27 + U, 'S')
       rect(21, 28 + U, 22, 29 + U, 'S')
       if (acc.has('wrist')) rect(21, 26 + U, 22, 27 + U, 'X')
-      if (shirt) {
-        rect(20, 18 + U, 21, 22 + U, 'K')
-        rect(21, 23 + U, 22, 25 + U, 'K')
-      }
     }
   }
   const dribbleR = () => {
@@ -385,10 +387,6 @@ export function build(
     rect(21, 23 + U, 22, 26 + U, 'S')
     rect(22, 27 + U, 23, 28 + U, 'S')
     if (acc.has('wrist')) rect(21, 25 + U, 22, 26 + U, 'X')
-    if (shirt) {
-      rect(20, 18 + U, 21, 22 + U, 'K')
-      rect(21, 23 + U, 22, 24 + U, 'K')
-    }
   }
   const upL = () => {
     rect(7, 16 + U, 8, 18 + U, 'S')
@@ -404,7 +402,6 @@ export function build(
     rect(19, 1 + U, 20, 7 + U, 'S')
     rect(18, -2 + U, 19, 0 + U, 'S')
     if (acc.has('wrist')) rect(19, 1 + U, 20, 2 + U, 'X')
-    if (shirt) rect(20, 8 + U, 21, 14 + U, 'K')
   }
   const fistR = () => {
     rect(19, 16 + U, 20, 18 + U, 'S')
@@ -412,7 +409,6 @@ export function build(
     rect(20, 3 + U, 22, 5 + U, 'S')
     put(22, 5 + U, 's')
     if (acc.has('wrist')) rect(20, 6 + U, 21, 7 + U, 'X')
-    if (shirt) rect(20, 8 + U, 21, 14 + U, 'K')
   }
 
   const up = pose === 'shoot' || pose === 'trophy'
@@ -501,7 +497,7 @@ export function build(
   if (acc.has('bandaid')) rect(16, 10 + y, 17, 10 + y, 'D')
   if (acc.has('glasses'))
     draw(['QQQQ.QQQQ', 'Q..QQQ..Q', 'QQQQ.QQQQ'], 9, 7 + y)
-  if (acc.has('shades')) draw(['QQQQQQQQQ', '.QQQ.QQQ.'], 9, 8 + y)
+  if (acc.has('shades')) draw(['VVVV.VVVV', 'VvVVVVvVV', '.VV...VV.'], 9, 7 + y)
   if (pose === 'sad' || (pose === 'shoot' && !frame)) {
     put(20, 4 + y + frame, 'T')
     put(20, 5 + y + frame, 'T')
@@ -512,17 +508,28 @@ export function build(
   if (acc.has('headband')) rect(8, 4 + U, 19, 4 + U, 'X')
   // 머리 위 치장: 모자·헤드폰·이어폰
   if (acc.has('cap')) {
-    rect(8, -1 + U, 19, 3 + U, 'C')
-    rect(6, 4 + U, 20, 4 + U, 'C')
+    // 모자 위로 삐져나온 머리카락은 지운다
+    for (let yy = -6; yy < 0; yy++)
+      for (let x = 5; x <= 22; x++) {
+        const Y0 = yy + U + OY
+        if (Y0 >= 0 && Y0 < H) g[Y0][x + OX] = null
+      }
+    draw(['..CCCCCCCC..', '.CCCCCCCCCC.', 'CCCCCGGCCCCC', 'CCCCCGGCCCCC'], 8, U)
+    rect(7, 4 + U, 20, 4 + U, 'c')
   }
   if (acc.has('headphones')) {
-    rect(10, 1 + U, 17, 1 + U, 'K')
-    rect(8, 7 + U, 9, 9 + U, 'K')
-    rect(18, 7 + U, 19, 9 + U, 'K')
-  }
-  if (acc.has('earbuds')) {
-    rect(8, 8 + U, 8, 9 + U, 'W')
-    rect(19, 8 + U, 19, 9 + U, 'W')
+    rect(10, -2 + U, 17, -2 + U, 'Y')
+    put(9, -1 + U, 'Y')
+    put(18, -1 + U, 'Y')
+    rect(8, U, 8, 5 + U, 'Y')
+    rect(19, U, 19, 5 + U, 'Y')
+    rect(6, 6 + U, 8, 10 + U, 'y')
+    rect(19, 6 + U, 21, 10 + U, 'y')
+    rect(6, 6 + U, 6, 10 + U, 'Y')
+    rect(21, 6 + U, 21, 10 + U, 'Y')
+  } else if (acc.has('earbuds')) {
+    rect(7, 8 + U, 8, 8 + U, 'L')
+    rect(19, 8 + U, 20, 8 + U, 'L')
   }
 
   if (up) {
@@ -535,6 +542,15 @@ export function build(
   if (pose === 'idle') draw(BALL, 21, frame ? 37 : 29)
   if (pose === 'shoot') draw(BALL, 10, frame ? -9 + L : -6 + U)
   if (pose === 'trophy') draw(TROPHY, 9, -5 + U)
+
+  // 컴프레션 상의(몸통·팔)와 하의(다리): 그 줄의 피부를 덮는다
+  const recolor = (y0: number, y1: number) => {
+    for (let yy = Math.max(0, y0 + OY); yy <= Math.min(H - 1, y1 + OY); yy++)
+      for (let x = 0; x < W; x++)
+        if (g[yy][x] === 'S' || g[yy][x] === 's') g[yy][x] = 'M'
+  }
+  if (acc.has('undershirt')) recolor(16 + U, 25 + U)
+  if (acc.has('tights')) recolor(35 + L, 39 + L)
 
   // 셰이딩
   const empty = (x: number, y: number) =>
