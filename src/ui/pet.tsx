@@ -4,10 +4,11 @@ import type { Item } from '../data/items'
 import { clamp } from '../engine/rng'
 import { type IconName, iconSize, iconURL } from './sprite'
 
-const SCALE = 3
+// 무대 아이템(×4)보다 1.5배 큰 픽셀로 그린다
+const SCALE = 6
 // 바닥 영역 안에서의 이동 범위: x 는 무대 폭 %, y 는 바닥에서 px
 const X_MAX = 92
-const Y_MAX = 36
+const Y_MAX = 18
 
 const reducedMotion = () =>
   typeof matchMedia !== 'undefined' &&
