@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DRILL_KINDS, DRILL_REPS, drillOutcome, DRILLS } from '../engine/events'
+import { T, type Text, tr, tx } from '../i18n'
 import { availableDrills, playDrill } from '../engine/game'
 import { ATTR_LABELS } from '../engine/player'
 import type { DrillKind, GameState } from '../engine/types'
@@ -22,7 +23,8 @@ export function TrainingPanel({
   onClose: () => void
 }) {
   const [playing, setPlaying] = useState<DrillKind | null>(null)
-  const [result, setResult] = useState('')
+  // 결과는 문장 조각으로 두고 그릴 때 번역한다 (언어를 바꿔도 따라가게)
+  const [result, setResult] = useState<Text[]>([])
   const left = availableDrills(state)
   // 히어로 카드 아래에 열리므로 열리면 패널로 스크롤
   const ref = useRef<HTMLElement>(null)
@@ -40,9 +42,13 @@ export function TrainingPanel({
     const made = optionId.startsWith('made:') ? Number(optionId.slice(5)) : null
     // 코치에게 맡기면 성공 수를 모르니, 최고치에서 못 오른 경우만 성공으로 본다
     const success = made === null ? raised || before >= 99 : made >= 6
-    setResult(
-      `${title}: ${made === null ? '' : `${DRILL_REPS}개 중 ${made}개 성공 · `}${drillOutcome(attr, success, raised)}`,
-    )
+    setResult([
+      title,
+      ...(made === null
+        ? []
+        : [{ k: '{reps}개 중 {made}개 성공', v: { reps: DRILL_REPS, made } }]),
+      drillOutcome(attr, success, raised),
+    ])
     setPlaying(null)
     onChange(next)
   }
@@ -51,19 +57,19 @@ export function TrainingPanel({
     <section ref={ref} className="panel training">
       <div className="panel-head">
         <div>
-          <p className="eyebrow">시즌 진행 전 훈련</p>
-          <h2>{playing ? DRILLS[playing].title : '훈련하기'}</h2>
+          <p className="eyebrow">{tr('시즌 진행 전 훈련')}</p>
+          <h2>{playing ? tr(DRILLS[playing].title) : tr('훈련하기')}</h2>
         </div>
         <button
           className="ghost"
           onClick={() => (playing ? setPlaying(null) : onClose())}
         >
-          {playing ? '목록으로' : '닫기'}
+          {playing ? tr('목록으로') : tr('닫기')}
         </button>
       </div>
       {playing ? (
         <>
-          <p>{DRILLS[playing].body}</p>
+          <p>{tr(DRILLS[playing].body, { reps: DRILL_REPS })}</p>
           <DrillGame
             kind={playing}
             kit={kit}
@@ -74,10 +80,16 @@ export function TrainingPanel({
         </>
       ) : (
         <>
-          {result && <p className="train-result">{result}</p>}
+          {result.length > 0 && (
+            <p className="train-result">
+              {tx(result[0])}: {result.slice(1).map(tx).join(' · ')}
+            </p>
+          )}
           <p className="muted">
-            종류마다 오프시즌에 한 번, {DRILL_REPS}개 중 6개 이상 성공하면
-            능력치 +1.
+            {tr(
+              '종류마다 오프시즌에 한 번, {reps}개 중 6개 이상 성공하면 능력치 +1.',
+              { reps: DRILL_REPS },
+            )}
           </p>
           <div className="options">
             {DRILL_KINDS.map((k) => {
@@ -92,13 +104,15 @@ export function TrainingPanel({
                     reducedMotion() ? finish(k, 'auto') : setPlaying(k)
                   }
                 >
-                  <b>{title}</b>
+                  <b>{tr(title)}</b>
                   <small>
                     {done
-                      ? '이번 오프시즌 완료'
+                      ? tr('이번 오프시즌 완료')
                       : reducedMotion()
-                        ? `코치에게 맡기기 · ${ATTR_LABELS[attr]}`
-                        : `${ATTR_LABELS[attr]} 능력치`}
+                        ? tr('코치에게 맡기기 · {attr}', {
+                            attr: T(ATTR_LABELS[attr]),
+                          })
+                        : tr('{attr} 능력치', { attr: T(ATTR_LABELS[attr]) })}
                   </small>
                 </button>
               )

@@ -10,6 +10,8 @@ export interface LegalDoc {
   title: string
   // 제목 아래 한 줄. 없으면 시행일을 보여준다
   subtitle?: string
+  // 번역 카탈로그에 본문이 있는 문서(공지). 없으면 다른 언어에서 한국어 안내를 띄운다
+  translated?: boolean
   intro: string
   sections: { title: string; blocks: LegalBlock[] }[]
 }

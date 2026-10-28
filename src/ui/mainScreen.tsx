@@ -17,10 +17,11 @@ import {
 } from '../engine/player'
 import { clamp } from '../engine/rng'
 import type { Attributes, GameLog, GameState, Look } from '../engine/types'
+import { T, tr, tx } from '../i18n'
 import { AttrBars } from './attrBars'
 import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { attrDelta, fmtDelta, statDelta } from './delta'
-import { avg, pct, seasonLabel, serviceLabel, STAGE_LABEL } from './format'
+import { avg, pct, seasonLabel, serviceLabel, stageLabel } from './format'
 import { GameCast } from './gameCast'
 import { HallSubmit } from './hallSubmit'
 import { DrillGame } from './drillGame'
@@ -68,10 +69,10 @@ function stageStyle(s: GameState) {
 function stageText(s: GameState) {
   const n = s.history.filter((h) => h.stage === s.stage).length + 1
   if (s.stage === 'HS' || s.stage === 'COLLEGE')
-    return `${STAGE_LABEL[s.stage]} ${n}학년`
+    return tr('{stage} {n}학년', { stage: stageLabel(s.stage), n })
   if (s.stage === 'KBL' || s.stage === 'NBA' || s.stage === 'MILITARY')
-    return `${STAGE_LABEL[s.stage]} ${n}년차`
-  return STAGE_LABEL[s.stage]
+    return tr('{stage} {n}년차', { stage: stageLabel(s.stage), n })
+  return stageLabel(s.stage)
 }
 
 export function MainScreen({
@@ -116,14 +117,14 @@ export function MainScreen({
     recordsRef.current?.scrollIntoView({ block: 'start' })
   }
   const alertText = retired
-    ? '커리어 종료'
+    ? tr('커리어 종료')
     : ev
-      ? '오프시즌 결정 대기'
+      ? tr('오프시즌 결정 대기')
       : state.contract
         ? state.contract.yearsLeft > 0
-          ? `계약 ${state.contract.yearsLeft}년 남음`
-          : '계약 마지막 시즌'
-        : `${seasonLabel(state)} 시즌 대기`
+          ? tr('계약 {n}년 남음', { n: state.contract.yearsLeft })
+          : tr('계약 마지막 시즌')
+        : tr('{season} 시즌 대기', { season: seasonLabel(state) })
 
   // 시즌 진행: 단계 로딩을 보여준 뒤 결과 반영 (시뮬레이션 자체는 즉시 끝난다)
   const steps =
@@ -172,8 +173,10 @@ export function MainScreen({
         >
           <div className="loading">
             <PixelPlayer pose="shoot" kit={kit} look={p.look} scale={4} />
-            <p className="eyebrow">{seasonLabel(state)} 시즌 진행 중</p>
-            <h2>{steps[Math.min(loadStep, steps.length - 1)]}</h2>
+            <p className="eyebrow">
+              {tr('{season} 시즌 진행 중', { season: seasonLabel(state) })}
+            </p>
+            <h2>{tr(steps[Math.min(loadStep, steps.length - 1)])}</h2>
             <div className="progress">
               <div
                 style={{ transform: `scaleX(${loadStep / steps.length})` }}
@@ -187,7 +190,7 @@ export function MainScreen({
                     i < loadStep ? 'done' : i === loadStep ? 'now' : undefined
                   }
                 >
-                  {label}
+                  {tr(label)}
                 </li>
               ))}
             </ol>
@@ -240,7 +243,7 @@ export function MainScreen({
         <div className="stage" style={stageStyle(state)}>
           <div className="pennant">
             {state.stage === 'RETIRED' || state.stage === 'FREE' ? (
-              STAGE_LABEL[state.stage]
+              stageLabel(state.stage)
             ) : (
               <>
                 <TeamLogo
@@ -248,7 +251,9 @@ export function MainScreen({
                   name={state.teamName}
                   size={18}
                 />
-                {state.teamName}
+                <span className="pennant-name" title={tr(state.teamName)}>
+                  {tr(state.teamName)}
+                </span>
               </>
             )}
           </div>
@@ -281,23 +286,32 @@ export function MainScreen({
             </span>
           </div>
           <div className="plates">
-            <Plate label="나이" v={`${state.age}`} />
-            <Plate label="신장" v={`${p.height}`} />
-            <Plate label="체중" v={`${p.weight}`} />
+            <Plate label={tr('나이')} v={`${state.age}`} />
+            <Plate label={tr('신장')} v={`${p.height}`} />
+            <Plate label={tr('체중')} v={`${p.weight}`} />
             <Plate
-              label="등번호"
+              label={tr('등번호')}
               v={`#${look.num}`}
               onClick={() => setEditNum(true)}
             />
-            <Plate label="스타일" v={p.style} />
-            <Plate label="잠재력" v={potentialGrade(p.potential)} />
-            <Plate label="병역" v={serviceLabel(state.service)} />
+            <Plate label={tr('스타일')} v={tr(p.style)} />
+            <Plate label={tr('잠재력')} v={potentialGrade(p.potential)} />
+            <Plate label={tr('병역')} v={serviceLabel(state.service)} />
           </div>
           {state.contract && (
             <p className="contract">
-              {state.contract.teamName}
-              {state.contract.twoWay ? ' 투웨이' : ''} 계약, 연봉{' '}
-              {formatMoney(state.contract.salary, state.contract.currency)}
+              {tr(
+                state.contract.twoWay
+                  ? '{team} 투웨이 계약, 연봉 {money}'
+                  : '{team} 계약, 연봉 {money}',
+                {
+                  team: T(state.contract.teamName),
+                  money: formatMoney(
+                    state.contract.salary,
+                    state.contract.currency,
+                  ),
+                },
+              )}
             </p>
           )}
           <AttrBars
@@ -311,13 +325,13 @@ export function MainScreen({
             <div className={drillsLeft ? 'split-cmd' : 'split-cmd solo'}>
               <Command
                 icon="ball"
-                label="시즌 진행"
+                label={tr('시즌 진행')}
                 sub={
                   retired
-                    ? '커리어 종료'
+                    ? tr('커리어 종료')
                     : ev
-                      ? '비시즌'
-                      : `${seasonLabel(state)} 시즌`
+                      ? tr('비시즌')
+                      : tr('{season} 시즌', { season: seasonLabel(state) })
                 }
                 primary
                 disabled={retired || !!ev || playing}
@@ -331,44 +345,46 @@ export function MainScreen({
                   onClick={() => setTraining(true)}
                 >
                   <span>
-                    <span className="label">훈련하기</span>
-                    <span className="sub">남은 훈련 {drillsLeft}</span>
+                    <span className="label">{tr('훈련하기')}</span>
+                    <span className="sub">
+                      {tr('남은 훈련 {n}', { n: drillsLeft })}
+                    </span>
                   </span>
                 </button>
               )}
             </div>
             <Command
               icon="hoop"
-              label="경기 중계"
+              label={tr('경기 중계')}
               sub={
                 last?.featured.length
-                  ? `주요 경기 ${last.featured.length}`
-                  : '중계 없음'
+                  ? tr('주요 경기 {n}', { n: last.featured.length })
+                  : tr('중계 없음')
               }
               pressed={tab === 'cast'}
               onClick={() => show('cast')}
             />
             <Command
               icon="star"
-              label="시즌 베스트"
+              label={tr('시즌 베스트')}
               sub={
                 last?.bestTeams
-                  ? `${STAGE_LABEL[last.stage]} 베스트 팀`
-                  : '발표 전'
+                  ? tr('{stage} 베스트 팀', { stage: stageLabel(last.stage) })
+                  : tr('발표 전')
               }
               pressed={tab === 'best'}
               onClick={() => show('best')}
             />
             <Command
               icon="trophy"
-              label="기록실"
-              sub="커리어 · 트로피"
+              label={tr('기록실')}
+              sub={tr('커리어 · 트로피')}
               pressed={RECORDS.some(([id]) => id === tab)}
               onClick={() => show('career')}
             />
             <Command
               icon="bag"
-              label="상점"
+              label={tr('상점')}
               sub={formatMoney(state.cash ?? 0, 'KRW')}
               pressed={shop}
               disabled={playing}
@@ -377,13 +393,17 @@ export function MainScreen({
           </div>
           {last && last.featured.length > 0 && (
             <div className="recent">
-              <p>최근 경기</p>
+              <p>{tr('최근 경기')}</p>
               {last.featured.map((g, i) => (
                 <div key={i} className="recent-row">
                   <WinLoss win={g.myScore > g.oppScore} />
-                  <span>vs {g.opponent}</span>
+                  <span>vs {tr(g.opponent)}</span>
                   <span className="muted">
-                    {g.myScore}–{g.oppScore} · {g.box.pts}점 {g.box.ast}어시
+                    {g.myScore}–{g.oppScore} ·{' '}
+                    {tr('{pts}점 {ast}어시', {
+                      pts: g.box.pts,
+                      ast: g.box.ast,
+                    })}
                   </span>
                 </div>
               ))}
@@ -410,9 +430,13 @@ export function MainScreen({
         </section>
       ) : ev ? (
         <section className="panel event">
-          <p className="eyebrow">{seasonLabel(state)} 시즌을 앞둔 오프시즌</p>
-          <h2>{ev.title}</h2>
-          <p>{ev.body}</p>
+          <p className="eyebrow">
+            {tr('{season} 시즌을 앞둔 오프시즌', {
+              season: seasonLabel(state),
+            })}
+          </p>
+          <h2>{tx(ev.title)}</h2>
+          <p>{tx(ev.body)}</p>
           {ev.data?.game ? <GameCast game={ev.data.game as GameLog} /> : null}
           {isDrill(ev.kind) &&
             !matchMedia('(prefers-reduced-motion: reduce)').matches && (
@@ -433,9 +457,9 @@ export function MainScreen({
               >
                 <b className="row">
                   {o.teamId && <TeamLogo teamId={o.teamId} size={22} />}
-                  {o.label}
+                  {tx(o.label)}
                 </b>
-                {o.desc && <small>{o.desc}</small>}
+                {o.desc && <small>{tx(o.desc)}</small>}
               </button>
             ))}
           </div>
@@ -445,7 +469,7 @@ export function MainScreen({
       <section ref={recordsRef} className="panel records">
         {RECORDS.some(([id]) => id === tab) && (
           <div className="panel-head">
-            <h3>기록실</h3>
+            <h3>{tr('기록실')}</h3>
             <div className="tabs" role="tablist">
               {RECORDS.map(([id, label]) => (
                 <button
@@ -454,7 +478,7 @@ export function MainScreen({
                   aria-selected={tab === id}
                   onClick={() => setTab(id)}
                 >
-                  {label}
+                  {tr(label)}
                 </button>
               ))}
             </div>
@@ -464,49 +488,75 @@ export function MainScreen({
           (last ? (
             <div>
               <p className="eyebrow">
-                {seasonLabel(last)} 시즌 {last.team}
+                {tr('{season} 시즌 {team}', {
+                  season: seasonLabel(last),
+                  team: T(last.team),
+                })}
               </p>
               <h2>
                 {last.stage === 'KBL' || last.stage === 'NBA'
-                  ? '정규시즌'
-                  : '전적'}{' '}
-                {last.wins}승 {last.losses}패
+                  ? tr('정규시즌')
+                  : tr('전적')}{' '}
+                {tr('{w}승 {l}패', { w: last.wins, l: last.losses })}
               </h2>
               <ul className="badges">
                 {last.result.map((r) => (
-                  <li key={r}>{r}</li>
+                  <li key={r}>{tr(r)}</li>
                 ))}
-                <li>시즌 OVR {last.ovr}</li>
+                <li>{tr('시즌 OVR {ovr}', { ovr: last.ovr })}</li>
               </ul>
               <div className="stats">
-                <Stat label="경기" v={String(last.stats.games)} />
+                <Stat label={tr('경기')} v={String(last.stats.games)} />
                 <Stat
-                  label="출전시간"
+                  label={tr('출전시간')}
                   v={avg(last.stats, 'minutes')}
                   d={sd('minutes')}
                 />
-                <Stat label="득점" v={avg(last.stats, 'pts')} d={sd('pts')} />
                 <Stat
-                  label="리바운드"
+                  label={tr('득점')}
+                  v={avg(last.stats, 'pts')}
+                  d={sd('pts')}
+                />
+                <Stat
+                  label={tr('리바운드')}
                   v={avg(last.stats, 'reb')}
                   d={sd('reb')}
                 />
                 <Stat
-                  label="어시스트"
+                  label={tr('어시스트')}
                   v={avg(last.stats, 'ast')}
                   d={sd('ast')}
                 />
-                <Stat label="스틸" v={avg(last.stats, 'stl')} d={sd('stl')} />
-                <Stat label="블록" v={avg(last.stats, 'blk')} d={sd('blk')} />
-                <Stat label="야투율" v={pct(last.stats.fgm, last.stats.fga)} />
-                <Stat label="3점" v={pct(last.stats.tpm, last.stats.tpa)} />
+                <Stat
+                  label={tr('스틸')}
+                  v={avg(last.stats, 'stl')}
+                  d={sd('stl')}
+                />
+                <Stat
+                  label={tr('블록')}
+                  v={avg(last.stats, 'blk')}
+                  d={sd('blk')}
+                />
+                <Stat
+                  label={tr('야투율')}
+                  v={pct(last.stats.fgm, last.stats.fga)}
+                />
+                <Stat
+                  label={tr('3점')}
+                  v={pct(last.stats.tpm, last.stats.tpa)}
+                />
               </div>
               {last.playoffStats && (
                 <p className="muted">
-                  플레이오프 {last.playoffStats.games}경기 평균{' '}
-                  {avg(last.playoffStats, 'pts')}득점{' '}
-                  {avg(last.playoffStats, 'reb')}리바운드{' '}
-                  {avg(last.playoffStats, 'ast')}어시스트
+                  {tr(
+                    '플레이오프 {g}경기 평균 {pts}득점 {reb}리바운드 {ast}어시스트',
+                    {
+                      g: last.playoffStats.games,
+                      pts: avg(last.playoffStats, 'pts'),
+                      reb: avg(last.playoffStats, 'reb'),
+                      ast: avg(last.playoffStats, 'ast'),
+                    },
+                  )}
                 </p>
               )}
               {last.awards.length > 0 && (
@@ -514,14 +564,16 @@ export function MainScreen({
                   {last.awards.map((a) => (
                     <li key={a}>
                       <img className="px" src={iconURL('trophy')} alt="" />
-                      {a}
+                      {tr(a)}
                     </li>
                   ))}
                 </ul>
               )}
             </div>
           ) : (
-            <p className="muted">시즌 진행 버튼을 눌러 첫 시즌을 시작하세요.</p>
+            <p className="muted">
+              {tr('시즌 진행 버튼을 눌러 첫 시즌을 시작하세요.')}
+            </p>
           ))}
 
         {tab === 'best' &&
@@ -529,9 +581,9 @@ export function MainScreen({
             <BestTeams key={last.year} teams={last.bestTeams} />
           ) : (
             <>
-              <h3>시즌 베스트 팀</h3>
+              <h3>{tr('시즌 베스트 팀')}</h3>
               <p className="muted">
-                베스트 팀은 대학·KBL·NBA 시즌이 끝나면 발표됩니다.
+                {tr('베스트 팀은 대학·KBL·NBA 시즌이 끝나면 발표됩니다.')}
               </p>
             </>
           ))}
@@ -540,7 +592,7 @@ export function MainScreen({
           (last?.featured.length ? (
             <>
               <div className="panel-head">
-                <h3>경기 중계</h3>
+                <h3>{tr('경기 중계')}</h3>
                 <div className="tabs" role="tablist">
                   {last.featured.map((g, i) => (
                     <button
@@ -549,7 +601,7 @@ export function MainScreen({
                       aria-selected={i === castIdx}
                       onClick={() => setCastIdx(i)}
                     >
-                      {g.label}
+                      {tr(g.label)}
                     </button>
                   ))}
                 </div>
@@ -561,8 +613,8 @@ export function MainScreen({
             </>
           ) : (
             <>
-              <h3>경기 중계</h3>
-              <p className="muted">중계할 경기가 없습니다.</p>
+              <h3>{tr('경기 중계')}</h3>
+              <p className="muted">{tr('중계할 경기가 없습니다.')}</p>
             </>
           ))}
 
@@ -592,7 +644,11 @@ function Plate({
     </>
   )
   return onClick ? (
-    <button className="plate" onClick={onClick} title={`${label} 수정`}>
+    <button
+      className="plate"
+      onClick={onClick}
+      title={tr('{label} 수정', { label })}
+    >
       {body}
     </button>
   ) : (
@@ -621,9 +677,9 @@ function NumberDialog({
       className="modal num-dialog"
       onClose={() => setTimeout(onClose, 150)}
     >
-      <p className="eyebrow">등번호</p>
+      <p className="eyebrow">{tr('등번호')}</p>
       <label className="field">
-        <span>0~99 사이 숫자</span>
+        <span>{tr('0~99 사이 숫자')}</span>
         <input
           type="number"
           min={0}
@@ -640,7 +696,7 @@ function NumberDialog({
       </label>
       <div className="row">
         <button className="ghost" onClick={() => ref.current?.close()}>
-          취소
+          {tr('취소')}
         </button>
         <button
           className="primary grow"
@@ -649,7 +705,7 @@ function NumberDialog({
             ref.current?.close()
           }}
         >
-          저장
+          {tr('저장')}
         </button>
       </div>
     </dialog>
@@ -753,10 +809,10 @@ function FmvpCelebration({
           <PixelPlayer pose="trophy" kit={kit} look={look} scale={4} />
         </div>
       </div>
-      <p className="eyebrow">{MVP_SHOW[award].eyebrow}</p>
-      <h2>{MVP_SHOW[award].title}</h2>
+      <p className="eyebrow">{tr(MVP_SHOW[award].eyebrow)}</p>
+      <h2>{tr(MVP_SHOW[award].title)}</h2>
       <button className="primary big" onClick={() => ref.current?.close()}>
-        계속
+        {tr('계속')}
       </button>
     </dialog>
   )
@@ -778,27 +834,29 @@ function RetiredSummary({
   const pts = pro.reduce((s, h) => s + h.stats.pts, 0)
   return (
     <div className="retired">
-      <p className="eyebrow">커리어 요약</p>
-      <h2>{state.player.name}의 농구 인생</h2>
+      <p className="eyebrow">{tr('커리어 요약')}</p>
+      <h2>{tr('{name}의 농구 인생', { name: state.player.name })}</h2>
       <div className="stats">
-        <Stat label="NBA 파이널 MVP" v={String(n('NBA 파이널 MVP'))} />
-        <Stat label="NBA 챔피언" v={String(n('NBA 챔피언'))} />
+        <Stat label={tr('NBA 파이널 MVP')} v={String(n('NBA 파이널 MVP'))} />
+        <Stat label={tr('NBA 챔피언')} v={String(n('NBA 챔피언'))} />
         <Stat label="NBA MVP" v={String(n('NBA MVP'))} />
-        <Stat label="KBL 우승" v={String(n('KBL 챔피언결정전 우승'))} />
+        <Stat label={tr('KBL 우승')} v={String(n('KBL 챔피언결정전 우승'))} />
         <Stat label="KBL MVP" v={String(n('KBL 국내선수 MVP'))} />
         <Stat
-          label="아시안게임 금메달"
+          label={tr('아시안게임 금메달')}
           v={String(
             state.honors.filter((h) => h.name === '아시안게임 금메달').length,
           )}
         />
-        <Stat label="최고 OVR" v={String(state.peakOvr)} />
-        <Stat label="프로 통산 경기" v={String(games)} />
-        <Stat label="프로 통산 득점" v={String(pts)} />
+        <Stat label={tr('최고 OVR')} v={String(state.peakOvr)} />
+        <Stat label={tr('프로 통산 경기')} v={String(games)} />
+        <Stat label={tr('프로 통산 득점')} v={String(pts)} />
       </div>
-      <p className="muted">병역: {serviceLabel(state.service)}</p>
       <p className="muted">
-        통산 수입: {formatMoney(state.earnings.KRW, 'KRW')}
+        {tr('병역:')} {serviceLabel(state.service)}
+      </p>
+      <p className="muted">
+        {tr('통산 수입:')} {formatMoney(state.earnings.KRW, 'KRW')}
         {state.earnings.USD > 0 &&
           ` + ${formatMoney(state.earnings.USD, 'USD')}`}
       </p>
@@ -820,10 +878,10 @@ function Highlight({ game, onClose }: { game: GameLog; onClose: () => void }) {
       className="modal"
       onClose={() => setTimeout(onClose, 150)}
     >
-      <p className="eyebrow">하이라이트</p>
+      <p className="eyebrow">{tr('하이라이트')}</p>
       <GameCast game={game} />
       <button className="primary big" onClick={() => ref.current?.close()}>
-        결과 확인
+        {tr('결과 확인')}
       </button>
     </dialog>
   )

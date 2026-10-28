@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import { useState } from 'react'
 import { DRILL_REPS } from '../engine/events'
 import { judge, shotZone, type Verdict } from './drill'
@@ -37,7 +38,7 @@ export function ShootDrill({
     <div className="drill">
       <div className="drill-stage">
         <div className="court shoot">
-          <img className="px hoop" src={iconURL('hoop')} alt="골대" />
+          <img className="px hoop" src={iconURL('hoop')} alt={tr('골대')} />
           <img
             key={run.results.length}
             className={flight ? `px ball fly-${flight}` : 'px ball'}
@@ -46,7 +47,7 @@ export function ShootDrill({
           />
           {flight && (
             <p className={flight === 'good' ? 'call good' : 'call'}>
-              {CALL[flight]}
+              {tr(CALL[flight])}
             </p>
           )}
         </div>
@@ -59,8 +60,11 @@ export function ShootDrill({
         {...gauge.bind}
       >
         {run.done
-          ? `${run.made}개 성공!`
-          : `누르고 있다가 떼서 슛 (${run.results.length + 1}/${DRILL_REPS})`}
+          ? tr('{n}개 성공!', { n: run.made })
+          : tr('누르고 있다가 떼서 슛 ({i}/{n})', {
+              i: run.results.length + 1,
+              n: DRILL_REPS,
+            })}
       </button>
     </div>
   )

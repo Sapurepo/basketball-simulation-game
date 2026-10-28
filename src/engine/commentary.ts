@@ -1,3 +1,4 @@
+import { T, type Text, type Vars } from '../i18n'
 import type { Rng } from './rng'
 import type { StatLine } from './types'
 
@@ -71,7 +72,7 @@ export function generatePbp(
   myScore: number,
   oppScore: number,
   quarterMinutes: number,
-): string[] {
+): Text[] {
   const qSec = quarterMinutes * 60
   const total = qSec * 4
   const t = () => rng.int(0, total - 1)
@@ -108,7 +109,9 @@ export function generatePbp(
     evs.push({ t: t(), kind: 'opp', pts: c })
   evs.sort((a, b) => a.t - b.t)
 
-  const lines: string[] = [`${myTeam} vs ${opp} — 경기 시작!`]
+  const lines: Text[] = [
+    { k: '{a} vs {b} — 경기 시작!', v: { a: T(myTeam), b: T(opp) } },
+  ]
   let me = 0
   let op = 0
   let q = 1
@@ -121,7 +124,7 @@ export function generatePbp(
   for (const e of evs) {
     const eq = Math.floor(e.t / qSec) + 1
     while (q < eq) {
-      lines.push(`— ${q}쿼터 종료 (${me}-${op}) —`)
+      lines.push({ k: '— {q}쿼터 종료 ({me}-{op}) —', v: { q, me, op } })
       q++
     }
     if (e.kind === 'opp') {
@@ -130,24 +133,39 @@ export function generatePbp(
     }
     me += e.pts
     if (e.kind === 'mate') continue
-    let text: string
+    // 중계 문장은 템플릿 안에 템플릿: text 의 {p} 는 선수 이름을 원문 그대로 넣는다
+    let text: Text
     if (e.kind === 'ft') {
       const [m, a] = e.ft!
-      text = `{p}, 자유투 ${a}개 중 ${m}개 성공.`
+      text = { k: '{p}, 자유투 {a}개 중 {m}개 성공.', v: { p: name, a, m } }
     } else {
-      text = rng.pick(TEXT[e.kind])
+      text = { k: rng.pick(TEXT[e.kind]), v: { p: name } }
     }
+    const v: Vars = { text, me, op, clock: clock(e.t) }
     const late = e.t >= total - 60 && Math.abs(me - op) <= 3 && e.pts >= 2
-    lines.push(
-      `[${clock(e.t)}] ${text.replace('{p}', name)} (${me}-${op})${late ? ' ★ 승부처!' : ''}`,
-    )
+    lines.push({
+      k: late
+        ? '[{clock}] {text} ({me}-{op}) ★ 승부처!'
+        : '[{clock}] {text} ({me}-{op})',
+      v,
+    })
   }
   while (q <= 4) {
-    lines.push(`— ${q}쿼터 종료 (${me}-${op}) —`)
+    lines.push({ k: '— {q}쿼터 종료 ({me}-{op}) —', v: { q, me, op } })
     q++
   }
-  lines.push(
-    `경기 종료. ${myTeam} ${myScore} : ${oppScore} ${opp} — ${name} ${box.pts}득점 ${box.reb}리바운드 ${box.ast}어시스트`,
-  )
+  lines.push({
+    k: '경기 종료. {a} {as} : {bs} {b} — {p} {pts}득점 {reb}리바운드 {ast}어시스트',
+    v: {
+      a: T(myTeam),
+      as: myScore,
+      bs: oppScore,
+      b: T(opp),
+      p: name,
+      pts: box.pts,
+      reb: box.reb,
+      ast: box.ast,
+    },
+  })
   return lines
 }

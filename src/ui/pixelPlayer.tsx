@@ -1,3 +1,4 @@
+import { tr } from '../i18n'
 import { useSyncExternalStore } from 'react'
 import type { Look } from '../engine/types'
 import type { Kit, Pose } from './pose'
@@ -66,7 +67,7 @@ export function PixelPlayer({
       src={spriteURL(spec, DRAWN[pose], frame)}
       width={W * scale}
       height={H * scale}
-      alt="선수 캐릭터"
+      alt={tr('선수 캐릭터')}
     />
   )
 }

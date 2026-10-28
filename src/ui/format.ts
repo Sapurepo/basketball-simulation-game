@@ -1,4 +1,5 @@
 import type { SeasonRecord, Service, Stage, StatLine } from '../engine/types'
+import { tr } from '../i18n'
 
 export const STAGE_LABEL: Record<Stage, string> = {
   HS: '고교',
@@ -11,13 +12,16 @@ export const STAGE_LABEL: Record<Stage, string> = {
 }
 
 export function serviceLabel(s: Service) {
-  if (s.status === 'exempt') return '병역특례(예술체육요원)'
+  if (s.status === 'exempt') return tr('병역특례(예술체육요원)')
   if (s.status === 'serving')
-    return s.kind === 'sangmu' ? '상무 복무 중' : '현역 복무 중'
+    return tr(s.kind === 'sangmu' ? '상무 복무 중' : '현역 복무 중')
   if (s.status === 'done')
-    return s.kind === 'sangmu' ? '상무 전역' : '현역 전역'
-  return '미필'
+    return tr(s.kind === 'sangmu' ? '상무 전역' : '현역 전역')
+  return tr('미필')
 }
+
+// 무대 라벨(현재 언어)
+export const stageLabel = (s: Stage) => tr(STAGE_LABEL[s])
 
 export const avg = (s: StatLine, k: keyof StatLine) =>
   s.games ? (s[k] / s.games).toFixed(1) : '-'

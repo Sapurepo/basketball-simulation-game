@@ -23,6 +23,7 @@ import { Rng } from './rng'
 import { migrateLook, parseSave } from './save'
 import type { Look, Player } from './types'
 import { botChoice, playCareer } from './testBot'
+import { ko } from '../i18n'
 
 const careers = Array.from({ length: 200 }, (_, i) =>
   playCareer(i * 7919 + 1, (['PG', 'SG', 'SF', 'PF', 'C'] as const)[i % 5]),
@@ -45,7 +46,7 @@ describe('커리어 전체 진행', () => {
         for (const g of h.featured) {
           expect(g.box.pts).toBeLessThanOrEqual(g.myScore)
           expect(g.myScore).not.toBe(g.oppScore)
-          expect(g.pbp.at(-1)).toContain(`${g.myScore} : ${g.oppScore}`)
+          expect(ko(g.pbp.at(-1)!)).toContain(`${g.myScore} : ${g.oppScore}`)
         }
       })
     }
@@ -140,7 +141,7 @@ test('중계 로그의 최종 스코어가 박스스코어와 일치한다', () 
     ftm: 3,
     fta: 4,
   }
-  const lines = generatePbp(rng, '홍길동', 'A', 'B', box, 80, 75, 10)
+  const lines = generatePbp(rng, '홍길동', 'A', 'B', box, 80, 75, 10).map(ko)
   const last = lines.filter((l) => l.startsWith('['))
   expect(last.at(-1)).toMatch(/\(\d+-\d+\)/)
   expect(lines).toContain('— 4쿼터 종료 (80-75) —')
@@ -221,8 +222,8 @@ describe('훈련 미니게임', () => {
     s.events = [{ kind: 'passDrill', title: '', body: '', options: [] }]
     const next = resolveEvent(s, 'made:9')
     expect(next.player.attrs.playmaking).toBe(99)
-    expect(next.events[0].body).toBe('패스 이미 최고치예요')
-    expect(resolveEvent(s, 'made:5').events[0].body).toBe(
+    expect(ko(next.events[0].body)).toBe('패스 이미 최고치예요')
+    expect(ko(resolveEvent(s, 'made:5').events[0].body)).toBe(
       '아쉽지만 감각은 익혔습니다.',
     )
   })
@@ -250,7 +251,7 @@ describe('훈련 미니게임', () => {
     const before = s.player.attrs.playmaking
     const next = resolveEvent(s, 'made:9')
     expect(next.player.attrs.playmaking).toBe(Math.min(99, before + 1))
-    expect(next.events[0].title).toBe('10개 중 9개 성공')
+    expect(ko(next.events[0].title)).toBe('10개 중 9개 성공')
   })
 })
 

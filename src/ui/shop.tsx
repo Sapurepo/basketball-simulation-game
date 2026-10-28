@@ -4,14 +4,15 @@ import { formatMoney } from '../engine/events'
 import { ATTR_LABELS } from '../engine/player'
 import type { AttrKey, GameState } from '../engine/types'
 import { Pet } from './pet'
+import { tr } from '../i18n'
 import { type IconName, iconSize, iconURL } from './sprite'
 
 const effectText = (it: Item) =>
   it.buff
     ? Object.entries(it.buff)
-        .map(([k, v]) => `${ATTR_LABELS[k as AttrKey]} +${v}`)
+        .map(([k, v]) => `${tr(ATTR_LABELS[k as AttrKey])} +${v}`)
         .join(' · ')
-    : `시즌 성장 +${it.growth}`
+    : tr('시즌 성장 +{n}', { n: it.growth ?? 0 })
 
 const KINDS: [Item['kind'], string, string][] = [
   ['luxury', '사치품', '착용하면 시즌 능력치 버프, 선수에게 입혀져요'],
@@ -54,11 +55,13 @@ export function ShopDialog({
     >
       <div className="panel-head">
         <div>
-          <p className="eyebrow">상점</p>
-          <h2>보유 자금 {formatMoney(cash, 'KRW')}</h2>
+          <p className="eyebrow">{tr('상점')}</p>
+          <h2>
+            {tr('보유 자금 {money}', { money: formatMoney(cash, 'KRW') })}
+          </h2>
         </div>
         <button className="ghost" onClick={() => ref.current?.close()}>
-          닫기
+          {tr('닫기')}
         </button>
       </div>
       <div className="tabs" role="tablist">
@@ -69,12 +72,12 @@ export function ShopDialog({
             aria-selected={tab === kind}
             onClick={() => setTab(kind)}
           >
-            {label}
+            {tr(label)}
           </button>
         ))}
       </div>
-      <section aria-label={title}>
-        <p className="muted">{desc}</p>
+      <section aria-label={tr(title)}>
+        <p className="muted">{tr(desc)}</p>
         <ul className="shop-list">
           {ITEMS.filter((it) => it.kind === tab).map((it) => {
             const owned = items.includes(it.id)
@@ -82,7 +85,7 @@ export function ShopDialog({
             return (
               <li key={it.id}>
                 <span>
-                  <b>{it.name}</b>
+                  <b>{tr(it.name)}</b>
                   <small>{effectText(it)}</small>
                 </span>
                 <span className="price">{formatMoney(it.price, 'KRW')}</span>
@@ -92,7 +95,7 @@ export function ShopDialog({
                     disabled={on}
                     onClick={() => onApply(it)}
                   >
-                    {on ? '적용 중' : '적용'}
+                    {on ? tr('적용 중') : tr('적용')}
                   </button>
                 ) : (
                   <button
@@ -100,7 +103,7 @@ export function ShopDialog({
                     disabled={owned || cash < it.price}
                     onClick={() => onBuy(it.id)}
                   >
-                    {owned ? '보유' : '구입'}
+                    {owned ? tr('보유') : tr('구입')}
                   </button>
                 )}
               </li>
@@ -138,11 +141,11 @@ export function Decor({ items = [] }: { items?: string[] }) {
   const pets = owned.filter((it) => it.kind === 'pet')
   return (
     <>
-      <Icon name="window" alt="창문" />
+      <Icon name="window" alt={tr('창문')} />
       {owned
         .filter((it) => it.kind !== 'pet')
         .map((it) => (
-          <Icon key={it.id} name={it.id as IconName} alt={it.name} />
+          <Icon key={it.id} name={it.id as IconName} alt={tr(it.name)} />
         ))}
       {pets.length > 0 && (
         <div className="pets">
@@ -168,7 +171,7 @@ export function TrophyShelf({ state }: { state: GameState }) {
       .filter((a) => a.endsWith(' 우승') || a === 'NBA 챔피언').length +
     state.honors.filter((h) => h.name === '아시안게임 금메달').length
   return (
-    <div className="shelf" aria-label={`팀 우승 트로피 ${n}개`}>
+    <div className="shelf" aria-label={tr('팀 우승 트로피 {n}개', { n })}>
       <div className="shelf-items">
         {[...Array(Math.min(n, SHELF_SLOTS))].map((_, i) => (
           <img

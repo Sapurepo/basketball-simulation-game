@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { GameLog } from '../engine/types'
+import { ko, tr, tx } from '../i18n'
 import { TeamLogo } from './teamLogo'
 import { WinLoss } from './winLoss'
 
@@ -26,10 +27,10 @@ export function GameCast({ game }: { game: GameLog }) {
     <div className="cast">
       <div className="row between">
         <div>
-          <p className="eyebrow">{game.label}</p>
+          <p className="eyebrow">{tr(game.label)}</p>
           <h3 className="row">
             <WinLoss win={win} />
-            vs <TeamLogo name={game.opponent} size={24} /> {game.opponent}{' '}
+            vs <TeamLogo name={game.opponent} size={24} /> {tr(game.opponent)}{' '}
             <span className={win ? 'win' : 'loss'}>
               {game.myScore}-{game.oppScore}
             </span>
@@ -37,25 +38,28 @@ export function GameCast({ game }: { game: GameLog }) {
         </div>
         {!done && (
           <button className="ghost" onClick={() => setShown(game.pbp.length)}>
-            건너뛰기
+            {tr('건너뛰기')}
           </button>
         )}
       </div>
       <ol ref={listRef} className="pbp" aria-live="polite">
-        {game.pbp.slice(0, shown).map((line, i) => (
-          <li
-            key={i}
-            className={
-              line.startsWith('—')
-                ? 'q'
-                : line.includes('★')
-                  ? 'hot'
-                  : undefined
-            }
-          >
-            {line}
-          </li>
-        ))}
+        {game.pbp.slice(0, shown).map((line, i) => {
+          const src = ko(line)
+          return (
+            <li
+              key={i}
+              className={
+                src.startsWith('—')
+                  ? 'q'
+                  : src.includes('★')
+                    ? 'hot'
+                    : undefined
+              }
+            >
+              {tx(line)}
+            </li>
+          )
+        })}
       </ol>
     </div>
   )

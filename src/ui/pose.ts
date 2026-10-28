@@ -1,4 +1,5 @@
 import type { GameState } from '../engine/types'
+import { ko } from '../i18n'
 
 export type Pose =
   | 'idle'
@@ -53,11 +54,12 @@ export function pickPose(s: GameState): { pose: Pose; kit: Kit } {
   if (s.stage === 'RETIRED') return { pose: 'wave', kit }
   if (ev?.kind === 'military') return { pose: 'salute', kit }
   if (ev?.data?.game) {
-    const medal = /금메달|은메달|동메달/.test(ev.title)
+    const medal = /금메달|은메달|동메달/.test(ko(ev.title))
     return { pose: medal ? 'celebrate' : 'sad', kit: NATIONAL }
   }
   if (ev?.kind === 'notice') {
-    if (/미지명|불합격|실패|과부하/.test(ev.title)) return { pose: 'sad', kit }
+    if (/미지명|불합격|실패|과부하/.test(ko(ev.title)))
+      return { pose: 'sad', kit }
     if (s.stage === 'MILITARY') return { pose: 'salute', kit }
     return { pose: 'cheer', kit }
   }

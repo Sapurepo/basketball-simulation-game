@@ -1,3 +1,4 @@
+import { T, tr } from '../i18n'
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import type { Item } from '../data/items'
 import { clamp } from '../engine/rng'
@@ -59,7 +60,7 @@ export function Pet({ it, start }: { it: Item; start: number }) {
     <button
       className="pet"
       style={{ left: `${pos.x}%`, bottom: pos.y, zIndex: 40 - pos.y }}
-      aria-label={`${it.name} 쓰다듬기`}
+      aria-label={tr('{name} 쓰다듬기', { name: T(it.name) })}
       onClick={pat}
     >
       <img
