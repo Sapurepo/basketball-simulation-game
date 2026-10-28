@@ -2,13 +2,7 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { itemById } from '../data/items'
 import { isUsCollege } from '../data/schools'
 import { formatMoney, isDrill } from '../engine/events'
-import {
-  advanceSeason,
-  availableDrills,
-  buyItem,
-  toggleAccessory,
-  resolveEvent,
-} from '../engine/game'
+import { advanceSeason, availableDrills, resolveEvent } from '../engine/game'
 import {
   ATTR_KEYS,
   ATTR_LABELS,
@@ -221,13 +215,9 @@ export function MainScreen({
       )}
       {shop && (
         <ShopDialog
-          cash={state.cash ?? 0}
-          items={state.items}
-          applied={[state.wall, state.floor]}
-          worn={p.look?.acc}
-          onBuy={(id) => onChange(buyItem(state, id))}
-          onApply={(it) => it.slot && onChange({ ...state, [it.slot]: it.id })}
-          onWear={(id) => onChange(toggleAccessory(state, id))}
+          state={state}
+          kit={kit}
+          onChange={onChange}
           onClose={() => setShop(false)}
         />
       )}
@@ -267,7 +257,7 @@ export function MainScreen({
               </>
             )}
           </div>
-          <Decor items={state.items} />
+          <Decor items={state.items} layout={state.layout} />
           <TrophyShelf state={state} />
           <div className="ovr-shield">
             <div>

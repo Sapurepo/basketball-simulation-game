@@ -590,3 +590,23 @@ describe('KBL 신인 드래프트', () => {
     expect(picks(80).filter((p) => p === 1).length).toBeGreaterThanOrEqual(95)
   })
 })
+
+test('OVR 95 이상은 양의 성장이 줄고, 노쇠는 줄지 않는다', () => {
+  // 잠재력 도달 뒤 보너스 성장(gap ≤ 0 분기)으로 비교: g ≈ U(-0.5,0.5) + 보너스×0.3
+  const gain = (base: number, age: number, bonus = 10) => {
+    const p = createPlayer(new Rng(5), 'x', 'SF', '스윙맨')
+    for (const k of Object.keys(p.attrs) as (keyof typeof p.attrs)[])
+      p.attrs[k] = base
+    p.potential = 60
+    const mean = () => Object.values(p.attrs).reduce((a, b) => a + b, 0) / 7
+    const before = mean()
+    grow(new Rng(1), p, age, 0.8, undefined, bonus)
+    return mean() - before
+  }
+  // 보너스 10 → g ≈ 3. 90 은 그대로, 95 는 절반, 97 은 1/4
+  expect(gain(95, 25) / gain(90, 25)).toBeCloseTo(0.5, 1)
+  expect(gain(97, 25) / gain(90, 25)).toBeCloseTo(0.25, 1)
+  // 40세 노쇠(보너스 0 → g < 0)는 체감 없음: 운동능력·스피드 추가 −1 포함 같은 폭
+  expect(gain(97, 40, 0)).toBeLessThan(0)
+  expect(gain(97, 40, 0)).toBeCloseTo(gain(90, 40, 0), 5)
+})
