@@ -25,8 +25,6 @@ import { ROSTER } from './sprite'
 
 const POSITIONS = Object.keys(POSITION_LABELS) as Position[]
 const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
-// 스카우팅 리포트 다시 뽑기 횟수
-const MAX_ROLLS = 10
 const STEPS = ['아바타', '기본 정보', '스카우팅 리포트', '집중 능력치']
 const POSE_STRIP: [Pose, string][] = [
   ['idle', '드리블'],
@@ -48,7 +46,6 @@ export function CreateScreen({
   const [style, setStyle] = useState(STYLES.PG[0].name)
   const [school, setSchool] = useState(HIGH_SCHOOLS[0].id)
   const [seed, setSeed] = useState(randomSeed)
-  const [rolls, setRolls] = useState(MAX_ROLLS)
   const [sel, setSel] = useState(0)
   const [num, setNum] = useState<number | null>(null)
   const [focus, setFocus] = useState<AttrKey | undefined>()
@@ -211,15 +208,8 @@ export function CreateScreen({
         <section className="panel">
           <div className="row between">
             <h2>{player.name}</h2>
-            <button
-              className="ghost"
-              disabled={rolls === 0}
-              onClick={() => {
-                setSeed(randomSeed())
-                setRolls(rolls - 1)
-              }}
-            >
-              다시 뽑기 ({rolls}/{MAX_ROLLS})
+            <button className="ghost" onClick={() => setSeed(randomSeed())}>
+              다시 뽑기
             </button>
           </div>
           <label className="field">
@@ -254,7 +244,10 @@ export function CreateScreen({
             <span>오버롤</span>
             <b>{overall(player)}</b>
             <span>잠재력 등급</span>
-            <b>{potentialGrade(player.potential)}</b>
+            <b>
+              {potentialGrade(player.potential)}
+              <small className="muted"> · 잠재 오버롤 {player.potential}</small>
+            </b>
             <span>남은 포인트</span>
             <b>{left}</b>
           </div>
