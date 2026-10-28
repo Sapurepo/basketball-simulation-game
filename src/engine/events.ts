@@ -195,7 +195,8 @@ function offersEvent(
 function kblDraft(rng: Rng, s: GameState): GameEvent {
   const ovr = overall(s.player)
   const score = ovr + (22 - s.age) * 0.3 + rng.normal(0, 2)
-  const pick = Math.max(1, Math.round((70 - score) * 1.6) + 1 + rng.int(0, 2))
+  // 1순위 기준 점수 75: OVR 70 은 8순위 안팎, 80 은 확실한 1순위로 고점을 벌린다
+  const pick = Math.max(1, Math.round((75 - score) * 1.2) + 1 + rng.int(0, 2))
   if (pick > 20) {
     setStage(s, 'FREE', '', '무소속')
     s.contract = undefined

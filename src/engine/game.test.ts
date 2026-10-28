@@ -554,3 +554,39 @@ describe('잔류와 연장 계약', () => {
     expect(next.events.map((e) => e.kind)).not.toContain('kblFA')
   })
 })
+
+describe('KBL 신인 드래프트', () => {
+  // 22세 대학 졸업생의 KBL 지명 순위 (미지명은 21)
+  const picks = (ovr: number) =>
+    Array.from({ length: 100 }, (_, i) => {
+      const rng = new Rng(i)
+      const p = createPlayer(rng, 'a', 'SG', '슈터')
+      for (const k of Object.keys(p.attrs) as (keyof typeof p.attrs)[])
+        p.attrs[k] = ovr
+      const s = {
+        ...newGame(i + 1, p, 'yongsan'),
+        age: 22,
+        stage: 'COLLEGE' as const,
+        stageYear: 4,
+        events: [
+          {
+            kind: 'collegeChoice',
+            title: '',
+            body: '',
+            options: [{ id: 'kbl', label: '' }],
+          },
+        ],
+      }
+      const title = resolveEvent(s, 'kbl').events[0].title
+      return typeof title === 'object' ? Number(title.v?.pick) : 21
+    })
+  const mean = (a: number[]) => a.reduce((x, y) => x + y, 0) / a.length
+
+  test('고점이 벌어진다: OVR 70 은 8순위 안팎, 75 는 1~3순위, 80 은 거의 1순위', () => {
+    expect(mean(picks(70))).toBeGreaterThan(6)
+    expect(mean(picks(70))).toBeLessThan(10)
+    expect(mean(picks(75))).toBeGreaterThan(1.5)
+    expect(mean(picks(75))).toBeLessThan(4)
+    expect(picks(80).filter((p) => p === 1).length).toBeGreaterThanOrEqual(95)
+  })
+})
