@@ -128,6 +128,9 @@ const text: Record<string, string> = {
   '{team} (투웨이)': '{team} (two-way)',
   '{team}': '{team}',
   '{team} (잔류)': '{team} (stay)',
+  '{team} (복귀)': '{team} (return)',
+  '{team} (잔류·투웨이)': '{team} (stay, two-way)',
+  '{team} (복귀·투웨이)': '{team} (return, two-way)',
   '연장 계약 제안': 'Contract extension offer',
   '계약이 1년 남았습니다. {team}이(가) 연장 계약을 제안했습니다.':
     'One year left on your deal. {team} offered an extension.',

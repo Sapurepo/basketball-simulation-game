@@ -104,15 +104,19 @@ function sign(s: GameState, stage: 'KBL' | 'NBA', c: Contract) {
 
 type Offer = Contract
 
-// stay: 현 소속팀 제안이면 라벨에 (잔류)
-function offerOption(o: Offer, i: number, stay: boolean): EventOption {
+// own: 소속팀(잔류) 또는 떠났던 팀(복귀) 제안이면 라벨에 표시
+function offerOption(
+  o: Offer,
+  i: number,
+  own: '잔류' | '복귀' | undefined,
+): EventOption {
+  const tag = [own, o.twoWay ? '투웨이' : undefined].filter(Boolean).join('·')
   return {
     id: `offer:${i}`,
     teamId: o.teamId,
-    label: {
-      k: o.twoWay ? '{team} (투웨이)' : stay ? '{team} (잔류)' : '{team}',
-      v: { team: T(o.teamName) },
-    },
+    label: tag
+      ? { k: `{team} (${tag})`, v: { team: T(o.teamName) } }
+      : { k: '{team}', v: { team: T(o.teamName) } },
     desc: {
       k: '연봉 {money}, {years}년 계약',
       v: { money: formatMoney(o.salary, o.currency), years: o.yearsLeft },
@@ -132,9 +136,17 @@ function withOwnTeam<T extends { id: string }>(
   return own ? [own, ...others] : others
 }
 
+// 원팀: 지금 소속이면 그 팀, 아니면 그 리그에서 마지막으로 뛴 팀(복귀·전역 때 1번 제안)
+function ownTeamId(s: GameState, league: 'KBL' | 'NBA'): string | undefined {
+  if (s.stage === league) return s.teamId
+  const name = s.history.findLast((h) => h.stage === league)?.team
+  return (league === 'KBL' ? KBL_TEAMS : NBA_TEAMS).find((t) => t.name === name)
+    ?.id
+}
+
 function kblOffers(rng: Rng, s: GameState, n = 3): Offer[] {
   const ovr = overall(s.player)
-  const own = s.stage === 'KBL' ? s.teamId : undefined
+  const own = ownTeamId(s, 'KBL')
   const years = s.age >= 32 ? [1, 2] : [2, 5]
   return withOwnTeam(rng, KBL_TEAMS, own, n).map((t) => ({
     teamId: t.id,
@@ -147,7 +159,7 @@ function kblOffers(rng: Rng, s: GameState, n = 3): Offer[] {
 
 function nbaOffers(rng: Rng, s: GameState, n = 3): Offer[] {
   const ovr = overall(s.player)
-  const own = s.stage === 'NBA' ? s.teamId : undefined
+  const own = ownTeamId(s, 'NBA')
   const years = s.age >= 31 ? [1, 2] : [1, 4]
   return withOwnTeam(rng, NBA_TEAMS, own, n).map((t) => ({
     teamId: t.id,
@@ -158,8 +170,8 @@ function nbaOffers(rng: Rng, s: GameState, n = 3): Offer[] {
   }))
 }
 
-function twoWay(rng: Rng): Offer {
-  const t = rng.pick(NBA_TEAMS)
+function twoWay(rng: Rng, teamId?: string): Offer {
+  const t = NBA_TEAMS.find((x) => x.id === teamId) ?? rng.pick(NBA_TEAMS)
   return {
     teamId: t.id,
     teamName: t.name,
@@ -170,20 +182,35 @@ function twoWay(rng: Rng): Offer {
   }
 }
 
+// NBA FA 제안: OVR 83 이상 정식(소속팀 잔류 + 다른 구단 n), 80~82 는 소속팀 투웨이(소속팀이 없으면 무작위)
+function nbaFaOffers(rng: Rng, s: GameState, n = 3): Offer[] {
+  const ovr = overall(s.player)
+  if (ovr >= 83) return nbaOffers(rng, s, n)
+  return ovr >= 80 ? [twoWay(rng, ownTeamId(s, 'NBA'))] : []
+}
+
+// ownId 제안은 잔류, back 이면 (리그 복귀·전역) 복귀로 표시
 function offersEvent(
   kind: string,
   title: Text,
   body: Text,
   offers: Offer[],
   extra: EventOption[] = [],
-  ownId = '',
+  ownId?: string,
+  back = false,
 ): GameEvent {
   return {
     kind,
     title,
     body,
     options: [
-      ...offers.map((o, i) => offerOption(o, i, o.teamId === ownId)),
+      ...offers.map((o, i) =>
+        offerOption(
+          o,
+          i,
+          ownId && o.teamId === ownId ? (back ? '복귀' : '잔류') : undefined,
+        ),
+      ),
       ...extra,
     ],
     data: { offers },
@@ -312,7 +339,9 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       },
     ]
   }
-  if (s.stage === 'MILITARY') {
+  // 전역 이벤트가 진로 선택을 담고 있으므로 아래 무대별 분기는 건너뛴다
+  const discharged = s.stage === 'MILITARY'
+  if (discharged) {
     ev.push(...leaveService(rng, s, true))
   }
   const pro = s.stage === 'KBL' || s.stage === 'NBA' || s.stage === 'FREE'
@@ -339,7 +368,9 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
     })
   }
 
-  if (s.stage === 'HS' && s.stageYear >= 3) {
+  if (discharged) {
+    // 전역 직후: 진로는 leaveService 가 만든 이벤트로 정한다
+  } else if (s.stage === 'HS' && s.stageYear >= 3) {
     const offers = [...UNIVERSITIES]
       .filter((u) => ovr >= u.strength - 8 + rng.normal(0, 2))
       .slice(0, 4)
@@ -413,7 +444,9 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
           ]
         : []
     if ((s.contract?.yearsLeft ?? 0) <= 0) {
-      if (ovr >= 55) {
+      // 원팀: 소속팀 잔류 제안은 문턱 없이, 다른 구단은 OVR 55 이상일 때만
+      const offers = kblOffers(rng, s, ovr >= 55 ? 3 : 0)
+      if (offers.length) {
         ev.push(
           offersEvent(
             'kblFA',
@@ -422,7 +455,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
               k: '현재 오버롤은 {ovr}입니다. 영입 제안이 왔습니다.',
               v: { ovr },
             },
-            kblOffers(rng, s),
+            offers,
             nbaOpt,
             s.teamId,
           ),
@@ -439,8 +472,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       })
     }
   } else if (s.stage === 'NBA' && (s.contract?.yearsLeft ?? 0) <= 0) {
-    const offers =
-      ovr >= 83 ? nbaOffers(rng, s) : ovr >= 80 ? [twoWay(rng)] : []
+    const offers = nbaFaOffers(rng, s)
     const extra: EventOption[] = [{ id: 'kbl', label: 'KBL 복귀' }]
     ev.push(
       offersEvent(
@@ -464,10 +496,10 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
     ev.push(freeChoice(s))
   }
 
-  // 계약 마지막 시즌을 앞두면 소속팀이 연장을 제안한다 (FA 제안과 같은 문턱)
+  // 계약 마지막 시즌을 앞두면 소속팀이 연장을 제안한다 (FA 잔류 제안과 같은 조건: KBL 은 항상, NBA 는 OVR 80 이상)
   if (
     s.contract?.yearsLeft === 1 &&
-    ((s.stage === 'KBL' && ovr >= 55) || (s.stage === 'NBA' && ovr >= 83))
+    (s.stage === 'KBL' || (s.stage === 'NBA' && ovr >= 80))
   ) {
     ev.push(
       offersEvent(
@@ -477,7 +509,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
           k: '계약이 1년 남았습니다. {team}이(가) 연장 계약을 제안했습니다.',
           v: { team: T(s.teamName) },
         },
-        s.stage === 'KBL' ? kblOffers(rng, s, 0) : nbaOffers(rng, s, 0),
+        s.stage === 'KBL' ? kblOffers(rng, s, 0) : nbaFaOffers(rng, s, 0),
         [{ id: 'expire', label: '계약 만료까지 뛴다' }],
         s.teamId,
       ),
@@ -695,6 +727,9 @@ export function applyEvent(
             'KBL 복귀',
             'KBL 구단들의 영입 제안입니다.',
             kblOffers(rng, s),
+            [],
+            ownTeamId(s, 'KBL'),
+            true,
           ),
         )
       }
@@ -941,8 +976,7 @@ function leaveService(rng: Rng, s: GameState, late: boolean): GameEvent[] {
   }
   setStage(s, 'FREE', '', '무소속')
   s.contract = undefined
-  const ovr = overall(s.player)
-  const offers = back?.stage === 'NBA' && ovr >= 83 ? nbaOffers(rng, s) : []
+  const offers = back?.stage === 'NBA' ? nbaFaOffers(rng, s) : []
   return [
     notice('전역', {
       k: '소속팀 없이 전역합니다. {when}',
@@ -956,6 +990,8 @@ function leaveService(rng: Rng, s: GameState, late: boolean): GameEvent[] {
         : 'KBL 구단과 계약을 알아봅니다.',
       offers,
       [{ id: 'kbl', label: 'KBL 구단과 계약' }],
+      back?.teamId,
+      true,
     ),
   ]
 }
