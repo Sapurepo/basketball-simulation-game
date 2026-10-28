@@ -16,7 +16,11 @@ interface Env {
   DB: { prepare(sql: string): D1Stmt }
   TURNSTILE_SECRET: string
 }
-type Ctx = { request: Request; env: Env }
+type Ctx = {
+  request: Request
+  env: Env
+  waitUntil(p: Promise<unknown>): void
+}
 
 // IP 하나당 1시간 등록 수, IP 해시 보관 시간
 const RATE_LIMIT = 5
@@ -28,13 +32,27 @@ const ORDER = {
   fmvp: 'fmvp DESC, peak_ovr DESC, created_at',
 }
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, cacheControl?: string) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      ...(cacheControl && { 'cache-control': cacheControl }),
+    },
   })
 
-export async function onRequestGet({ request, env }: Ctx) {
+// 조회는 전체 스캔(COUNT·윈도)이라 정렬·종류별 상위 100명을 엣지에 1분 담아 두고 size 는 잘라서 준다.
+// 등록되면 지워서 방금 올린 기록이 바로 보이게 한다 (캐시는 데이터센터마다 따로라 같은 곳만)
+const CACHE_TTL = 60
+const edge = () => (caches as unknown as { default: Cache }).default
+const cacheKey = (request: Request, sort: string, best: boolean) =>
+  new Request(
+    new URL(`/api/hall?sort=${sort}${best ? '&best=1' : ''}`, request.url),
+  )
+type HallBody = { total: number; rows: unknown[] }
+
+export async function onRequestGet(ctx: Ctx) {
+  const { request, env } = ctx
   const url = new URL(request.url)
   const sort = url.searchParams.get('sort') === 'fmvp' ? 'fmvp' : 'ovr'
   const size = Math.max(
@@ -44,30 +62,48 @@ export async function onRequestGet({ request, env }: Ctx) {
       Math.floor(Number(url.searchParams.get('size'))) || HALL_TOP,
     ),
   )
+  const best = !!url.searchParams.get('best')
+  const key = cacheKey(request, sort, best)
+  const hit = await edge().match(key)
+  const body: HallBody = hit
+    ? await hit.json()
+    : await queryHall(env, sort, best)
+  if (!hit)
+    ctx.waitUntil(
+      edge().put(key, json(body, 200, `public, s-maxage=${CACHE_TTL}`)),
+    )
+  return json(best ? body : { ...body, rows: body.rows.slice(0, size) })
+}
+
+async function queryHall(
+  env: Env,
+  sort: keyof typeof ORDER,
+  best: boolean,
+): Promise<HallBody> {
   const cols = `id, name, position, look, peak_ovr AS peakOvr, fmvp, trophies, seasons,
     retired_year AS retiredYear`
   // 베스트 5: 전체 순위를 매긴 뒤 포지션마다 가장 앞선 한 명
-  const sql = url.searchParams.get('best')
+  const sql = best
     ? `SELECT ${cols}, rank FROM (
          SELECT *, ROW_NUMBER() OVER (ORDER BY ${ORDER[sort]}) AS rank,
            ROW_NUMBER() OVER (PARTITION BY position ORDER BY ${ORDER[sort]}) AS pos_rank
          FROM hall)
        WHERE pos_rank = 1 ORDER BY rank`
     : `SELECT ${cols}, ROW_NUMBER() OVER (ORDER BY ${ORDER[sort]}) AS rank
-       FROM hall ORDER BY ${ORDER[sort]} LIMIT ${size}`
+       FROM hall ORDER BY ${ORDER[sort]} LIMIT ${HALL_TOP}`
   const [{ results }, count] = await Promise.all([
     env.DB.prepare(sql).all<
       Record<string, unknown> & { look: string | null }
     >(),
     env.DB.prepare('SELECT COUNT(*) AS n FROM hall').first<{ n: number }>(),
   ])
-  return json({
+  return {
     total: count?.n ?? 0,
     rows: results.map((r) => ({
       ...r,
       look: r.look ? JSON.parse(r.look) : null,
     })),
-  })
+  }
 }
 
 async function sha256(text: string) {
@@ -139,6 +175,14 @@ export async function onRequestPost({ request, env }: Ctx) {
       now,
     )
     .run()
+  if (meta.changes)
+    await Promise.all(
+      (['ovr', 'fmvp'] as const).flatMap((sort) =>
+        [false, true].map((best) =>
+          edge().delete(cacheKey(request, sort, best)),
+        ),
+      ),
+    )
   return json(
     { ok: true, duplicate: meta.changes === 0 },
     meta.changes ? 201 : 200,
