@@ -178,6 +178,14 @@ export interface Honor {
   name: string
 }
 
+// 무대 위 아이템 하나의 배치. x·y 는 110×80 논리 격자, 없으면 아이템 기본 자리
+export interface Placement {
+  x?: number
+  y?: number
+  flip?: boolean
+  hidden?: boolean
+}
+
 export interface GameState {
   version: 1
   rng: number
@@ -204,6 +212,8 @@ export interface GameState {
   // 무대에 적용한 벽지·바닥타일 아이템 id
   wall?: string
   floor?: string
+  // 무대 배치 편집 결과 (아이템 id → 옮긴 자리·반전·보관). 없는 항목은 기본 자리
+  layout?: Record<string, Placement>
   // 공용 명예의 전당 등록용 커리어 고유 id와 등록 여부
   careerId?: string
   hallPosted?: boolean
