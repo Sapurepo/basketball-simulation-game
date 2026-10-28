@@ -14,6 +14,7 @@ const DRAWN: Record<Pose, DrawnPose> = {
   salute: 'cheer',
   wave: 'cheer',
   guard: 'guard',
+  trophy: 'trophy',
 }
 
 // 화면의 모든 선수가 한 타이머로 같은 박자(380ms)에 프레임을 넘긴다

@@ -2323,3 +2323,193 @@ tr.me td {
     transition: none;
   }
 }
+
+/* 시즌 증감: 능력치·스탯 값 옆 작은 +n. 능력치는 값 칸을 넓혀 넘치지 않게 */
+.bars.with-delta li {
+  grid-template-columns: 72px minmax(0, 1fr) 46px;
+}
+
+.bars b {
+  white-space: nowrap;
+}
+
+.delta {
+  margin-left: 4px;
+  font: 400 11px var(--font-pixel);
+  font-style: normal;
+  vertical-align: top;
+}
+
+.delta.up {
+  color: var(--win);
+}
+
+.delta.down {
+  color: var(--muted);
+}
+
+/* 푸터 공지사항: 아직 안 본 업데이트가 있으면 점 하나 */
+.link.unseen::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 3px;
+  vertical-align: top;
+  background: var(--accent);
+}
+
+/* NBA 파이널 MVP 축하: 코트 무대 + 색종이 + 폭죽 */
+.modal.fmvp {
+  width: min(100% - 32px, 480px);
+  padding: 0 0 20px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.fmvp .court {
+  position: relative;
+  height: 260px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border-bottom: 3px solid var(--ink);
+  background: repeating-linear-gradient(
+    90deg,
+    #d49a5e 0 28px,
+    #c98b52 28px 56px
+  );
+}
+
+/* 센터 서클과 하프 라인 */
+.fmvp .court::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 150px;
+  height: 150px;
+  translate: -50% -50%;
+  border: 3px solid rgb(255 255 255 / 0.85);
+  border-radius: 50%;
+}
+
+.fmvp .court::after {
+  content: '';
+  position: absolute;
+  inset: 56% 0 auto;
+  border-top: 3px solid rgb(255 255 255 / 0.85);
+}
+
+.fmvp .sprite {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  z-index: 2;
+  translate: -50%;
+  animation: fmvp-pop 0.5s steps(4) both;
+}
+
+.fmvp .burst {
+  position: absolute;
+  left: 22%;
+  top: 30%;
+  z-index: 1;
+  width: 90px;
+  height: 90px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--gold-hi) 0 10%,
+    transparent 11% 30%,
+    var(--accent) 31% 36%,
+    transparent 37% 60%,
+    var(--gold) 61% 64%,
+    transparent 65%
+  );
+  animation: fmvp-burst 1.6s steps(6) infinite;
+}
+
+.fmvp .burst.two {
+  left: 78%;
+  top: 22%;
+  animation-delay: 0.8s;
+}
+
+.fmvp .confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.fmvp .confetti i {
+  position: absolute;
+  top: -10px;
+  left: var(--x);
+  width: 8px;
+  height: 8px;
+  background: var(--c);
+  animation: confetti-fall var(--t) linear var(--d) infinite;
+}
+
+.fmvp .confetti i:nth-child(odd) {
+  width: 6px;
+  height: 12px;
+}
+
+.fmvp h2 {
+  margin: 0 20px;
+  font: 400 28px var(--font-pixel);
+  color: var(--gold-ink);
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(290px) rotate(720deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes fmvp-burst {
+  0% {
+    scale: 0.2;
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    scale: 1.3;
+    opacity: 0;
+  }
+}
+
+@keyframes fmvp-pop {
+  from {
+    scale: 0.4;
+    opacity: 0;
+  }
+  to {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+/* 파엠 축하 동작 줄이기: 기본 규칙과 명시도가 같아 반드시 그 뒤에 온다.
+   색종이는 흩어진 자리에 멈춰 있고 폭죽·등장 연출은 없다 */
+@media (prefers-reduced-motion: reduce) {
+  .fmvp .confetti i {
+    animation: none;
+    top: var(--y);
+  }
+
+  .fmvp .burst,
+  .fmvp .sprite {
+    animation: none;
+  }
+}
