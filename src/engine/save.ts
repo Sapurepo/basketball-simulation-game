@@ -22,9 +22,17 @@ export function loadGame(): GameState | null {
   }
 }
 
+// 화면은 마지막 시즌의 주요 경기만 다시 보여 준다. 지난 시즌 중계(세이브의 대부분)는 저장하지 않는다
+export const compactSave = (s: GameState): GameState => ({
+  ...s,
+  history: s.history.map((h, i) =>
+    i < s.history.length - 1 ? { ...h, featured: [] } : h,
+  ),
+})
+
 export function saveGame(s: GameState | null) {
   try {
-    if (s) localStorage.setItem(KEY, JSON.stringify(s))
+    if (s) localStorage.setItem(KEY, JSON.stringify(compactSave(s)))
     else localStorage.removeItem(KEY)
   } catch {
     // 시크릿 모드 등 저장 불가 환경: 메모리 상태로만 진행

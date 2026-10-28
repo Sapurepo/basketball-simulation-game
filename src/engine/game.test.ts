@@ -21,7 +21,7 @@ import {
   weightSpeedMod,
 } from './player'
 import { Rng } from './rng'
-import { migrateLook, parseSave } from './save'
+import { compactSave, migrateLook, parseSave } from './save'
 import type { GameState, Look, Player } from './types'
 import { botChoice, playCareer } from './testBot'
 import { ko } from '../i18n'
@@ -162,6 +162,17 @@ test('저장 파일 검증', () => {
   expect(() => parseSave('{"foo":1}')).toThrow()
   const s = careers[0]
   expect(parseSave(JSON.stringify(s)).player.name).toBe(s.player.name)
+})
+
+test('저장할 때 지난 시즌 중계는 빼고 마지막 시즌 것만 남긴다', () => {
+  const s = careers[0]
+  const saved = parseSave(JSON.stringify(compactSave(s)))
+  expect(saved.history.slice(0, -1).every((h) => !h.featured.length)).toBe(true)
+  expect(saved.history.at(-1)!.featured).toEqual(s.history.at(-1)!.featured)
+  // 메모리 상태는 그대로
+  expect(
+    s.history.some((h, i) => i < s.history.length - 1 && h.featured.length),
+  ).toBe(true)
 })
 
 test('이전 외형(팔레트 인덱스)은 v2 외형으로 바뀐다', () => {
