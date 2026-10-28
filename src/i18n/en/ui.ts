@@ -50,15 +50,15 @@ const text: Record<string, string> = {
   '현재 버전 {version}': 'Current version {version}',
   '배포할 때마다 바뀐 점을 여기에 적어요.':
     'Every release, the changes are listed here.',
-  '푸터에서 게임 확률표를 볼 수 있어요': 'Game odds are now in the footer',
-  'NBA 파이널 MVP 를 받기 조금 쉬워졌어요':
-    'NBA Finals MVP is a little easier to win',
-  '패스 훈련의 초록 구간이 1.6배 넓어졌어요':
-    'The green zone in pass drills is 1.6× wider',
-  '랭킹 화면에 새로고침 버튼이 생겼어요':
-    'The rankings screen has a refresh button',
-  '문의하기 링크와 서버비 후원 계좌를 안내해요':
-    'Added a contact link and a server-cost donation account',
+  '푸터에서 게임 확률표를 볼 수 있어요.': 'Game odds are now in the footer.',
+  'NBA 파이널 MVP 를 받기 조금 쉬워졌어요.':
+    'NBA Finals MVP is a little easier to win.',
+  '패스 훈련의 초록 구간이 1.6배 넓어졌어요.':
+    'The green zone in pass drills is 1.6× wider.',
+  '랭킹 화면에 새로고침 버튼이 생겼어요.':
+    'The rankings screen has a refresh button.',
+  '문의하기 링크와 서버비 후원 계좌를 안내해요.':
+    'Added a contact link and a server-cost donation account.',
   // ── 이사·오류 ──
   '새 주소에 이미 진행 중인 커리어가 있어요. 이전 주소의 커리어로 바꿀까요?':
     'There is already a career in progress at the new address. Replace it with the one from the old address?',
@@ -437,21 +437,21 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.1.0 ──
-  '영어·일본어를 지원해요. 푸터에서 언어를 바꿀 수 있어요':
-    'English and Japanese are supported. Switch languages in the footer',
-  '푸터 공지사항 버튼에서 업데이트 소식을 볼 수 있어요':
-    "The News button in the footer shows what's new",
-  'NBA 파이널 MVP·KBL 챔프전 MVP 를 받으면 축하 연출이 나와요':
-    'Winning NBA Finals MVP or KBL Finals MVP plays a celebration',
-  '시즌이 끝나면 능력치와 평균 스탯 옆에 지난 시즌 대비 증감이 보여요':
-    'After each season, attributes and averages show the change from last season',
-  '노쇠가 완만해졌고 45세까지 뛸 수 있어요':
-    'Decline is gentler and you can play until 45',
-  '고교 졸업 때 미국 대학(NCAA)에 갈 수 있고, 거기서 NBA 드래프트에 도전해요':
-    'You can attend a US college (NCAA) after high school and declare for the NBA Draft from there',
-  '스카우팅 리포트를 횟수 제한 없이 다시 뽑을 수 있어요':
-    'Scouting reports can be rerolled without limit',
-  '상점 가격이 15% 내렸어요': 'Shop prices are 15% lower',
+  '영어·일본어를 지원해요. 푸터에서 언어를 바꿀 수 있어요.':
+    'English and Japanese are supported. Switch languages in the footer.',
+  '푸터 공지사항 버튼에서 업데이트 소식을 볼 수 있어요.':
+    "The News button in the footer shows what's new.",
+  'NBA 파이널 MVP·KBL 챔프전 MVP 를 받으면 축하 연출이 나와요.':
+    'Winning NBA Finals MVP or KBL Finals MVP plays a celebration.',
+  '시즌이 끝나면 능력치와 평균 스탯 옆에 지난 시즌 대비 증감이 보여요.':
+    'After each season, attributes and averages show the change from last season.',
+  '노쇠가 완만해졌고 45세까지 뛸 수 있어요.':
+    'Decline is gentler and you can play until 45.',
+  '고교 졸업 때 미국 대학(NCAA)에 갈 수 있고, 거기서 NBA 드래프트에 도전해요.':
+    'You can attend a US college (NCAA) after high school and declare for the NBA Draft from there.',
+  '스카우팅 리포트를 횟수 제한 없이 다시 뽑을 수 있어요.':
+    'Scouting reports can be rerolled without limit.',
+  '상점 가격이 15% 내렸어요.': 'Shop prices are 15% lower.',
 }
 
 export default text
