@@ -2575,3 +2575,29 @@ footer .row.lang .link.current {
 :root:lang(ja) {
   --bar-label: 84px;
 }
+
+/* 시즌 결과 아래 팬 반응 카드 */
+.sns {
+  margin: 14px 2px 2px;
+  padding: 8px 12px;
+  background: var(--panel-hi);
+  box-shadow:
+    0 -2px 0 0 var(--ink),
+    0 2px 0 0 var(--ink),
+    -2px 0 0 0 var(--ink),
+    2px 0 0 0 var(--ink),
+    inset 0 -2px 0 0 var(--line);
+}
+
+.sns ul {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.sns b {
+  color: var(--accent-lo);
+}
