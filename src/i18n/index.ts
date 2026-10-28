@@ -1,6 +1,4 @@
 import { useSyncExternalStore } from 'react'
-import en from './en'
-import ja from './ja'
 
 export type Lang = 'ko' | 'en' | 'ja'
 export const LANGS: { id: Lang; label: string }[] = [
@@ -27,7 +25,12 @@ export interface Catalog {
   patterns: [RegExp, string][]
 }
 
-const CATALOGS: Record<Exclude<Lang, 'ko'>, Catalog> = { en, ja }
+// 기본이 한국어라 번역 카탈로그(번들의 약 1/4)는 그 언어를 쓸 때 따로 받는다
+const CATALOGS: Partial<Record<Exclude<Lang, 'ko'>, Catalog>> = {}
+const LOADERS = { en: () => import('./en'), ja: () => import('./ja') }
+export async function loadLang(l: Lang) {
+  if (l !== 'ko') CATALOGS[l] ??= (await LOADERS[l]()).default
+}
 const KEY = 'lang'
 
 function detect(): Lang {
@@ -45,7 +48,13 @@ let lang: Lang = detect()
 const subs = new Set<() => void>()
 
 export const getLang = () => lang
+// 받아 둔 언어는 바로, 아니면 카탈로그를 받은 뒤에 바꾼다 (그동안은 이전 언어 그대로)
 export function setLang(l: Lang) {
+  if (l !== 'ko' && !CATALOGS[l])
+    return void loadLang(l).then(
+      () => setLang(l),
+      () => {},
+    )
   lang = l
   try {
     localStorage.setItem(KEY, l)
@@ -101,6 +110,7 @@ export const tx = (t: Text): string =>
 function lookup(k: string): string {
   if (lang === 'ko') return k
   const c = CATALOGS[lang]
+  if (!c) return k
   const hit = c.text[k]
   if (hit !== undefined) return hit
   for (const [re, tpl] of c.patterns) {
@@ -112,3 +122,5 @@ function lookup(k: string): string {
 
 // 모듈 끝에서 호출: tr 이 쓰는 fill·lookup 이 모두 초기화된 뒤여야 한다
 applyToDocument()
+// 처음 언어의 카탈로그. main 이 기다린 뒤 그린다 (못 받으면 한국어 원문으로)
+export const langReady = loadLang(lang).then(applyToDocument, () => {})

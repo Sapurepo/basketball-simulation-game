@@ -1,4 +1,5 @@
 import {
+  type ComponentProps,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
   useEffect,
@@ -73,6 +74,11 @@ export interface StageEdit {
   onGrab: (id: string, e: ReactPointerEvent) => void
 }
 
+// 프레임을 넘기는 무대 아이템은 시계뿐이라 시계만 박자를 구독한다
+function ClockImg(props: ComponentProps<'img'>) {
+  return <img src={artURL('clock', useFrame())} {...props} />
+}
+
 function Piece({
   id,
   place,
@@ -88,7 +94,6 @@ function Piece({
   drop?: boolean
   edit?: StageEdit
 }) {
-  const frame = useFrame()
   const [w, h] = artSize(id)
   const { x, y } = place
   // 커튼과 창문은 한 몸이라 어느 쪽을 골라도 둘 다 선택 표시
@@ -98,6 +103,13 @@ function Piece({
     left: `${(x * 100) / 110}%`,
     zIndex: preview ? 150 : zOf(id, y, h),
     ...(WALL.has(id) ? { top: y * UNIT_Y } : { bottom: (80 - y - h) * UNIT_Y }),
+  }
+  const img = {
+    className: place.flip ? 'px flip' : 'px',
+    width: w * SCALE,
+    height: h * SCALE,
+    alt,
+    draggable: false,
   }
   const cls = [
     'decor',
@@ -112,14 +124,11 @@ function Piece({
       style={style}
       onPointerDown={edit && ((e) => edit.onGrab(id, e))}
     >
-      <img
-        className={place.flip ? 'px flip' : 'px'}
-        src={artURL(id, id === 'clock' ? frame : 0)}
-        width={w * SCALE}
-        height={h * SCALE}
-        alt={alt}
-        draggable={false}
-      />
+      {id === 'clock' ? (
+        <ClockImg {...img} />
+      ) : (
+        <img src={artURL(id)} {...img} />
+      )}
       {preview && <b className="preview-tag">{tr('미리보기')}</b>}
       {picked && edit?.sel === id && <b className="preview-tag">{alt}</b>}
     </span>
@@ -504,9 +513,11 @@ export function ShopDialog({
     addEventListener('pointerup', up)
   }
 
-  // 방향키로 1칸씩
+  // 방향키로 1칸씩. 누르는 동안은 drag 에만 두고 키를 떼면 저장한다 (키 반복마다 세이브 전체를 쓰지 않게)
   useEffect(() => {
     if (!editing || !edSel) return
+    const target = anchorOf(edSel)
+    let moved: { x: number; y: number } | undefined
     const onKey = (e: KeyboardEvent) => {
       const d = (
         {
@@ -518,13 +529,26 @@ export function ShopDialog({
       )[e.key]
       if (!d) return
       e.preventDefault()
-      const target = anchorOf(edSel)
-      const p = placeOf(state.layout, target)
+      const p = moved ?? placeOf(state.layout, target)
       const [x, y] = clampPos(target, p.x + d[0], p.y + d[1])
-      onChange({ ...state, layout: patchPlace(state.layout, target, { x, y }) })
+      moved = { x, y }
+      setDrag({ id: target, x, y })
+    }
+    const onUp = (e: KeyboardEvent) => {
+      if (!moved || !e.key.startsWith('Arrow')) return
+      const at = moved
+      moved = undefined
+      setDrag(undefined)
+      onChange({ ...state, layout: patchPlace(state.layout, target, at) })
     }
     addEventListener('keydown', onKey)
-    return () => removeEventListener('keydown', onKey)
+    addEventListener('keyup', onUp)
+    return () => {
+      removeEventListener('keydown', onKey)
+      removeEventListener('keyup', onUp)
+      // 누른 채로 편집을 끝내면 옮기던 자리는 버린다
+      if (moved) setDrag(undefined)
+    }
   }, [editing, edSel, state, onChange])
 
   const startEdit = (id?: string) => {
