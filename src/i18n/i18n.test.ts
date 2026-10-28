@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import { advanceSeason, newGame, resolveEvent } from '../engine/game'
 import { createPlayer } from '../engine/player'
 import { Rng } from '../engine/rng'
@@ -7,7 +7,10 @@ import type { GameState } from '../engine/types'
 import { generatePbp } from '../engine/commentary'
 import { ROSTER } from '../ui/sprite'
 import { formatMoney } from '../engine/events'
-import { ko, setLang, type Text, tr, tx } from './index'
+import { ko, loadLang, setLang, type Text, tr, tx } from './index'
+
+// 카탈로그를 미리 받아 두면 setLang 이 바로 바뀐다
+beforeAll(() => Promise.all([loadLang('en'), loadLang('ja')]))
 
 // 봇 커리어가 만들어 내는 모든 엔진 문장(수상·결과·라벨·이벤트·중계)을 모은다
 function collect(n: number) {
