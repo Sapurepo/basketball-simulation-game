@@ -65,6 +65,16 @@ describe('픽셀 스프라이트 v2', () => {
     expect(g[31][22]).not.toBe('#16130f')
   })
 
+  test('noBall 이면 슛 포즈에서 손의 공을 지운다 (랜딩 공 궤적)', () => {
+    // 공 솔기 색(셰이딩 없음)으로 공을 찾는다
+    const ball = (g: (string | null)[][]) =>
+      g.flat().filter((c) => c === '#5a2a12').length
+    for (const frame of [0, 1]) {
+      expect(ball(build(spec(), 'shoot', frame))).toBeGreaterThan(0)
+      expect(ball(build(spec({ noBall: true }), 'shoot', frame))).toBe(0)
+    }
+  })
+
   test('트로피 포즈는 머리 위 우승컵까지 잘리지 않고 외곽선이 그려진다', () => {
     for (const frame of [0, 1]) {
       // 트림이 금색이 아니어도 금색이 보여야 컵이다

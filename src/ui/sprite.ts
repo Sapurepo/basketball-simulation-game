@@ -11,7 +11,9 @@ export const OUT = '#16130f'
 
 // 시안에 없는 포즈 — trophy: 슛 포즈의 두 팔로 머리 위 우승컵을 든다 (파비콘)
 // guard: 공 없이 두 팔을 내리고 선다 (훈련의 수비수·패스 받는 동료)
-export type DrawnPose = 'idle' | 'shoot' | 'cheer' | 'sad' | 'trophy' | 'guard'
+// bench: 어깨에 수건을 걸치고 벤치에 앉아 있다 (랜딩 첫 장면)
+export type DrawnPose =
+  'idle' | 'shoot' | 'cheer' | 'sad' | 'trophy' | 'guard' | 'bench'
 export const DRAWN_POSES: DrawnPose[] = [
   'idle',
   'shoot',
@@ -19,12 +21,17 @@ export const DRAWN_POSES: DrawnPose[] = [
   'sad',
   'trophy',
   'guard',
+  'bench',
 ]
 
 export interface Spec extends Look {
   jersey: string
   trim: string
   shorts?: string
+  // 스냅백 색 (기본 빨강)
+  capColor?: string
+  // 슛 포즈에서 손의 공을 지운다 (공을 따로 날릴 때)
+  noBall?: boolean
 }
 
 const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
@@ -39,7 +46,7 @@ const hex = (a: number[]) =>
     .join('')
 export const adj = (h: string, k: number) =>
   hex(rgb(h).map((v) => (k > 1 ? v + (255 - v) * (k - 1) : v * k)))
-const mix = (a: string, b: string, t: number) =>
+export const mix = (a: string, b: string, t: number) =>
   hex(rgb(a).map((v, i) => v + (rgb(b)[i] - v) * t))
 
 export const SKINS = [
@@ -241,8 +248,8 @@ function palette(s: Spec): Record<string, string> {
     G: '#f2c14e',
     g: '#8a5a34',
     // 상점 치장: 스냅백(C·c), 목걸이 펜던트(j), 선글라스(V·v), 헤드폰(Y·y), 컴프레션(M), 이어폰(L)
-    C: '#d8433a',
-    c: '#9e2a24',
+    C: s.capColor ?? '#d8433a',
+    c: s.capColor ? adj(s.capColor, 0.7) : '#9e2a24',
     j: '#c99a25',
     V: '#1e1a1a',
     v: '#8fd0f5',
@@ -288,6 +295,8 @@ export function build(
   }
   if (pose === 'cheer') L = frame ? -1 : 0
   if (pose === 'sad' || pose === 'trophy' || pose === 'guard') dy = frame
+  // 앉으면 상체가 내려온다
+  if (pose === 'bench') dy = 6 + frame
   const U = dy + L
 
   for (let x = 5; x <= 22; x++) put(x, 46, '~')
@@ -415,7 +424,13 @@ export function build(
   if (!up) {
     armsDown('L')
     if (pose === 'idle') dribbleR()
-    else if (pose === 'sad' || pose === 'guard') armsDown('R')
+    else if (pose === 'sad' || pose === 'guard' || pose === 'bench')
+      armsDown('R')
+  }
+  if (pose === 'bench') {
+    rect(8, 15 + U, 19, 16 + U, 'W')
+    rect(8, 17 + U, 10, 23 + U, 'W')
+    put(10, 24 + U, 'W')
   }
 
   // 머리
@@ -442,7 +457,7 @@ export function build(
 
   // 얼굴
   const face =
-    pose === 'sad'
+    pose === 'sad' || pose === 'bench'
       ? 'sad'
       : pose === 'cheer' || pose === 'trophy'
         ? 'shout'
@@ -540,7 +555,7 @@ export function build(
 
   // 공
   if (pose === 'idle') draw(BALL, 21, frame ? 37 : 29)
-  if (pose === 'shoot') draw(BALL, 10, frame ? -9 + L : -6 + U)
+  if (pose === 'shoot' && !s.noBall) draw(BALL, 10, frame ? -9 + L : -6 + U)
   if (pose === 'trophy') draw(TROPHY, 9, -5 + U)
 
   // 컴프레션 상의(몸통·팔)와 하의(다리): 그 줄의 피부를 덮는다
