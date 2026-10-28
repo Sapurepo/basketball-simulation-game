@@ -21,6 +21,9 @@ export function botChoice(s: GameState): string {
       return has('nba') ? 'nba' : ids[0]
     case 'nbaFA':
       return ids[0]
+    // 연장은 거절: FA 시장의 NBA 도전 경로를 그대로 타게 해 실측 기준선을 유지
+    case 'extension':
+      return 'expire'
     case 'free':
       return has('draft') ? 'draft' : 'tryout'
     case 'retire':

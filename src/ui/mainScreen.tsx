@@ -11,7 +11,13 @@ import {
   potentialGrade,
 } from '../engine/player'
 import { clamp } from '../engine/rng'
-import type { Attributes, GameLog, GameState, Look } from '../engine/types'
+import type {
+  Attributes,
+  GameLog,
+  GameState,
+  Look,
+  SeasonRecord,
+} from '../engine/types'
 import { T, tr, tx } from '../i18n'
 import { AttrBars } from './attrBars'
 import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
@@ -23,6 +29,7 @@ import { DrillGame } from './drillGame'
 import { PixelPlayer } from './pixelPlayer'
 import { type Kit, pickPose } from './pose'
 import { Decor, ShopDialog, TrophyShelf } from './shop'
+import { fanReaction } from '../data/sns'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
 import { TeamLogo } from './teamLogo'
 import { TrainingPanel } from './trainingPanel'
@@ -562,6 +569,7 @@ export function MainScreen({
                   ))}
                 </ul>
               )}
+              <FanReaction name={p.name} rec={last} prev={prev} />
             </div>
           ) : (
             <p className="muted">
@@ -877,5 +885,28 @@ function Highlight({ game, onClose }: { game: GameLog; onClose: () => void }) {
         {tr('결과 확인')}
       </button>
     </dialog>
+  )
+}
+
+// 시즌 결과 아래 가상 팬 반응 카드 (저장하지 않고 시즌 기록으로 만든다)
+function FanReaction(props: {
+  name: string
+  rec: SeasonRecord
+  prev?: SeasonRecord
+}) {
+  const { likes, comments } = fanReaction(props.name, props.rec, props.prev)
+  return (
+    <section className="sns" aria-label={tr('팬 반응')}>
+      <p className="eyebrow">
+        {tr('팬 반응')} · ♥ {tr('좋아요 {n}', { n: likes.toLocaleString() })}
+      </p>
+      <ul>
+        {comments.map((c) => (
+          <li key={c.user}>
+            <b>@{c.user}</b> {tx(c.text)}
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }

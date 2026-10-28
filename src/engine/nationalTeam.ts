@@ -22,7 +22,7 @@ const WEAK = [
   { name: '몽골', rating: 55 },
   { name: '바레인', rating: 54 },
 ]
-const KOREA_RATING = 66
+const KOREA_RATING = 75
 
 export type Medal = 'gold' | 'silver' | 'bronze'
 

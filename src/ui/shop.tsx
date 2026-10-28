@@ -7,7 +7,7 @@ import {
 } from 'react'
 import { type Item, itemById, itemEffects, ITEMS, tierOf } from '../data/items'
 import { formatMoney } from '../engine/events'
-import { buyItem } from '../engine/game'
+import { buyItem, toggleAccessory } from '../engine/game'
 import { ATTR_LABELS } from '../engine/player'
 import type { AttrKey, GameState } from '../engine/types'
 import { T, tr } from '../i18n'
@@ -196,7 +196,9 @@ const kindTab = (k: Item['kind']) =>
   })[k]
 const kindDesc = (k: Item['kind']) =>
   ({
-    luxury: tr('착용하면 시즌 능력치 버프. 탈것은 무대 앞에 세워져요.'),
+    luxury: tr(
+      '보유하면 시즌 능력치 버프. 입히고 벗을 수 있고, 탈것은 무대 앞에 세워져요.',
+    ),
     decor: tr('무대를 꾸미고 시즌 성장 보너스. 벽지와 바닥은 하나만 적용돼요.'),
     furniture: tr('무대를 꾸미고 시즌 성장 보너스. 놓을 자리가 정해져 있어요.'),
     pet: tr('무대에서 함께 지내고 시즌 성장 보너스. 눌러서 쓰다듬어 주세요.'),
@@ -220,9 +222,9 @@ function whereLabel(it: Item) {
   return tr('효과 · 무대에 배치')
 }
 
-// 카드에 붙는 보유 상태
-function ownedStatus(it: Item, applied: boolean) {
-  if (it.buff) return tr('착용 중')
+// 카드에 붙는 보유 상태. 사치품은 벗어 둘 수 있다
+function ownedStatus(it: Item, applied: boolean, worn: boolean) {
+  if (it.buff) return worn ? tr('착용 중') : tr('미착용')
   if (it.kind === 'pet') return tr('함께 지내는 중')
   if (it.slot) return applied ? tr('적용 중') : tr('보유 · 미적용')
   return tr('배치 중')
@@ -460,6 +462,8 @@ export function ShopDialog({
   const has = owned.includes(it.id)
   const isApplied = (x: Item) => !!x.slot && state[x.slot] === x.id
   const look = state.player.look ?? DEFAULT_LOOK
+  // 보유한 사치품을 지금 입고 있는지 (벗어도 버프는 보유 기준이라 그대로)
+  const isWorn = (x: Item) => !!x.acc && look.acc.includes(x.acc)
 
   // 배치 편집: 미리보기를 끄고 무대 아이템을 끌거나 방향키로 옮긴다.
   // 끄는 동안의 자리는 drag 에만 두고, 손을 떼면 저장한다
@@ -758,7 +762,9 @@ export function ShopDialog({
                 <p className="shop-owned">
                   {tr('보유 중 · {status}', {
                     status: it.buff
-                      ? tr('착용됨')
+                      ? isWorn(it)
+                        ? tr('착용됨')
+                        : tr('미착용')
                       : it.kind === 'pet'
                         ? tr('함께 지내는 중')
                         : it.slot
@@ -775,6 +781,14 @@ export function ShopDialog({
               ) : (
                 <button className="primary big" disabled>
                   {tr('자금 부족 · {money}', { money: money(it.price - cash) })}
+                </button>
+              )}
+              {has && it.acc && (
+                <button
+                  className={isWorn(it) ? 'ghost' : 'primary'}
+                  onClick={() => onChange(toggleAccessory(state, it.id))}
+                >
+                  {isWorn(it) ? tr('해제') : tr('착용')}
                 </button>
               )}
               {has && it.slot && !isApplied(it) && (
@@ -840,7 +854,7 @@ export function ShopDialog({
                   <small className="win">▲ {effectText(c)}</small>
                   {mine ? (
                     <small className="win">
-                      {ownedStatus(c, isApplied(c))}
+                      {ownedStatus(c, isApplied(c), isWorn(c))}
                     </small>
                   ) : (
                     <span
