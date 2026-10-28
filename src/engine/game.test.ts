@@ -22,7 +22,7 @@ import {
 } from './player'
 import { Rng } from './rng'
 import { migrateLook, parseSave } from './save'
-import type { Look, Player } from './types'
+import type { GameState, Look, Player } from './types'
 import { botChoice, playCareer } from './testBot'
 import { ko } from '../i18n'
 
@@ -491,4 +491,66 @@ test('성장 분배: 99 능력치는 제외돼 오버롤 변화량이 줄지 않
     1,
   )
   expect(capped.attrs.rebounding).toBe(99)
+})
+
+describe('잔류와 연장 계약', () => {
+  const mk = (stage: 'KBL' | 'NBA', teamId: string, yearsLeft: number) => {
+    const rng = new Rng(4)
+    const p = createPlayer(rng, 'a', 'SG', '슈터')
+    for (const k of Object.keys(p.attrs) as (keyof typeof p.attrs)[])
+      p.attrs[k] = 85
+    return {
+      ...newGame(4, p, 'yongsan'),
+      age: 27,
+      stage,
+      teamId,
+      teamName: teamId,
+      service: { status: 'exempt' as const },
+      contract: {
+        teamId,
+        teamName: teamId,
+        salary: 1,
+        currency: stage === 'KBL' ? ('KRW' as const) : ('USD' as const),
+        yearsLeft,
+      },
+    }
+  }
+  const event = (s: ReturnType<typeof mk>, kind: string, seed: number) =>
+    buildOffseason(new Rng(seed), structuredClone(s)).find(
+      (e) => e.kind === kind,
+    )
+
+  test('FA 제안 1번은 항상 현 소속팀 (잔류), 다른 구단 3개가 더 붙는다', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      for (const [stage, team, kind] of [
+        ['KBL', 'changwon', 'kblFA'],
+        ['NBA', 'bos', 'nbaFA'],
+      ] as const) {
+        const offers = event(mk(stage, team, 0), kind, seed)!.options.filter(
+          (o) => o.id.startsWith('offer:'),
+        )
+        expect(offers).toHaveLength(4)
+        expect(offers[0].teamId).toBe(team)
+        expect(offers[0].label).toMatchObject({ k: '{team} (잔류)' })
+        expect(offers.slice(1).map((o) => o.teamId)).not.toContain(team)
+      }
+    }
+  })
+
+  test('계약 1년 남으면 연장 제안, 받으면 다음 오프시즌 FA 를 건너뛴다', () => {
+    expect(event(mk('KBL', 'changwon', 2), 'extension', 1)).toBeUndefined()
+    let s: GameState = mk('KBL', 'changwon', 1)
+    s = { ...s, events: buildOffseason(new Rng(1), structuredClone(s)) }
+    const ext = s.events.find((e) => e.kind === 'extension')!
+    expect(ext.options.map((o) => o.id)).toEqual(['offer:0', 'expire'])
+    s = { ...s, events: [ext] }
+    // 만료까지 뛰면 계약 그대로
+    expect(resolveEvent(s, 'expire').contract?.yearsLeft).toBe(1)
+    const signed = resolveEvent(s, 'offer:0')
+    expect(signed.contract?.teamId).toBe('changwon')
+    expect(signed.contract!.yearsLeft).toBeGreaterThanOrEqual(2)
+    expect(signed.stage).toBe('KBL')
+    const next = advanceSeason({ ...signed, events: [] })
+    expect(next.events.map((e) => e.kind)).not.toContain('kblFA')
+  })
 })

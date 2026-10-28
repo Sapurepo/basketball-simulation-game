@@ -127,6 +127,14 @@ const text: Record<string, string> = {
     'Signed a standard contract with {team} at {money}.',
   '{team} (투웨이)': '{team} (two-way)',
   '{team}': '{team}',
+  '{team} (잔류)': '{team} (stay)',
+  '연장 계약 제안': 'Contract extension offer',
+  '계약이 1년 남았습니다. {team}이(가) 연장 계약을 제안했습니다.':
+    'One year left on your deal. {team} offered an extension.',
+  '계약 만료까지 뛴다': 'Play out the contract',
+  '{team} 연장 계약': 'Extension with {team}',
+  '연봉 {money}에 {years}년 연장 계약을 맺었습니다.':
+    'Signed a {years}-year extension at {money} per year.',
   '연봉 {money}, {years}년 계약': '{money} per year, {years}-year deal',
   '{team} 계약': 'Signed with {team}',
   '연봉 {money}에 {years}년 계약을 맺었습니다.':
