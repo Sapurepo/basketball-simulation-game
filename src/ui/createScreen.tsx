@@ -107,7 +107,7 @@ export function CreateScreen({
           <div className="pick-head">
             <span className="tag gold">P1 SELECT</span>
             <h2>
-              {ROSTER[sel].name}{' '}
+              {tr(ROSTER[sel].name)}{' '}
               <label className="num-field">
                 #
                 <input
@@ -147,7 +147,7 @@ export function CreateScreen({
               >
                 {i === sel && <span className="tag gold">P1</span>}
                 <PixelPlayer pose="idle" kit={kit} look={r.look} />
-                <b>{r.name}</b>
+                <b>{tr(r.name)}</b>
                 <small>#{r.look.num}</small>
               </button>
             ))}

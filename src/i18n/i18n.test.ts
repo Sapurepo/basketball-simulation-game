@@ -5,6 +5,7 @@ import { Rng } from '../engine/rng'
 import { botChoice } from '../engine/testBot'
 import type { GameState } from '../engine/types'
 import { generatePbp } from '../engine/commentary'
+import { ROSTER } from '../ui/sprite'
 import { formatMoney } from '../engine/events'
 import { ko, setLang, type Text, tr, tx } from './index'
 
@@ -144,5 +145,14 @@ describe('금액 표기', () => {
     const s = formatMoney(amount, 'KRW')
     setLang('ko')
     expect(s).toBe(out)
+  })
+})
+
+describe('아바타 캐릭터 이름', () => {
+  it.each(['en', 'ja'] as const)('%s 로 표기된다', (lang) => {
+    setLang(lang)
+    const miss = ROSTER.map((r) => r.name).filter((n) => tr(n) === n)
+    setLang('ko')
+    expect(miss).toEqual([])
   })
 })
