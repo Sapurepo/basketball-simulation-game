@@ -57,25 +57,25 @@
 
 ### 10. 업데이트 공지
 
-- [ ] `src/data/changelog.ts` — `{ version, date, items[] }` 배열. 버전은 `package.json` 과 맞춘다.
-- [ ] 푸터 `v<버전>` 을 눌러 공지 팝업 열기 (`legalDialog.tsx` 와 같은 팝업 패턴 재사용)
-- [ ] 마지막으로 본 버전을 localStorage 에 두고, 새 버전이면 버전 표시 옆에 점 하나. 자동 팝업은 띄우지 않는다.
-- [ ] 사이트맵 팝업에 "업데이트 소식" 항목 추가
+- [x] `src/data/changelog.ts` — `{ version, date, items[] }` 배열. 버전은 `package.json` 과 맞춘다 (`changelog.test.ts` 가 검사).
+- [x] 푸터 버전 옆 "공지사항" 버튼으로 공지 팝업 열기 (버전은 일반 텍스트) — `CHANGELOG_DOC` 을 `LegalDoc` 으로 만들어 `LegalDialog` 그대로 재사용
+- [x] 마지막으로 본 버전을 localStorage(`seenVersion`) 에 두고, 새 버전이면 공지사항 버튼 옆에 점 하나. 자동 팝업은 띄우지 않는다.
+- [x] 사이트맵 팝업에 "업데이트 소식" 항목 추가
 - 건너뛴 것: 서버 공지·푸시. 배포가 곧 공지이므로 코드 안의 정적 데이터로 충분하다.
 
 ### 11. 파이널 MVP 이벤트 애니메이션
 
-- [ ] `src/ui/mainScreen.tsx` — 시즌 진행 후 `last.awards` 에 `'NBA 파이널 MVP'` 가 있으면 오버레이 표시. 기존 `Highlight` 팝업 앞에 끼운다 (파엠 → 하이라이트 → 시즌 결과 순).
-- [ ] 연출: `PixelPlayer` 의 `trophy` 포즈 + CSS 애니메이션(색종이·확대). 외부 라이브러리 없이 CSS keyframes 로.
-- [ ] 닫기 버튼과 `prefers-reduced-motion` 대응
+- [x] `src/ui/mainScreen.tsx` — 시즌 진행 후 `last.awards` 에 `'NBA 파이널 MVP'` 가 있으면 `FmvpCelebration` 표시. 기존 `Highlight` 팝업 앞에 끼운다 (파엠 → 하이라이트 → 시즌 결과 순).
+- [x] 연출: 코트 무대(마루·센터서클) 위 `PixelPlayer` `trophy` 포즈 + 색종이 40장 낙하 + 폭죽 2발. CSS keyframes 만 (`.modal.fmvp`). `Pose` 에 `trophy` 추가.
+- [x] 닫기 버튼과 `prefers-reduced-motion` 대응 (색종이는 흩어진 자리에 정지)
 - 결정 필요: KBL 챔프전 MVP·U-리그 챔프전 MVP 도 약한 버전으로 보여줄지. 기본은 NBA 파엠만.
 
 ### 12. 시즌 후 능력치·스탯 +n 표시
 
-- [ ] 능력치: `mainScreen.tsx` 의 시즌 진행 핸들러(114행 부근)가 `advanceSeason` 전 상태를 이미 갖고 있다. 진행 직전 `attrs` 스냅샷을 state 에 두고 `AttrBars` 에 `delta` prop 으로 넘긴다. 세이브 구조는 건드리지 않는다.
-- [ ] `src/ui/attrBars.tsx` — `delta` 가 있으면 값 옆에 `+1.2` / `−0.8` 표시 (성장 양수 초록, 노쇠 음수 회색)
-- [ ] 스탯: `history` 의 직전 시즌 `stats` 와 비교해 경기당 평균 증감을 시즌 결과 칸에 표시. `SeasonTable`(`careerTables.tsx`) 또는 시즌 결과 영역 중 한 곳만.
-- [ ] 표시 유지 기간: 다음 시즌 진행 전까지. 새로고침하면 사라져도 된다 (스냅샷을 저장하지 않으므로).
+- [x] 능력치: 시즌 진행 핸들러에서 `attrDelta(state.player.attrs, next.player.attrs)` 를 state 에 두고 `AttrBars` 에 `delta` prop 으로 넘긴다. 세이브 구조는 건드리지 않는다.
+- [x] `src/ui/attrBars.tsx` — `delta` 가 있으면 값 옆에 `+2` / `−1` 표시 (성장 양수 초록, 노쇠 음수 회색). 막대가 보여주는 반올림 정수끼리 비교. 계산은 `src/ui/delta.ts` + `delta.test.ts`
+- [x] 스탯: `history.at(-2)` 와 비교해 경기당 평균 증감을 시즌 결과 칸(`Stat`)에 표시. `careerTables.tsx` 는 그대로.
+- [x] 표시 유지 기간: 다음 시즌 진행 전까지. 새로고침하거나 세이브를 불러오면(`MainScreen` 을 `careerId`+가져오기 횟수로 key) 사라진다.
 - 건너뛴 것: 세이브에 이전 능력치 저장. 새로고침 후에도 보여야 한다는 요구가 나오면 그때 `SeasonRecord` 에 `attrsAfter` 추가.
 
 ## C. 밸런스 — 결정이 먼저
@@ -212,6 +212,7 @@
 
 ## 진행 기록
 
-| 날짜       | 항목             | 커밋 | 메모                                                    |
-| ---------- | ---------------- | ---- | ------------------------------------------------------- |
-| 2026-10-27 | 1, 6, 7, 8(코드) |      | 푸터 "게임 확률표" 팝업(`src/data/odds.ts`) 추가로 함께 |
+| 날짜       | 항목             | 커밋 | 메모                                                      |
+| ---------- | ---------------- | ---- | --------------------------------------------------------- |
+| 2026-10-27 | 1, 6, 7, 8(코드) |      | 푸터 "게임 확률표" 팝업(`src/data/odds.ts`) 추가로 함께   |
+| 2026-10-28 | 10, 11, 12       |      | repo-loop 3회차 통과. 파엠 연출은 코트 무대 + 색종이·폭죽 |

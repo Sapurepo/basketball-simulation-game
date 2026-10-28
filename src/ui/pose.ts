@@ -10,6 +10,7 @@ export type Pose =
   | 'salute'
   | 'wave'
   | 'guard'
+  | 'trophy'
 
 const TEAM_COLORS = [
   '#1f5fbf',
