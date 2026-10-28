@@ -436,6 +436,22 @@ const text: Record<string, string> = {
   '2026년 10월 28일': 'October 28, 2026',
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
+  // ── 공지 1.1.0 ──
+  '영어·일본어를 지원해요. 푸터에서 언어를 바꿀 수 있어요':
+    'English and Japanese are supported. Switch languages in the footer',
+  '푸터 공지사항 버튼에서 업데이트 소식을 볼 수 있어요':
+    "The News button in the footer shows what's new",
+  'NBA 파이널 MVP·KBL 챔프전 MVP 를 받으면 축하 연출이 나와요':
+    'Winning NBA Finals MVP or KBL Finals MVP plays a celebration',
+  '시즌이 끝나면 능력치와 평균 스탯 옆에 지난 시즌 대비 증감이 보여요':
+    'After each season, attributes and averages show the change from last season',
+  '노쇠가 완만해졌고 45세까지 뛸 수 있어요':
+    'Decline is gentler and you can play until 45',
+  '고교 졸업 때 미국 대학(NCAA)에 갈 수 있고, 거기서 NBA 드래프트에 도전해요':
+    'You can attend a US college (NCAA) after high school and declare for the NBA Draft from there',
+  '스카우팅 리포트를 횟수 제한 없이 다시 뽑을 수 있어요':
+    'Scouting reports can be rerolled without limit',
+  '상점 가격이 15% 내렸어요': 'Shop prices are 15% lower',
 }
 
 export default text
