@@ -198,6 +198,10 @@ function ageMult(age: number): number {
   return 0.12
 }
 
+// OVR 95 이상 양의 성장 절반, 97 이상 1/4
+export const topGrowthScale = (ovr: number) =>
+  ovr >= 97 ? 0.25 : ovr >= 95 ? 0.5 : 1
+
 // 한 시즌 성장(또는 노쇠). minutesShare = 평균 출전시간 / 경기 시간.
 export function grow(
   rng: Rng,
@@ -220,6 +224,8 @@ export function grow(
     const play = 0.7 + 0.5 * clamp(minutesShare, 0, 1)
     g = gap * ageMult(age) * play * rng.range(0.75, 1.25) + bonus
   }
+  // 99 근처 체감: 성장 보너스가 잠재력을 넘겨 99 까지 쉽게 밀어 올리지 않게 (노쇠는 그대로)
+  if (g > 0) g *= topGrowthScale(overall(p))
 
   // s_i = b_i / Σ w_j·b_j (b = w + 0.1 + 집중 보너스) → 오버롤 변화량이 정확히 g 가 된다.
   // 0.1 은 주력 능력치 하나만 99 로 치솟지 않도록 성장을 고르게 퍼뜨린다.
