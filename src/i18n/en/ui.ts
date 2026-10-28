@@ -280,6 +280,8 @@ const text: Record<string, string> = {
   파엠: 'Finals MVP',
   '불가능이라 여겼던 파이널 MVP를 거머쥐다':
     'Seizing the Finals MVP once thought impossible',
+  '1라운드': 'Round 1',
+  '3순위': 'Pick 3',
   '새로운 인생 시작하기': 'Start a new life',
   // ── 명예의 전당·랭킹 ──
   '(총 {n}명)': '({n} players)',

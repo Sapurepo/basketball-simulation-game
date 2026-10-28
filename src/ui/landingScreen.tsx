@@ -2,62 +2,71 @@ import { useEffect, useState } from 'react'
 import type { HallEntry } from '../engine/save'
 import type { GameState } from '../engine/types'
 import { HallBoard } from './hallBoard'
-import { PixelPlayer } from './pixelPlayer'
 import { tr } from '../i18n'
-import { type Kit, type Pose, teamKit } from './pose'
+import { useFrame } from './frame'
+import { MilestoneScene } from './milestoneScene'
+import { DEFAULT_LOOK } from './sprite'
 
-// 벤치 → 파엠: 마일스톤마다 포즈·유니폼·캡션을 바꿔가며 순환 재생
-const MILESTONES: { label: string; caption: string; pose: Pose; kit: Kit }[] = [
+// 벤치 → 파엠: 마일스톤마다 장면·캡션을 바꿔가며 순환 재생
+const MILESTONES: { label: string; caption: string }[] = [
   {
     label: '벤치',
     caption: '고1, 벤치 끝자리에서 출전을 기다리고',
-    pose: 'sad',
-    kit: teamKit('yongsan'),
   },
   {
     label: '데뷔',
     caption: '첫 출전, 공을 잡고 코트를 누벼',
-    pose: 'idle',
-    kit: teamKit('yongsan'),
   },
   {
     label: '프로 입성',
     caption: 'KBL 드래프트 지명, 프로 무대에 입성하고',
-    pose: 'cheer',
-    kit: teamKit('kbl'),
   },
   {
     label: 'NBA',
     caption: '꿈에 그리던 NBA 진출, 세계 최고의 무대에서 슛',
-    pose: 'shoot',
-    kit: teamKit('nba'),
   },
   {
     label: '파엠',
     caption: '불가능이라 여겼던 파이널 MVP를 거머쥐다',
-    pose: 'celebrate',
-    kit: { jersey: '#f2c14e', number: '#1b2230' },
   },
 ]
-const STEP_MS = 1800
+const STEP_MS = 3200
+const TYPE_MS = 70
 
 const reducedMotion = () =>
   matchMedia('(prefers-reduced-motion: reduce)').matches
 
 function useMilestoneLoop() {
   // 모션 줄이기: 순환 없이 마지막 장면 고정
-  const [i, setI] = useState(() =>
-    reducedMotion() ? MILESTONES.length - 1 : 0,
-  )
+  const [reduced] = useState(reducedMotion)
+  const [step, setStep] = useState(reduced ? MILESTONES.length - 1 : 0)
+  // 단계가 바뀔 때마다 타이머를 새로 잡아 직접 고른 단계도 한 박자 온전히 보여준다
   useEffect(() => {
-    if (reducedMotion()) return
-    const id = setInterval(
-      () => setI((n) => (n + 1) % MILESTONES.length),
+    if (reduced) return
+    const id = setTimeout(
+      () => setStep((n) => (n + 1) % MILESTONES.length),
       STEP_MS,
     )
-    return () => clearInterval(id)
-  }, [])
-  return i
+    return () => clearTimeout(id)
+  }, [step, reduced])
+  return { reduced, step, setStep }
+}
+
+// 한 글자씩 타이핑. 단계마다 key 로 새로 마운트해 처음부터 친다
+function Typed({ text, instant }: { text: string; instant: boolean }) {
+  const [n, setN] = useState(instant ? text.length : 0)
+  useEffect(() => {
+    if (n >= text.length) return
+    const id = setTimeout(() => setN(n + 1), TYPE_MS)
+    return () => clearTimeout(id)
+  }, [n, text])
+  return (
+    <p className="caption">
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">{text.slice(0, n) || '\u00a0'}</span>
+      <span className="cursor" aria-hidden="true" />
+    </p>
+  )
 }
 
 export function LandingScreen({
@@ -73,7 +82,8 @@ export function LandingScreen({
   onNew: () => void
   onOpenRanking: () => void
 }) {
-  const step = useMilestoneLoop()
+  const { reduced, step, setStep } = useMilestoneLoop()
+  const frame = useFrame()
   const m = MILESTONES[step]
 
   return (
@@ -94,23 +104,32 @@ export function LandingScreen({
         </p>
       </section>
 
-      <section className="panel center">
-        <PixelPlayer
+      <section className="panel milestone">
+        <MilestoneScene
           key={step}
-          pose={m.pose}
-          kit={m.kit}
-          look={state?.player.look}
+          step={step}
+          look={state?.player.look ?? DEFAULT_LOOK}
+          frame={frame}
+          reduced={reduced}
         />
-        <p className="muted caption" key={`c${step}`}>
-          {tr(m.caption)}
-        </p>
-        <ol className="milestones">
-          {MILESTONES.map((x, i) => (
-            <li key={x.label} className={i <= step ? 'on' : undefined}>
-              {tr(x.label)}
-            </li>
-          ))}
-        </ol>
+        <div className="milestone-body">
+          <Typed key={step} text={tr(m.caption)} instant={reduced} />
+          <ol className="milestones">
+            {MILESTONES.map((x, i) => (
+              <li
+                key={x.label}
+                className={i < step ? 'done' : i === step ? 'now' : undefined}
+              >
+                <button
+                  aria-current={i === step ? 'step' : undefined}
+                  onClick={() => setStep(i)}
+                >
+                  {tr(x.label)}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       <HallBoard mine={hall} onOpenRanking={onOpenRanking} />
