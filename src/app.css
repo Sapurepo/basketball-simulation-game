@@ -45,6 +45,16 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  /* 드래그 선택·이미지 끌기 차단. 입력란은 타이핑 때문에 예외 */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* #root 가 화면 전체를 차지하고 앱 박스를 가운데 둔다 (body 를 grid 로 두면
