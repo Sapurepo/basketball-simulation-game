@@ -68,7 +68,7 @@
 - [x] `src/ui/mainScreen.tsx` — 시즌 진행 후 `last.awards` 에 `'NBA 파이널 MVP'` 가 있으면 `FmvpCelebration` 표시. 기존 `Highlight` 팝업 앞에 끼운다 (파엠 → 하이라이트 → 시즌 결과 순).
 - [x] 연출: 코트 무대(마루·센터서클) 위 `PixelPlayer` `trophy` 포즈 + 색종이 40장 낙하 + 폭죽 2발. CSS keyframes 만 (`.modal.fmvp`). `Pose` 에 `trophy` 추가.
 - [x] 닫기 버튼과 `prefers-reduced-motion` 대응 (색종이는 흩어진 자리에 정지)
-- 결정 필요: KBL 챔프전 MVP·U-리그 챔프전 MVP 도 약한 버전으로 보여줄지. 기본은 NBA 파엠만.
+- [x] 2026-10-28 결정: KBL 챔피언결정전 MVP 도 같은 연출(문구만 다름). U-리그는 제외.
 
 ### 12. 시즌 후 능력치·스탯 +n 표시
 

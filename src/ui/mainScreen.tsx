@@ -83,8 +83,11 @@ export function MainScreen({
   const [castIdx, setCastIdx] = useState(0)
   const [loadStep, setLoadStep] = useState(-1)
   const [highlight, setHighlight] = useState<GameLog | null>(null)
-  // 파이널 MVP 축하 오버레이. 닫으면 보류해 둔 하이라이트(key)를 이어서 띄운다
-  const [fmvp, setFmvp] = useState<{ key: GameLog | null } | null>(null)
+  // 파이널 MVP 축하 오버레이(NBA 파엠·KBL 챔결 MVP). 닫으면 보류해 둔 하이라이트(key)를 이어서 띄운다
+  const [fmvp, setFmvp] = useState<{
+    key: GameLog | null
+    award: keyof typeof MVP_SHOW
+  } | null>(null)
   // 방금 진행한 시즌의 능력치 증감. 다음 진행 때 교체되고 새로고침하면 사라진다
   const [delta, setDelta] = useState<Attributes | null>(null)
   const [leaving, setLeaving] = useState(false)
@@ -132,13 +135,15 @@ export function MainScreen({
       setTraining(false)
       const season = next.history.at(-1)
       const key = season?.featured.find((g) => KEY_GAME.test(g.label)) ?? null
-      const won = season?.awards.includes('NBA 파이널 MVP')
+      const won = (Object.keys(MVP_SHOW) as (keyof typeof MVP_SHOW)[]).find(
+        (a) => season?.awards.includes(a),
+      )
       // 결과를 먼저 반영하고 오버레이는 페이드아웃(150ms) 뒤 내린다
       setLeaving(true)
       setTimeout(() => {
         setLoadStep(-1)
         setLeaving(false)
-        if (won) setFmvp({ key })
+        if (won) setFmvp({ key, award: won })
         else if (key) setHighlight(key)
       }, 150)
     }
@@ -186,6 +191,7 @@ export function MainScreen({
         <FmvpCelebration
           kit={kit}
           look={p.look}
+          award={fmvp.award}
           onClose={() => {
             setHighlight(fmvp.key)
             setFmvp(null)
@@ -699,14 +705,22 @@ const CONFETTI = Array.from({ length: 40 }, (_, i) => ({
   '--c': ['#f2c14e', '#f07a2b', '#1d8a57', '#cc3049', '#3b7dd8'][i % 5],
 })) as CSSProperties[]
 
-// NBA 파이널 MVP 축하: 코트 위에서 트로피를 들고, 색종이·폭죽이 흩날린다
+// 축하 연출을 띄우는 수상과 문구 (수상명은 엔진 식별자라 그대로 쓴다)
+const MVP_SHOW = {
+  'NBA 파이널 MVP': { eyebrow: 'NBA 파이널', title: '파이널 MVP!' },
+  'KBL 챔피언결정전 MVP': { eyebrow: 'KBL 챔피언결정전', title: '챔프전 MVP!' },
+} as const
+
+// 파이널 MVP 축하: 코트 위에서 트로피를 들고, 색종이·폭죽이 흩날린다
 function FmvpCelebration({
   kit,
   look,
+  award,
   onClose,
 }: {
   kit: Kit
   look?: Look
+  award: keyof typeof MVP_SHOW
   onClose: () => void
 }) {
   const ref = useRef<HTMLDialogElement>(null)
@@ -717,7 +731,7 @@ function FmvpCelebration({
     <dialog
       ref={ref}
       className="modal fmvp"
-      aria-label="NBA 파이널 MVP"
+      aria-label={award}
       onClose={() => setTimeout(onClose, 150)}
     >
       <div className="court">
@@ -732,8 +746,8 @@ function FmvpCelebration({
           <PixelPlayer pose="trophy" kit={kit} look={look} scale={4} />
         </div>
       </div>
-      <p className="eyebrow">NBA 파이널</p>
-      <h2>파이널 MVP!</h2>
+      <p className="eyebrow">{MVP_SHOW[award].eyebrow}</p>
+      <h2>{MVP_SHOW[award].title}</h2>
       <button className="primary big" onClick={() => ref.current?.close()}>
         계속
       </button>
