@@ -830,6 +830,8 @@ input[type='range'] {
   background: var(--wall, var(--bg-wall));
   border-bottom: 3px solid var(--ink);
   overflow: hidden;
+  /* 무대 속 z-index(스프라이트 83·펫 85·페넌트 200)가 로딩 오버레이(10) 위로 새지 않게 가둔다 */
+  isolation: isolate;
 }
 
 .stage::after {
