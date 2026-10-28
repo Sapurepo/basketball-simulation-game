@@ -93,6 +93,47 @@ describe('병역', () => {
     }
   })
 
+  test('NBA 출신 상무 전역: 무소속 선택이 끼어들지 않고 NBA·KBL 계약이 그대로 남는다', () => {
+    const rng = new Rng(3)
+    const p = createPlayer(rng, 'a', 'SF', 'n/a')
+    for (const k of Object.keys(p.attrs) as (keyof Player['attrs'])[])
+      p.attrs[k] = 90
+    const base: GameState = {
+      ...newGame(1, p, 'yongsan'),
+      age: 24,
+      stage: 'MILITARY',
+      teamId: 'sangmu',
+      teamName: '국군체육부대',
+      history: [
+        {
+          year: 2034,
+          age: 23,
+          stage: 'NBA',
+          team: '보스턴 셀틱스',
+        } as GameState['history'][number],
+      ],
+      service: {
+        status: 'serving',
+        kind: 'sangmu',
+        returnTo: { stage: 'NBA', teamId: 'bos', teamName: '보스턴 셀틱스' },
+      },
+    }
+    let s = advanceSeason(base)
+    expect(s.events.map((e) => e.kind)).toEqual(['notice', 'nbaFA', 'training'])
+    s = resolveEvent(s, 'ok')
+    expect(s.events[0].options[0]).toMatchObject({
+      teamId: 'bos',
+      label: { k: '{team} (복귀)' },
+    })
+    const nba = resolveEvent(s, 'offer:0')
+    expect(nba.stage).toBe('NBA')
+    expect(nba.events.map((e) => e.kind)).toEqual(['notice', 'training'])
+    let kbl = resolveEvent(s, 'kbl')
+    kbl = resolveEvent(kbl, 'offer:0')
+    expect(kbl.stage).toBe('KBL')
+    expect(kbl.events.map((e) => e.kind)).toEqual(['notice', 'training'])
+  })
+
   test('아시안게임 금메달이면 예술체육요원으로 면제된다', () => {
     const gold = careers.filter((s) =>
       s.honors.some((h) => h.name === '아시안게임 금메달'),
@@ -535,6 +576,69 @@ describe('잔류와 연장 계약', () => {
         expect(offers.slice(1).map((o) => o.teamId)).not.toContain(team)
       }
     }
+  })
+
+  test('원팀: 문턱 미만이어도 소속팀 제안은 온다 (KBL 55 미만 잔류만, NBA 80~82 소속팀 투웨이)', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      const low = mk('KBL', 'changwon', 0)
+      for (const k of Object.keys(
+        low.player.attrs,
+      ) as (keyof Player['attrs'])[])
+        low.player.attrs[k] = 50
+      const kbl = event(low, 'kblFA', seed)!.options.filter((o) =>
+        o.id.startsWith('offer:'),
+      )
+      expect(kbl).toHaveLength(1)
+      expect(kbl[0].teamId).toBe('changwon')
+      expect(event(low, 'free', seed)).toBeUndefined()
+
+      const mid = mk('NBA', 'bos', 0)
+      for (const k of Object.keys(
+        mid.player.attrs,
+      ) as (keyof Player['attrs'])[])
+        mid.player.attrs[k] = 81
+      const nba = event(mid, 'nbaFA', seed)!.options.filter((o) =>
+        o.id.startsWith('offer:'),
+      )
+      expect(nba).toHaveLength(1)
+      expect(nba[0].teamId).toBe('bos')
+      expect(nba[0].label).toMatchObject({ k: '{team} (잔류·투웨이)' })
+      // 연장도 같은 조건
+      expect(
+        event(
+          { ...low, contract: { ...low.contract, yearsLeft: 1 } },
+          'extension',
+          seed,
+        ),
+      ).toBeDefined()
+      expect(
+        event(
+          { ...mid, contract: { ...mid.contract, yearsLeft: 1 } },
+          'extension',
+          seed,
+        ),
+      ).toBeDefined()
+    }
+  })
+
+  test('원팀: NBA 에서 KBL 로 돌아오면 마지막 KBL 팀이 1번 (복귀)', () => {
+    const s: GameState = {
+      ...mk('NBA', 'bos', 0),
+      history: [
+        {
+          year: 2030,
+          age: 23,
+          stage: 'KBL',
+          team: '창원 LG 세이커스',
+        } as GameState['history'][number],
+      ],
+    }
+    s.events = buildOffseason(new Rng(2), structuredClone(s))
+    const fa = s.events.find((e) => e.kind === 'nbaFA')!
+    const back = resolveEvent({ ...s, events: [fa] }, 'kbl').events[0]
+    expect(back.kind).toBe('kblFA')
+    expect(back.options[0].teamId).toBe('changwon')
+    expect(back.options[0].label).toMatchObject({ k: '{team} (복귀)' })
   })
 
   test('계약 1년 남으면 연장 제안, 받으면 다음 오프시즌 FA 를 건너뛴다', () => {
