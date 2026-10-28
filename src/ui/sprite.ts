@@ -7,7 +7,7 @@ export const W = 30
 export const H = 54
 const OX = 1
 const OY = 6
-const OUT = '#16130f'
+export const OUT = '#16130f'
 
 // 시안에 없는 포즈 — trophy: 슛 포즈의 두 팔로 머리 위 우승컵을 든다 (파비콘)
 // guard: 공 없이 두 팔을 내리고 선다 (훈련의 수비수·패스 받는 동료)
@@ -37,7 +37,7 @@ const hex = (a: number[]) =>
         .padStart(2, '0'),
     )
     .join('')
-const adj = (h: string, k: number) =>
+export const adj = (h: string, k: number) =>
   hex(rgb(h).map((v) => (k > 1 ? v + (255 - v) * (k - 1) : v * k)))
 const mix = (a: string, b: string, t: number) =>
   hex(rgb(a).map((v, i) => v + (rgb(b)[i] - v) * t))
@@ -584,7 +584,7 @@ export function build(
   return out
 }
 
-function paint(px: (string | null)[][], w: number, h: number) {
+export function paint(px: (string | null)[][], w: number, h: number) {
   const cv = document.createElement('canvas')
   cv.width = w
   cv.height = h
@@ -667,108 +667,8 @@ const ICONS = {
     '.YYYYYYY.',
     '.........',
   ],
-  // 상점 장식 아이템: 무대(히어로 카드)에 놓인다. 크기는 자유
-  rug: [
-    'RRRRRRRRRRRRRRRRRRRR',
-    'RYYYYYYYYYYYYYYYYYYR',
-    'RYRRRRRRRRRRRRRRRRYR',
-    'RYYYYYYYYYYYYYYYYYYR',
-    'RRRRRRRRRRRRRRRRRRRR',
-  ],
-  frame: [
-    'BBBBBBBBB',
-    'BTTTTTTTB',
-    'BTTTYTTTB',
-    'BTTTTTTTB',
-    'BgggggggB',
-    'BgggggggB',
-    'BBBBBBBBB',
-  ],
-  sofa: [
-    'LL..............LL',
-    'LLLLLLLLLLLLLLLLLL',
-    'LLLLLLLLLLLLLLLLLL',
-    'LLLLLLLLLLLLLLLLLL',
-    'LL.LLLLLLLLLLLL.LL',
-    '.B..............B.',
-  ],
-  barbell: [
-    'GG..........GG',
-    'GG..........GG',
-    'KKKKKKKKKKKKKK',
-    'GG..........GG',
-    'GG..........GG',
-  ],
-  car: [
-    '.......CCCCCCCCC........',
-    '......CTTTCTTTTCC.......',
-    '.....CTTTTCTTTTTCC......',
-    'CCCCCCCCCCCCCCCCCCCCCCC.',
-    'CCCCCCCCCCCCCCCCCCCCCCCC',
-    'CCCKKCCCCCCCCCCCCCKKCCCC',
-    '..KGGK..........KGGK....',
-    '..KGGK..........KGGK....',
-    '...KK............KK.....',
-  ],
-  // 무대 고정 창문과 가구
-  window: [
-    'BBBBBBBBBBBBBB',
-    'BTTTTTBBTTTTTB',
-    'BTWWTTBBTTTTTB',
-    'BTTTTTBBTTTWWB',
-    'BTTTTTBBTTTTTB',
-    'BBBBBBBBBBBBBB',
-    'BTTTTTBBTTTTTB',
-    'BTTTTTBBTTTTTB',
-    'BTTTTTBBTTTTTB',
-    'BBBBBBBBBBBBBB',
-  ],
-  curtain: [
-    'RRRRRRRRRRRRRRRRRR',
-    'RRRRRRRRRRRRRRRRRR',
-    'RRRR..........RRRR',
-    'RRR............RRR',
-    'RRR............RRR',
-    'RRR............RRR',
-    'RRR............RRR',
-    'RRR............RRR',
-    'RRR............RRR',
-    'RRR............RRR',
-    'RRRR..........RRRR',
-    'RRRR..........RRRR',
-  ],
-  bed: [
-    'BB..................',
-    'BBWWW...............',
-    'BBWWWLLLLLLLLLLLLLLB',
-    'BBLLLLLLLLLLLLLLLLLB',
-    'BBBBBBBBBBBBBBBBBBBB',
-    'BB................BB',
-  ],
-  clock: [
-    '..KKKKK..',
-    '.KWWWWWK.',
-    'KWWWKWWWK',
-    'KWWWKWWWK',
-    'KWWWKKKWK',
-    'KWWWWWWWK',
-    'KWWWWWWWK',
-    '.KWWWWWK.',
-    '..KKKKK..',
-  ],
   heart: ['.RR.RR.', 'RRRRRRR', 'RRRRRRR', '.RRRRR.', '..RRR..', '...R...'],
-  // 오토바이와 펫 10종 (왼쪽을 바라본다)
-  motorcycle: [
-    '.........KK.......',
-    '....CCCC..K.......',
-    '..KKCCCCCCK.......',
-    '....GGGGCCCCC.....',
-    '..KKK.GG...KKK....',
-    '.KKKKK....KKKKK...',
-    '.KKGKK....KKGKK...',
-    '.KKKKK....KKKKK...',
-    '..KKK......KKK....',
-  ],
+  // 펫 10종 (왼쪽을 바라본다)
   pomeranian: [
     '.o.o.......',
     'ooooo...oo.',
@@ -874,10 +774,8 @@ const ICON_PAL: Record<string, string> = {
   g: '#3f9a4a',
   D: '#a8743a',
   E: '#1e1a1a',
-  L: '#4f7ad6',
   K: '#2b2a2a',
   G: '#9a9a9a',
-  C: '#d6262f',
   o: '#e8963a',
   w: '#f6f2ea',
   c: '#d9a26b',

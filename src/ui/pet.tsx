@@ -16,7 +16,16 @@ const reducedMotion = () =>
 const rand = (n: number) => Math.floor(Math.random() * n)
 
 // 무대 바닥을 몇 픽셀씩 돌아다니는 펫. 누르면 머리 위로 하트가 떠오른다
-export function Pet({ it, start }: { it: Item; start: number }) {
+export function Pet({
+  it,
+  start,
+  preview,
+}: {
+  it: Item
+  start: number
+  // 상점에서 사기 전에 놓아 본 펫
+  preview?: boolean
+}) {
   const [pos, setPos] = useState({
     x: start,
     y: (start * 7) % Y_MAX,
@@ -58,7 +67,7 @@ export function Pet({ it, start }: { it: Item; start: number }) {
   const [w, h] = iconSize(name)
   return (
     <button
-      className="pet"
+      className={preview ? 'pet preview' : 'pet'}
       style={{ left: `${pos.x}%`, bottom: pos.y, zIndex: 40 - pos.y }}
       aria-label={tr('{name} 쓰다듬기', { name: T(it.name) })}
       onClick={pat}
@@ -89,6 +98,7 @@ export function Pet({ it, start }: { it: Item; start: number }) {
           }
         />
       ))}
+      {preview && <b className="preview-tag">{tr('미리보기')}</b>}
     </button>
   )
 }

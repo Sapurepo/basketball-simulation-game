@@ -22,6 +22,7 @@
   --accent-hi: #ffb27a;
   --accent-lo: #c05a12;
   --accent-soft: #f6c79f;
+  --rare: #4f9fdc;
   --gold: #f2c14e;
   --gold-hi: #ffe08a;
   --gold-lo: #c99a25;
@@ -847,7 +848,7 @@ input[type='range'] {
   position: absolute;
   left: 0;
   top: 16px;
-  z-index: 1;
+  z-index: 200;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -899,7 +900,7 @@ input[type='range'] {
   position: absolute;
   right: 12px;
   top: 10px;
-  z-index: 1;
+  z-index: 200;
   width: 50px;
   height: 58px;
   background: var(--ink);
@@ -936,7 +937,7 @@ input[type='range'] {
   position: absolute;
   left: 50%;
   bottom: 22px;
-  z-index: 1;
+  z-index: 83;
   transform: translateX(-50%);
 }
 
@@ -1012,64 +1013,68 @@ button.plate:hover > span {
   background: var(--gold-hi);
 }
 
-/* 상점 장식: 무대 위 정해진 자리 */
-/* 바닥(::after)보다 위, 뒤에 오는 선수 스프라이트(z 1)보다는 아래 */
+/* 상점 장식: 무대 위 기본 자리(인라인 left/top/bottom/z-index).
+   벽 장식 < 러그 < 가구(아래일수록 앞) < 선수(83) < 펫(85) < 무대 표지(200) */
 .stage .decor {
   position: absolute;
-  z-index: 1;
   pointer-events: none;
 }
 
-.decor-rug {
+/* 상점에서 사기 전에 놓아 본 아이템: 금색 점선이 깜빡이고 위에 이름표 */
+.stage .preview {
+  outline: 3px dashed var(--gold);
+  outline-offset: 3px;
+  animation: preview-blink 0.76s steps(1) infinite;
+}
+
+.preview-tag {
+  position: absolute;
   left: 50%;
-  bottom: 10px;
+  bottom: calc(100% + 8px);
   translate: -50% 0;
+  padding: 3px 8px;
+  background: var(--gold);
+  color: var(--ink);
+  font: 400 11px var(--font-pixel);
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px var(--ink);
 }
 
-.decor-sofa {
-  left: 8px;
-  bottom: 26px;
+/* 선수는 무대 높이에 가까워 이름표를 머리 옆에 단다 */
+.stage .sprite > .preview-tag {
+  left: 100%;
+  bottom: auto;
+  top: 8px;
+  translate: 8px 0;
 }
 
-.decor-car {
-  right: 6px;
-  bottom: 26px;
+@keyframes preview-blink {
+  50% {
+    outline-color: transparent;
+  }
 }
 
-.decor-motorcycle {
-  right: 126px;
-  bottom: 28px;
+/* 방금 산 아이템은 위에서 떨어져 한 번 튄다 */
+.stage .drop {
+  animation: shop-drop 0.6s steps(6) both;
 }
 
-.decor-frame {
-  left: 40px;
-  top: 64px;
-}
-
-.decor-barbell {
-  right: 18px;
-  bottom: 120px;
-}
-
-/* 창문(고정)과 그 위에 거는 커튼, 벽시계, 침대 */
-.decor-window {
-  left: 150px;
-  top: 52px;
-}
-
-.decor-curtain {
-  left: 142px;
-  top: 48px;
-}
-
-.decor-clock {
-  right: 210px;
-  top: 62px;
-}
-
-.decor-bed {
-  left: 160px;
-  bottom: 26px;
+@keyframes shop-drop {
+  0% {
+    transform: translateY(-48px);
+    opacity: 0;
+  }
+  45% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(-8px);
+  }
+  85%,
+  100% {
+    transform: translateY(0);
+  }
 }
 
 /* 펫: 바닥 영역을 돌아다닌다. 아래(앞)에 있을수록 위에 그린다 */
@@ -1077,7 +1082,7 @@ button.plate:hover > span {
   position: absolute;
   inset: auto 0 2px;
   height: 72px;
-  z-index: 2;
+  z-index: 85;
 }
 
 .pet {
@@ -1138,7 +1143,7 @@ button.plate:hover > span {
   position: absolute;
   right: 74px;
   top: 20px;
-  z-index: 1;
+  z-index: 200;
   min-width: 132px;
   padding: 0 6px;
   border-bottom: 8px solid #8a5a34;
@@ -1898,60 +1903,495 @@ tr.me td {
   white-space: pre;
 }
 
-/* 상점 팝업 */
+/* 상점 팝업: 어두운 상단 바 + 무대 미리보기·상세 + 탭 + 카드 그리드 */
+.modal.shop {
+  width: min(100% - 32px, 880px);
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  background: var(--panel-hi);
+}
+
 .modal.shop[open] {
   display: grid;
-  gap: 14px;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
-.modal.shop section {
-  display: grid;
-  gap: 6px;
+.shop-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--ink);
+  color: var(--panel-hi);
 }
 
-.modal.shop h3 {
-  margin: 0;
+.shop-bar h2 {
+  font: 400 20px var(--font-pixel);
 }
 
-.shop-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
+.shop-badge {
+  margin: 3px;
+  padding: 2px 8px;
+  background: var(--accent);
+  color: var(--ink);
+  font: 12px var(--font-pixel);
+  box-shadow:
+    0 -3px 0 0 var(--accent),
+    0 3px 0 0 var(--accent),
+    -3px 0 0 0 var(--accent),
+    3px 0 0 0 var(--accent);
+}
+
+.shop-cash {
+  position: relative;
+  display: flex;
+  align-items: center;
   gap: 8px;
+  padding: 6px 14px 6px 10px;
+  background: var(--ink-hover);
+  box-shadow: inset 0 0 0 2px var(--muted);
 }
 
-.shop-list li {
+.shop-cash > span {
+  display: grid;
+  gap: 1px;
+  font-family: var(--font-pixel);
+}
+
+.shop-cash small {
+  font-size: 10px;
+  color: var(--muted-on-dark);
+}
+
+.shop-cash b {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--gold);
+}
+
+/* 산 금액이 지갑 위로 떠오르며 사라진다 */
+.cash-float {
+  position: absolute;
+  right: 10px;
+  top: -6px;
+  color: var(--accent);
+  font: 13px var(--font-pixel);
+  pointer-events: none;
+  animation: float-up 1.2s steps(8) both;
+}
+
+@keyframes float-up {
+  to {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+}
+
+.shop-body {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.shop-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: start;
+}
+
+.shop-stage {
+  flex: 3 1 400px;
+  min-width: 0;
+  margin: 3px;
+  border-bottom: 0;
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink);
+}
+
+.shop-stage-tag {
+  position: absolute;
+  left: 0;
+  top: 12px;
+  z-index: 200;
+  display: flex;
+  gap: 8px;
+  padding: 6px 22px 6px 12px;
+  background: var(--ink);
+  color: var(--panel-hi);
+  font: 12px var(--font-pixel);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%);
+}
+
+.shop-stage-tag .gold {
+  color: var(--gold);
+}
+
+.shop-stage-tag .mint {
+  color: #9ed8a8;
+}
+
+.slot-tag {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 200;
+  translate: -50% 0;
+  padding: 4px 10px;
+  background: var(--gold);
+  color: var(--ink);
+  font: 12px var(--font-pixel);
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.shop-toast {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  z-index: 220;
+  padding: 8px 14px;
+  background: var(--gold);
+  color: var(--ink);
+  font: 14px var(--font-pixel);
+  white-space: nowrap;
+  translate: -50% 0;
+  box-shadow:
+    0 0 0 3px var(--ink),
+    0 6px 0 0 var(--ink);
+  animation: shop-toast 1.8s steps(12) both;
+}
+
+@keyframes shop-toast {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  12% {
+    transform: none;
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 착용 아이템을 사면 선수 둘레가 세 번 반짝인다 */
+.stage .sprite.spark {
+  animation: shop-spark 0.5s steps(2) 3 both;
+}
+
+@keyframes shop-spark {
+  50% {
+    filter: drop-shadow(0 0 0 var(--gold)) brightness(1.15);
+  }
+}
+
+.shop-detail {
+  flex: 2 1 260px;
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  margin: 3px;
+  padding: 16px;
+  background: var(--panel-hi);
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink);
+}
+
+.shop-detail h3 {
+  font: 400 26px/1.2 var(--font-pixel);
+}
+
+.shop-detail > p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 등급 배지: 일반 · 레어 · 에픽 · 레전드 */
+.tier {
+  padding: 2px 7px;
+  color: var(--ink);
+  font: 11px var(--font-pixel);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.tier.t0 {
+  background: #e6dfcf;
+}
+
+.tier.t1 {
+  background: var(--rare);
+}
+
+.tier.t2 {
+  background: var(--accent);
+}
+
+.tier.t3 {
+  background: var(--gold);
+}
+
+.shop-effects {
+  display: grid;
+  border: 2px solid var(--ink);
+}
+
+.shop-effects > p {
+  padding: 6px 10px;
+  background: var(--ink);
+  color: var(--panel-hi);
+  font: 11px var(--font-pixel);
+}
+
+.shop-effects > div {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 10px;
-  padding: 6px 10px;
-  background: var(--panel-sunk);
+  padding: 8px 10px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
 }
 
-.shop-list li > span:first-child {
+.shop-effects > div > span:first-of-type {
+  font: 14px var(--font-pixel);
+}
+
+.shop-effects .plus {
+  padding: 1px 6px;
+  background: var(--win);
+  color: var(--panel-hi);
+  font: 11px var(--font-pixel);
+}
+
+.shop-price {
   display: grid;
-  min-width: 0;
+  gap: 4px;
 }
 
-.shop-list b {
-  font-size: 14px;
+.shop-price b {
+  font: 400 26px/1 var(--font-pixel);
 }
 
-.shop-list small {
+.shop-price small {
   font-size: 12px;
-  color: var(--muted);
+  font-weight: 700;
 }
 
-.shop-list .price {
-  font: 400 13px var(--font-pixel);
+.shop-owned {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  margin: 3px;
+  padding: 8px 14px;
+  background: var(--win);
+  color: var(--panel-hi);
+  font: 16px var(--font-pixel);
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink);
 }
 
-.shop-list .primary,
-.shop-list .ghost {
-  margin: 2px;
-  padding: 6px 12px;
+.shop-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.shop-tabs .tabs button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shop-tabs .tabs small {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.shop-tabs > p {
+  font-size: 13px;
+}
+
+.shop-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 12px 14px;
+}
+
+.shop-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  margin: 3px 3px 9px;
+  padding: 0;
+  border: 0;
+  background: var(--panel-hi);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink),
+    0 9px 0 0 var(--ink);
+}
+
+.shop-card:hover {
+  transform: translateY(-3px);
+}
+
+/* 고른 카드: 금색 테두리 */
+.shop-card.on {
+  box-shadow:
+    0 -3px 0 0 var(--gold),
+    0 3px 0 0 var(--gold),
+    -3px 0 0 0 var(--gold),
+    3px 0 0 0 var(--gold),
+    0 9px 0 0 var(--gold-lo);
+}
+
+.card-art {
+  position: relative;
+  display: grid;
+  place-items: end center;
+  height: 128px;
+  padding-bottom: 14px;
+  background: var(--ink-hover);
+  overflow: hidden;
+}
+
+/* 받침대 */
+.card-art::before {
+  content: '';
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: 8px;
+  height: 12px;
+  background: var(--muted);
+  box-shadow:
+    inset 0 3px 0 0 #7a766b,
+    0 0 0 2px var(--ink);
+}
+
+.card-art > img,
+.card-art > .swatch {
+  position: relative;
+}
+
+/* 레전드는 반짝이 */
+.card-art.legend::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(var(--gold-hi) 2px, transparent 3px) 20% 30% / 100% 100%
+      no-repeat,
+    radial-gradient(var(--gold) 3px, transparent 4px) 78% 18% / 100% 100%
+      no-repeat;
+  pointer-events: none;
+}
+
+.swatch {
+  display: block;
+  width: 104px;
+  height: 72px;
+  margin-bottom: 4px;
+  box-shadow:
+    0 0 0 3px var(--ink),
+    6px 6px 0 0 var(--ink-deep);
+}
+
+.card-art .tier {
+  position: absolute;
+  left: 0;
+  top: 0;
+  box-shadow: none;
+}
+
+.owned-tag {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 2px 7px;
+  background: var(--win);
+  color: var(--panel-hi);
+  font: 11px var(--font-pixel);
+}
+
+.card-body {
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px 12px;
+  border-top: 3px solid var(--ink);
+}
+
+.card-body b {
+  font: 400 15px/1.25 var(--font-pixel);
+}
+
+.card-body small {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.card-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font: 15px var(--font-pixel);
+}
+
+.card-price.short {
+  color: var(--loss);
+}
+
+.card-price.short img {
+  opacity: 0.5;
+}
+
+.card-price em {
+  padding: 1px 5px;
+  background: var(--loss);
+  color: var(--panel-hi);
+  font-size: 10px;
+  font-style: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage .preview,
+  .stage .drop,
+  .stage .sprite.spark,
+  .shop-toast,
+  .cash-float {
+    animation: none;
+  }
+
+  .shop-card:hover {
+    transform: none;
+  }
 }
 
 /* 등번호 수정 팝업 */
