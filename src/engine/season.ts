@@ -1,4 +1,10 @@
-import { HIGH_SCHOOLS, HS_TOURNAMENTS, UNIVERSITIES } from '../data/schools'
+import {
+  HIGH_SCHOOLS,
+  HS_TOURNAMENTS,
+  isUsCollege,
+  UNIVERSITIES,
+  US_COLLEGES,
+} from '../data/schools'
 import { KBL_TEAMS, NBA_TEAMS } from '../data/teams'
 import { EN_FIRST, EN_LAST, KR_GIVEN, KR_SURNAMES } from '../data/names'
 import {
@@ -7,6 +13,7 @@ import {
   LEAGUES,
   NBA_GAMES,
   TWO_WAY_GAME_LIMIT,
+  NCAA_GAMES,
   UNIV_LEAGUE_GAMES,
 } from '../data/leagues'
 import { generatePbp } from './commentary'
@@ -305,7 +312,8 @@ function highSchool(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
   return { c, result: [`대회 최고 성적 ${RESULT_LABEL[best]}`], teams }
 }
 
-function college(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
+function college(rng: Rng, s: GameState, ctx: SeasonCtxFactory) {
+  if (isUsCollege(s.teamId)) return ncaa(rng, ctx)
   const teams = makeTeams(rng, UNIVERSITIES, 58, 2)
   const c = ctx(teams, 'COLLEGE')
   const others = teams.filter((t) => t.id !== c.team.id)
@@ -328,6 +336,39 @@ function college(rng: Rng, _s: GameState, ctx: SeasonCtxFactory) {
     if (c.impact() >= c.rival(68)) c.awards.push('U-리그 MVP')
     if (perGame(c.stats, 'pts') >= c.rival(20, 2))
       c.awards.push('U-리그 득점상')
+  }
+  return { c, result, teams }
+}
+
+// 미국 대학: 정규시즌 30경기, 상위 8팀 단판 토너먼트
+function ncaa(rng: Rng, ctx: SeasonCtxFactory) {
+  const teams = makeTeams(rng, US_COLLEGES, 68, 2)
+  const c = ctx(teams, 'NCAA')
+  const others = teams.filter((t) => t.id !== c.team.id)
+  for (let i = 0; i < NCAA_GAMES; i++) {
+    c.game(others[i % others.length], 'NCAA 정규시즌')
+  }
+  const table = standings(rng, teams, c.team, c.wins, NCAA_GAMES)
+  const rank = table.indexOf(c.team) + 1
+  const result = [`정규시즌 ${rank}위`]
+  const q = [0, 7, 3, 4, 2, 5, 1, 6].map((i) => table[i])
+  const semi: Team[] = []
+  for (let i = 0; i < 8; i += 2)
+    semi.push(c.series(q[i], q[i + 1], 1, 'NCAA 토너먼트 8강'))
+  const fin = [
+    c.series(semi[0], semi[1], 1, 'NCAA 토너먼트 4강'),
+    c.series(semi[2], semi[3], 1, 'NCAA 토너먼트 4강'),
+  ]
+  const champ = c.series(fin[0], fin[1], 1, 'NCAA 토너먼트 결승')
+  result.push(champ.id === c.team.id ? 'NCAA 토너먼트 우승' : '토너먼트 진출')
+  if (champ.id === c.team.id) {
+    c.awards.push('NCAA 토너먼트 우승')
+    if (c.finalsMvp(finalsLine(c, 'NCAA 토너먼트 결승'), 22))
+      c.awards.push('NCAA 토너먼트 MOP')
+  }
+  if (c.eligible()) {
+    if (c.impact() >= c.rival(76)) c.awards.push('NCAA 올해의 선수')
+    if (perGame(c.stats, 'pts') >= c.rival(20, 2)) c.awards.push('NCAA 득점상')
   }
   return { c, result, teams }
 }
@@ -518,12 +559,15 @@ const POSITIONS = Object.keys(POSITION_LABELS) as Position[]
 // 베스트 팀 기준 오버롤 [퍼스트, 세컨드, 서드]
 const TIER_OVR: Partial<Record<League, [number, number, number]>> = {
   COLLEGE: [70, 66, 63],
+  NCAA: [78, 74, 71],
   KBL: [78, 74, 71],
   NBA: [94, 91, 89],
 }
 
 function myTier(league: League, awards: string[]): number {
   const has = (p: string) => awards.some((a) => a.includes(p))
+  if (league === 'NCAA')
+    return has('올해의 선수') ? 0 : has('득점상') ? 1 : has('MOP') ? 2 : -1
   if (league === 'COLLEGE')
     return has('U-리그 MVP')
       ? 0
@@ -553,7 +597,7 @@ function bestTeams(
 ): BestPlayer[][] | undefined {
   const tiers = TIER_OVR[c.league]
   if (!tiers) return undefined
-  const kr = c.league !== 'NBA'
+  const kr = c.league !== 'NBA' && c.league !== 'NCAA'
   const name = () =>
     kr
       ? rng.pick(KR_SURNAMES) + rng.pick(KR_GIVEN)

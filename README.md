@@ -14,7 +14,7 @@ pnpm lint && pnpm typecheck && pnpm format
 ## 구조
 
 - `src/engine/` — 순수 TS 시뮬레이션 엔진 (UI 의존 없음)
-  - `player.ts` 능력치·오버롤·성장(전성기 31~34세, 34세부터 급격한 노쇠), `sim.ts` 경기·박스스코어, `commentary.ts` 텍스트 중계
+  - `player.ts` 능력치·오버롤·성장(전성기 33~36세, 38세부터 급격한 노쇠), `sim.ts` 경기·박스스코어, `commentary.ts` 텍스트 중계
   - `season.ts` 무대별 시즌·플레이오프·수상, `events.ts` 오프시즌 선택지(진학·드래프트·FA·NBA 도전·은퇴)
   - `game.ts` 공개 API(`newGame`/`advanceSeason`/`resolveEvent`), `save.ts` 로컬 저장·파일 내보내기
 - `src/data/` — 학교·구단(실명), 리그 보정 수치

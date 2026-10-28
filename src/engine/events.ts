@@ -1,10 +1,13 @@
-import { UNIVERSITIES } from '../data/schools'
+import { isUsCollege, UNIVERSITIES, US_COLLEGES } from '../data/schools'
 import { KBL_TEAMS, NBA_TEAMS } from '../data/teams'
 import {
   ENLIST_MAX_AGE,
   ENLIST_MIN_AGE,
   KBL_SALARY,
+  LEAGUES,
+  NBA_DRAFT_MARGIN,
   NBA_SALARY,
+  NCAA_DRAFT_BONUS,
   NBA_TWO_WAY_SALARY,
 } from '../data/leagues'
 import {
@@ -24,7 +27,11 @@ import type {
   Stage,
 } from './types'
 
-const RETIRE_AGE = 41
+// 고교 졸업 때 미국 대학 제안이 오는 OVR
+const US_COLLEGE_OVR = 64
+const RETIRE_AGE = 45
+// 은퇴 고민 이벤트가 뜨기 시작하는 나이
+const RETIRE_ASK_AGE = 36
 
 export function interp(table: [number, number][], ovr: number): number {
   if (ovr <= table[0][0]) return table[0][1]
@@ -176,7 +183,11 @@ function kblDraft(rng: Rng, s: GameState): GameEvent {
 function nbaDraft(rng: Rng, s: GameState): GameEvent[] {
   const ovr = overall(s.player)
   const score =
-    ovr + (22 - s.age) * 0.6 + (s.player.height - 195) / 5 + rng.normal(0, 2)
+    ovr +
+    (22 - s.age) * 0.6 +
+    (s.player.height - 195) / 5 +
+    (isUsCollege(s.teamId) ? NCAA_DRAFT_BONUS : 0) +
+    rng.normal(0, 2)
   if (score < 82) {
     return [
       notice(
@@ -253,7 +264,7 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
   ) {
     ev.push(enlistEvent(s))
   }
-  if (pro && s.age >= 34) {
+  if (pro && s.age >= RETIRE_ASK_AGE) {
     ev.push({
       kind: 'retire',
       title: '은퇴 고민',
@@ -270,12 +281,20 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       .filter((u) => ovr >= u.strength - 8 + rng.normal(0, 2))
       .slice(0, 4)
     const list = offers.length ? offers : UNIVERSITIES.slice(-2)
+    // 미국 대학: 고교 최상위권이면 2곳에서 제안
+    const us =
+      ovr >= US_COLLEGE_OVR ? rng.shuffle([...US_COLLEGES]).slice(0, 2) : []
     ev.push({
       kind: 'hsGraduate',
       title: '고교 졸업 — 진로 선택',
       body: `현재 오버롤은 ${ovr}입니다. 스카우트 제안이 도착했습니다.`,
       options: [
         ...list.map((u) => ({ id: `univ:${u.id}`, label: `${u.name} 진학` })),
+        ...us.map((u) => ({
+          id: `us:${u.id}`,
+          label: `${u.name} 진학`,
+          desc: '미국 NCAA. NBA 드래프트로 가는 길',
+        })),
         {
           id: 'kbl',
           label: '고졸 KBL 드래프트 참가',
@@ -298,7 +317,13 @@ export function buildOffseason(rng: Rng, s: GameState): GameEvent[] {
       id: 'kbl',
       label: last ? 'KBL 드래프트 참가' : 'KBL 얼리 엔트리',
     })
-    if (ovr >= 80) options.push({ id: 'nba', label: 'NBA 드래프트 도전' })
+    // NBA 드래프트는 미국 대학에서만, 리그 평균 OVR 보다 넉넉히 높을 때 (상위권)
+    if (isUsCollege(s.teamId) && ovr >= LEAGUES.NCAA.level + NBA_DRAFT_MARGIN)
+      options.push({
+        id: 'nba',
+        label: 'NBA 드래프트 도전',
+        desc: '미지명이면 같은 해 KBL 드래프트',
+      })
     if (last || s.stageYear >= 1) {
       ev.push({
         kind: 'collegeChoice',
@@ -528,10 +553,18 @@ export function applyEvent(
     case 'hsGraduate':
       if (optionId === 'kbl') return front(kblDraft(rng, s))
       {
-        const u = UNIVERSITIES.find((x) => `univ:${x.id}` === optionId)!
+        const us = optionId.startsWith('us:')
+        const u = (us ? US_COLLEGES : UNIVERSITIES).find(
+          (x) => `${us ? 'us' : 'univ'}:${x.id}` === optionId,
+        )!
         setStage(s, 'COLLEGE', u.id, u.name)
         return front(
-          notice(`${u.name} 입학`, '대학 무대에서 새로운 도전을 시작합니다.'),
+          notice(
+            `${u.name} 입학`,
+            us
+              ? '미국 대학 무대에서 NBA 를 향한 도전을 시작합니다.'
+              : '대학 무대에서 새로운 도전을 시작합니다.',
+          ),
         )
       }
     case 'collegeChoice':

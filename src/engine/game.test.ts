@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { generatePbp } from './commentary'
-import { isDrill } from './events'
+import { buildOffseason, isDrill } from './events'
 import { buffed, itemById, itemEffects } from '../data/items'
 import {
   advanceSeason,
@@ -54,7 +54,8 @@ describe('커리어 전체 진행', () => {
   test('NBA 진출은 가능하지만 드물다', () => {
     const nba = careers.filter((s) => s.history.some((h) => h.stage === 'NBA'))
     expect(nba.length).toBeGreaterThan(0)
-    expect(nba.length / careers.length).toBeLessThan(0.35)
+    // 2026-10-28 미국 대학 경로·은퇴 45세 이후 봇 600개 실측 35.3%
+    expect(nba.length / careers.length).toBeLessThan(0.45)
   })
 })
 
@@ -334,6 +335,122 @@ describe('상점과 자금', () => {
     const raw = JSON.parse(JSON.stringify(s))
     raw.items = ['dog', 'cap']
     expect(parseSave(JSON.stringify(raw)).items).toEqual(['pomeranian', 'cap'])
+  })
+})
+
+describe('노쇠 완화와 은퇴 45세', () => {
+  const mk = (age: number) => {
+    const rng = new Rng(3)
+    const p = createPlayer(rng, 'a', 'SF', '스윙맨')
+    p.growthType = 'normal'
+    p.potential = 70
+    for (const k of Object.keys(p.attrs) as (keyof typeof p.attrs)[])
+      p.attrs[k] = 70
+    const s = newGame(3, p, 'yongsan')
+    return { ...s, age }
+  }
+
+  test('36세 보통형은 완만히 떨어지고 38세부터 급노쇠다', () => {
+    // overall() 은 반올림이라 능력치 평균으로 잰다
+    const mean = (a: Record<string, number>) =>
+      Object.values(a).reduce((x, y) => x + y, 0) / Object.keys(a).length
+    const g = (age: number) => {
+      const s = mk(age)
+      const before = mean(s.player.attrs)
+      grow(new Rng(1), s.player, age, 0.8, undefined, 0)
+      return mean(s.player.attrs) - before
+    }
+    expect(g(36)).toBeGreaterThanOrEqual(-1)
+    expect(g(36)).toBeLessThanOrEqual(0)
+    // 38세는 -(1.0)×0.8~1.2 에 운동능력·스피드 -1 이 더해진다
+    expect(g(38)).toBeLessThan(-1)
+  })
+
+  test('은퇴 고민은 36세부터, 강제 은퇴는 45세', () => {
+    const kinds = (age: number) =>
+      buildOffseason(new Rng(1), {
+        ...mk(age),
+        stage: 'KBL',
+        service: { status: 'exempt' },
+        contract: {
+          teamId: 'x',
+          teamName: 'x',
+          salary: 1,
+          currency: 'KRW',
+          yearsLeft: 2,
+        },
+      }).map((e) => e.kind)
+    expect(kinds(35)).not.toContain('retire')
+    expect(kinds(36)).toContain('retire')
+    expect(kinds(44)).not.toContain('forceRetire')
+    expect(kinds(45)).toEqual(['forceRetire'])
+  })
+})
+
+describe('미국 대학 경로', () => {
+  const mk = (ovr: number) => {
+    const rng = new Rng(9)
+    const p = createPlayer(rng, 'a', 'SG', '슈터')
+    for (const k of Object.keys(p.attrs) as (keyof typeof p.attrs)[])
+      p.attrs[k] = ovr
+    return newGame(9, p, 'yongsan')
+  }
+  const ids = (s: ReturnType<typeof mk>) =>
+    buildOffseason(new Rng(1), s).flatMap((e) => e.options.map((o) => o.id))
+
+  test('고교 3학년 OVR 64 이상이면 미국 대학 제안이 2개 온다', () => {
+    const us = (ovr: number) =>
+      ids({ ...mk(ovr), stageYear: 3 }).filter((id) => id.startsWith('us:'))
+    expect(us(64)).toHaveLength(2)
+    expect(us(60)).toHaveLength(0)
+  })
+
+  test('NBA 드래프트 선택지는 미국 대학 OVR 78 이상에서만 열린다', () => {
+    const college = (ovr: number, teamId: string) => ({
+      ...mk(ovr),
+      age: 20,
+      stage: 'COLLEGE' as const,
+      stageYear: 2,
+      teamId,
+    })
+    expect(ids(college(78, 'duke'))).toContain('nba')
+    expect(ids(college(77, 'duke'))).not.toContain('nba')
+    expect(ids(college(90, 'korea'))).not.toContain('nba')
+  })
+
+  test('미국 대학 출신은 드래프트 점수 +4: 20세 195cm OVR 78 이 100번 중 60번 이상 지명된다', () => {
+    // 보너스 없으면 Φ((78+1.2−82)/2) ≈ 8%, 있으면 Φ(0.6) ≈ 73%
+    let drafted = 0
+    for (let seed = 1; seed <= 100; seed++) {
+      const s = {
+        ...mk(78),
+        rng: seed,
+        age: 20,
+        stage: 'COLLEGE' as const,
+        stageYear: 2,
+        teamId: 'duke',
+        teamName: '듀크대',
+        events: [
+          {
+            kind: 'collegeChoice',
+            title: '',
+            body: '',
+            options: [{ id: 'nba', label: '' }],
+          },
+        ],
+      }
+      s.player.height = 195
+      if (resolveEvent(s, 'nba').stage === 'NBA') drafted++
+    }
+    expect(drafted).toBeGreaterThanOrEqual(60)
+  })
+
+  test('미국 대학 시즌은 NCAA 명칭으로 기록된다', () => {
+    const s = { ...mk(75), age: 19, stage: 'COLLEGE' as const, teamId: 'duke' }
+    const h = advanceSeason(s).history[0]
+    expect(h.result[0]).toMatch(/^정규시즌 \d+위$/)
+    expect(h.featured.every((g) => /NCAA/.test(g.label))).toBe(true)
+    expect(h.bestTeams?.[0]).toHaveLength(5)
   })
 })
 

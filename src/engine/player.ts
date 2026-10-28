@@ -186,9 +186,9 @@ function rollPotential(rng: Rng) {
   return p < 92 && rng.chance(0.028) ? rng.int(92, 95) : p
 }
 
-// 전성기 종료 나이. 그 뒤 33세까지는 완만히, 34세부터 급격히 노쇠한다.
-const PEAK: Record<GrowthType, number> = { early: 31, normal: 33, late: 34 }
-const DECLINE_AGE = 34
+// 전성기 종료 나이. 그 뒤 37세까지는 완만히, 38세(DECLINE_AGE)부터 급격히 노쇠한다.
+const PEAK: Record<GrowthType, number> = { early: 33, normal: 35, late: 36 }
+const DECLINE_AGE = 38
 
 function ageMult(age: number): number {
   if (age <= 18) return 0.3
@@ -211,7 +211,7 @@ export function grow(
   const gap = p.potential - overall(p)
   let g: number
   if (age >= DECLINE_AGE) {
-    g = -(1.5 + 0.6 * (age - DECLINE_AGE)) * rng.range(0.8, 1.2) + bonus * 0.5
+    g = -(1.0 + 0.4 * (age - DECLINE_AGE)) * rng.range(0.8, 1.2) + bonus * 0.5
   } else if (age >= peak) {
     g = -rng.range(0.2, 0.8) + bonus * 0.5
   } else if (gap <= 0) {

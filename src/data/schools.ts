@@ -42,6 +42,22 @@ export const UNIVERSITIES: School[] = [
   { id: 'sangmyung', name: '상명대', region: '서울', strength: 54 },
 ]
 
+// 미국 대학 (NCAA 디비전 1 강호, 명단은 근사치). 고교 OVR 이 높으면 제안이 온다
+export const US_COLLEGES: School[] = [
+  { id: 'duke', name: '듀크대', region: '미국', strength: 74 },
+  { id: 'kentucky', name: '켄터키대', region: '미국', strength: 73 },
+  { id: 'kansas', name: '캔자스대', region: '미국', strength: 73 },
+  { id: 'unc', name: '노스캐롤라이나대', region: '미국', strength: 72 },
+  { id: 'uconn', name: '코네티컷대', region: '미국', strength: 72 },
+  { id: 'ucla', name: 'UCLA', region: '미국', strength: 71 },
+  { id: 'gonzaga', name: '곤자가대', region: '미국', strength: 70 },
+  { id: 'arizona', name: '애리조나대', region: '미국', strength: 70 },
+]
+
+// 대학 무대에서 소속이 미국 대학인지 (stage 는 COLLEGE 로 같다)
+export const isUsCollege = (teamId: string) =>
+  US_COLLEGES.some((u) => u.id === teamId)
+
 export const HS_TOURNAMENTS = [
   '춘계전국남녀중고농구연맹전',
   '협회장기 전국남녀중고농구대회',
