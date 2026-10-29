@@ -12,9 +12,11 @@ import {
 import { HallItem } from './hallBoard'
 import { HallPlayerDialog } from './hallPlayerDialog'
 
-// 주소 해시(#ranking?sort=fmvp)에 정렬을 남겨 새로고침해도 같은 정렬로 연다
+// 주소(/ranking?sort=fmvp)에 정렬을 남겨 새로고침해도 같은 정렬로 연다. #ranking?sort= 는 예전 주소
 const readSort = (): HallSort =>
-  new URLSearchParams(location.hash.split('?')[1] ?? '').get('sort') === 'fmvp'
+  new URLSearchParams(
+    location.search || (location.hash.split('?')[1] ?? ''),
+  ).get('sort') === 'fmvp'
     ? 'fmvp'
     : 'ovr'
 
@@ -45,7 +47,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   }
 
   useEffect(() => {
-    history.replaceState(null, '', `#ranking?sort=${sort}`)
+    history.replaceState(null, '', `/ranking?sort=${sort}`)
     let alive = true
     Promise.all([fetchHall(sort), fetchHall(sort, { best: true })])
       .then(([top, best]) => alive && (setData({ top, best }), setError(false)))

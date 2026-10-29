@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { EFFECTIVE_DATE, type LegalBlock, type LegalDoc } from '../data/legal'
 import { getLang, T, tr } from '../i18n'
 
@@ -37,32 +36,23 @@ function Block({ b }: { b: LegalBlock }) {
   )
 }
 
-// 푸터의 개인정보 처리방침·이용약관 팝업
-export function LegalDialog({
+// 공지사항·개인정보 처리방침·이용약관·확률표 페이지
+export function LegalPage({
   doc,
-  onClose,
+  onBack,
 }: {
   doc: LegalDoc
-  onClose: () => void
+  onBack: () => void
 }) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    ref.current?.showModal()
-  }, [])
   return (
-    <dialog
-      ref={ref}
-      className="modal legal"
-      aria-label={doc.title}
-      onClose={() => setTimeout(onClose, 150)}
-    >
+    <main className="panel legal">
       <div className="panel-head">
         <div>
           <p className="eyebrow">{tr('벤치에서 파엠까지')}</p>
-          <h2>{tr(doc.title)}</h2>
+          <h1>{tr(doc.title)}</h1>
         </div>
-        <button className="ghost" onClick={() => ref.current?.close()}>
-          {tr('닫기')}
+        <button className="ghost" onClick={onBack}>
+          {tr('뒤로')}
         </button>
       </div>
       {getLang() !== 'ko' && !doc.translated && (
@@ -82,6 +72,6 @@ export function LegalDialog({
           ))}
         </section>
       ))}
-    </dialog>
+    </main>
   )
 }

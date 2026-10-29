@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { type MouseEvent, useEffect, useRef, useState } from 'react'
 import { loadGame, loadHall, recordHall, saveGame } from './engine/save'
 import type { GameState } from './engine/types'
 import {
@@ -13,14 +13,29 @@ import { ODDS } from './data/odds'
 import { LANGS, setLang, tr, useLang } from './i18n'
 import { CreateScreen } from './ui/createScreen'
 import { LandingScreen } from './ui/landingScreen'
-import { LegalDialog } from './ui/legalDialog'
+import { LegalPage } from './ui/legalPage'
 import { MainScreen } from './ui/mainScreen'
 import { MoveBanner } from './ui/moveBanner'
 import { RankingScreen } from './ui/rankingScreen'
 import { SitemapDialog } from './ui/sitemapDialog'
 import './app.css'
 
-type Screen = 'landing' | 'create' | 'game' | 'ranking'
+type Screen = 'landing' | 'create' | 'game' | 'ranking' | 'doc'
+
+// 검색엔진에 따로 노출하는 문서 페이지의 주소 (public/sitemap.xml 과 맞춘다)
+const DOC_PATHS: [string, LegalDoc][] = [
+  ['/notice', CHANGELOG_DOC],
+  ['/privacy', PRIVACY],
+  ['/terms', TERMS],
+  ['/odds', ODDS],
+]
+const docAt = (path: string) => DOC_PATHS.find(([p]) => p === path)?.[1]
+// 크롤러가 따라갈 수 있게 주소 링크로 두고, 누르면 새로 불러오지 않고 연다 (보조키를 누르면 새 탭 그대로)
+const go = (f: () => void) => (e: MouseEvent) => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey) return
+  e.preventDefault()
+  f()
+}
 
 export default function App() {
   const lang = useLang()
@@ -29,12 +44,17 @@ export default function App() {
   const [hall, setHall] = useState(() =>
     state?.stage === 'RETIRED' ? recordHall(state) : loadHall(),
   )
-  // 랭킹은 주소 해시로 바로 열 수 있다 (새로고침해도 같은 페이지)
+  // 랭킹·문서는 주소로 바로 열 수 있다 (새로고침해도 같은 페이지). #ranking 은 예전 주소
   const [screen, setScreen] = useState<Screen>(() =>
-    location.hash.startsWith('#ranking') ? 'ranking' : 'landing',
+    docAt(location.pathname)
+      ? 'doc'
+      : location.pathname === '/ranking' || location.hash.startsWith('#ranking')
+        ? 'ranking'
+        : 'landing',
   )
   const [rankingFrom, setRankingFrom] = useState<Screen>('landing')
-  const [legal, setLegal] = useState<LegalDoc | null>(null)
+  const [legal, setLegal] = useState(() => docAt(location.pathname) ?? null)
+  const [docFrom, setDocFrom] = useState<Screen>('landing')
   const [sitemap, setSitemap] = useState(false)
   // 아직 안 본 새 버전이면 푸터 버전 옆에 점. 공지를 열면 사라진다
   const [unseen, setUnseen] = useState(() => {
@@ -44,13 +64,19 @@ export default function App() {
       return false
     }
   })
+  // 문서 페이지: 연 화면을 기억했다가 뒤로 가면 그 화면으로
+  const openDoc = (d: LegalDoc) => {
+    if (screen !== 'doc') setDocFrom(screen)
+    setLegal(d)
+    setScreen('doc')
+  }
   const openChangelog = () => {
-    setLegal(CHANGELOG_DOC)
+    openDoc(CHANGELOG_DOC)
     setUnseen(false)
     try {
       localStorage.setItem(SEEN_VERSION_KEY, __APP_VERSION__)
     } catch {
-      // 저장 못 해도 팝업은 연다
+      // 저장 못 해도 공지는 연다
     }
   }
   const screenRef = useRef<HTMLDivElement>(null)
@@ -60,10 +86,17 @@ export default function App() {
   // (scrollTo 가 Promise 를 반환하는 브라우저가 있어 effect 에서 값을 돌려주지 않는다)
   useEffect(() => {
     screenRef.current?.scrollTo(0, 0)
-    // 랭킹을 떠나면 주소의 #ranking 을 지워 새로고침 때 다시 열리지 않게
-    if (screen !== 'ranking' && location.hash.startsWith('#ranking'))
-      history.replaceState(null, '', location.pathname + location.search)
-  }, [screen])
+  }, [screen, legal])
+  // 주소를 지금 화면에 맞춘다. 기록은 쌓지 않는다 (뒤로 가기는 지금처럼 사이트를 떠난다)
+  useEffect(() => {
+    const path =
+      screen === 'doc'
+        ? (DOC_PATHS.find(([, d]) => d === legal)?.[0] ?? '/')
+        : screen === 'ranking'
+          ? '/ranking'
+          : '/'
+    if (path !== location.pathname) history.replaceState(null, '', path)
+  }, [screen, legal])
 
   // 새 커리어: 생성 화면으로. 은퇴하지 않은 커리어는 기록에 남지 않는다
   const reset = () => {
@@ -119,6 +152,9 @@ export default function App() {
           <CreateScreen onStart={start} onBack={() => setScreen('landing')} />
         )}
         {screen === 'ranking' && <RankingScreen onBack={closeRanking} />}
+        {screen === 'doc' && legal && (
+          <LegalPage doc={legal} onBack={() => setScreen(docFrom)} />
+        )}
         {screen === 'game' && state && (
           <MainScreen
             key={state.careerId}
@@ -156,21 +192,34 @@ export default function App() {
             </div>
             <div className="row build">
               v{__APP_VERSION__}
-              <button
+              <a
                 className={unseen ? 'link unseen' : 'link'}
-                onClick={openChangelog}
+                href="/notice"
+                onClick={go(openChangelog)}
               >
                 {tr('공지사항')}
-              </button>
-              <button className="link" onClick={() => setLegal(PRIVACY)}>
+              </a>
+              <a
+                className="link"
+                href="/privacy"
+                onClick={go(() => openDoc(PRIVACY))}
+              >
                 {tr('개인정보처리방침')}
-              </button>
-              <button className="link" onClick={() => setLegal(TERMS)}>
+              </a>
+              <a
+                className="link"
+                href="/terms"
+                onClick={go(() => openDoc(TERMS))}
+              >
                 {tr('이용약관')}
-              </button>
-              <button className="link" onClick={() => setLegal(ODDS)}>
+              </a>
+              <a
+                className="link"
+                href="/odds"
+                onClick={go(() => openDoc(ODDS))}
+              >
                 {tr('게임 확률표')}
-              </button>
+              </a>
               <button className="link" onClick={() => setSitemap(true)}>
                 {tr('사이트맵')}
               </button>
@@ -196,7 +245,6 @@ export default function App() {
             </small>
           </div>
         </footer>
-        {legal && <LegalDialog doc={legal} onClose={() => setLegal(null)} />}
         {sitemap && (
           <SitemapDialog
             onClose={() => setSitemap(false)}
@@ -243,17 +291,17 @@ export default function App() {
                   {
                     label: tr('개인정보처리방침'),
                     desc: tr('수집하는 정보와 보관 기간'),
-                    onSelect: () => setLegal(PRIVACY),
+                    onSelect: () => openDoc(PRIVACY),
                   },
                   {
                     label: tr('이용약관'),
                     desc: tr('서비스 이용 조건'),
-                    onSelect: () => setLegal(TERMS),
+                    onSelect: () => openDoc(TERMS),
                   },
                   {
                     label: tr('게임 확률표'),
                     desc: tr('성장·수상·NBA 진출 등 주요 판정의 확률'),
-                    onSelect: () => setLegal(ODDS),
+                    onSelect: () => openDoc(ODDS),
                   },
                   {
                     label: tr('업데이트 소식'),

@@ -2473,52 +2473,49 @@ tr.me td {
   margin-top: 16px;
 }
 
-/* 개인정보 처리방침·이용약관 팝업 */
-.modal.legal[open] {
-  display: grid;
+/* 공지사항·개인정보 처리방침·이용약관·확률표 페이지 (.panel 위에 본문 글씨만) */
+.legal {
   gap: 12px;
-  max-height: 85dvh;
-  overflow-y: auto;
   font-size: 13px;
   line-height: 1.7;
 }
 
-.modal.legal :is(p, ul, h3) {
+.legal :is(p, ul, h3) {
   margin: 0;
 }
 
-.modal.legal section {
+.legal section {
   display: grid;
   gap: 6px;
 }
 
-.modal.legal h3 {
+.legal h3 {
   font-size: 14px;
 }
 
-.modal.legal ul {
+.legal ul {
   padding-left: 18px;
 }
 
-.modal.legal .table-scroll {
+.legal .table-scroll {
   overflow-x: auto;
 }
 
-.modal.legal table {
+.legal table {
   width: 100%;
   border-collapse: collapse;
   /* 기록 표의 전역 nowrap 대신 본문은 줄바꿈 */
   white-space: normal;
 }
 
-.modal.legal :is(th, td) {
+.legal :is(th, td) {
   padding: 6px 8px;
   border: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
 }
 
-.modal.legal th {
+.legal th {
   background: var(--panel-sunk);
   white-space: nowrap;
 }
