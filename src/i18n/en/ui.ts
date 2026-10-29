@@ -607,6 +607,8 @@ const text: Record<string, string> = {
     'The Hall of Fame rankings are redesigned. The Best 5 stand in a gold showcase, and the top 100 are listed with medals.',
   '랭킹에서 선수를 누르면 상세 기록을 볼 수 있고, 이전·다음 버튼이나 ←/→ 키로 넘겨 볼 수 있어요.':
     'Tap a player in the rankings to see their detailed record, and flip through with the previous/next buttons or the ←/→ keys.',
+  '파이널 MVP 수상 연출이 새로워졌어요. 암전 속 스포트라이트 아래 트로피를 든 내 선수가 등장하고, 결승 시리즈 평균 기록도 보여 줘요.':
+    'The Finals MVP celebration is redesigned. Your player steps into the spotlight with the trophy, and your Finals series averages are shown.',
   '파이널 MVP 축하 연출이 결승 하이라이트보다 먼저 뜨던 문제를 고쳤어요.':
     'Fixed the Finals MVP celebration appearing before the Finals highlights.',
   '팝업을 드래그할 때 글자가 선택되거나 이미지가 끌려 나오던 문제를 고쳤어요.':
