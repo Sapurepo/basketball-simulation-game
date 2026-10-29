@@ -1,5 +1,4 @@
 import {
-  type KeyboardEvent,
   type MouseEvent,
   useCallback,
   useEffect,
@@ -61,6 +60,25 @@ export function useHoldGauge(
   }
   const letGo = () => release()
 
+  // 스페이스·엔터는 화면 전체에서 받는다. 버튼에 묶으면 비활성화될 때 포커스를 잃어 다음 회차부터 안 먹는다
+  useEffect(() => {
+    if (disabled) return
+    const down = (e: KeyboardEvent) => {
+      if (!isKey(e)) return
+      e.preventDefault()
+      if (!e.repeat) press()
+    }
+    const up = (e: KeyboardEvent) => {
+      if (isKey(e)) letGo()
+    }
+    addEventListener('keydown', down)
+    addEventListener('keyup', up)
+    return () => {
+      removeEventListener('keydown', down)
+      removeEventListener('keyup', up)
+    }
+  })
+
   return {
     fillRef,
     holding,
@@ -70,14 +88,6 @@ export function useHoldGauge(
       onPointerLeave: letGo,
       onPointerCancel: letGo,
       onContextMenu: (e: MouseEvent) => e.preventDefault(),
-      onKeyDown: (e: KeyboardEvent) => {
-        if (!isKey(e)) return
-        e.preventDefault()
-        if (!e.repeat) press()
-      },
-      onKeyUp: (e: KeyboardEvent) => {
-        if (isKey(e)) letGo()
-      },
     },
   }
 }

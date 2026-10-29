@@ -352,6 +352,9 @@ const text: Record<string, string> = {
   '누르고 있다가 떼서 패스 ({i}/{n})': 'Hold and release to pass ({i}/{n})',
   '수비가 기우는 반대쪽으로! ({i}/{n})':
     'Go away from the defender’s lean! ({i}/{n})',
+  '키보드 ← → 방향키로도 할 수 있어요': 'You can also use the ← → arrow keys',
+  '키보드 스페이스·엔터 키로도 할 수 있어요':
+    'You can also hold Space or Enter',
   '골인!': 'Swish!',
   짧아요: 'Short',
   길어요: 'Long',
