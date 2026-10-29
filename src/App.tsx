@@ -147,6 +147,7 @@ export default function App() {
             key={`${state.careerId}-${loadCount}`}
             state={state}
             onChange={change}
+            onNew={reset}
           />
         )}
         <footer>

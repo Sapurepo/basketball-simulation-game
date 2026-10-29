@@ -16,7 +16,7 @@ import {
   NCAA_GAMES,
   UNIV_LEAGUE_GAMES,
 } from '../data/leagues'
-import { generatePbp } from './commentary'
+import { generateCast } from './commentary'
 import { overall, POSITION_LABELS } from './player'
 import { clamp, sigmoid, type Rng } from './rng'
 import {
@@ -60,6 +60,8 @@ class SeasonCtx {
   losses = 0
   played: Played[] = []
   finale?: Played
+  // 우승한 결승 시리즈 내 기록 (파이널 MVP 판정과 축하 팝업이 쓴다)
+  finals?: StatLine
   awards: string[] = []
   private readonly rng: Rng
   private readonly s: GameState
@@ -164,7 +166,7 @@ class SeasonCtx {
       myScore: p.myScore,
       oppScore: p.oppScore,
       box: p.box,
-      pbp: generatePbp(
+      cast: generateCast(
         this.rng,
         this.s.player.name,
         this.team.name,
@@ -211,6 +213,7 @@ class SeasonCtx {
   }
 
   finalsMvp(finals: StatLine, mean: number, sd = 5): boolean {
+    this.finals = finals
     return finals.games > 0 && gameScoreAvg(finals) >= this.rival(mean, sd)
   }
 }
@@ -678,6 +681,7 @@ export function simulateSeason(rng: Rng, s: GameState): SeasonRecord {
     ...base,
     stats: c.stats,
     playoffStats: c.po.games ? c.po : undefined,
+    finalsStats: c.finals,
     wins: c.wins,
     losses: c.losses,
     result: [...result, ...extra],

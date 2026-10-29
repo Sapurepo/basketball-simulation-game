@@ -15,7 +15,6 @@ import type {
   Attributes,
   GameLog,
   GameState,
-  Look,
   SeasonRecord,
 } from '../engine/types'
 import { T, tr, tx } from '../i18n'
@@ -23,11 +22,12 @@ import { AttrBars } from './attrBars'
 import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { attrDelta, fmtDelta, statDelta } from './delta'
 import { avg, pct, seasonLabel, serviceLabel, stageLabel } from './format'
-import { GameCast } from './gameCast'
-import { HallSubmit } from './hallSubmit'
+import { type CastPlayer, GameCast } from './gameCast'
 import { DrillGame } from './drillGame'
+import { FinalsMvp, type FmvpAward } from './finalsMvp'
 import { PixelPlayer } from './pixelPlayer'
-import { type Kit, pickPose } from './pose'
+import { Retirement } from './retirement'
+import { pickPose } from './pose'
 import { Decor, ShopDialog, TrophyShelf } from './shop'
 import { fanReaction } from '../data/sns'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
@@ -80,19 +80,19 @@ function stageText(s: GameState) {
 export function MainScreen({
   state,
   onChange,
+  onNew,
 }: {
   state: GameState
   onChange: (s: GameState) => void
+  onNew: () => void
 }) {
   const [tab, setTab] = useState<Tab>('season')
   const [castIdx, setCastIdx] = useState(0)
   const [loadStep, setLoadStep] = useState(-1)
   const [highlight, setHighlight] = useState<GameLog | null>(null)
-  // 파이널 MVP 축하 오버레이(NBA 파엠·KBL 챔결 MVP). 닫으면 보류해 둔 하이라이트(key)를 이어서 띄운다
-  const [fmvp, setFmvp] = useState<{
-    key: GameLog | null
-    award: keyof typeof MVP_SHOW
-  } | null>(null)
+  // 파이널 MVP 축하 오버레이(NBA 파엠·KBL 챔결 MVP). 하이라이트 중계가 있으면 그 결과를 본 뒤(fmvpNext) 띄운다
+  const [fmvp, setFmvp] = useState<FmvpAward | null>(null)
+  const [fmvpNext, setFmvpNext] = useState<FmvpAward | null>(null)
   // 방금 진행한 시즌의 능력치 증감. 다음 진행 때 교체되고 새로고침하면 사라진다
   const [delta, setDelta] = useState<Attributes | null>(null)
   const [leaving, setLeaving] = useState(false)
@@ -105,6 +105,8 @@ export function MainScreen({
     prev && last ? statDelta(prev.stats, last.stats, k) : undefined
   const ev = state.events[0]
   const retired = state.stage === 'RETIRED'
+  // 이 화면에서 은퇴를 정했으면 은퇴식 팝업을 띄운다 (은퇴한 저장을 불러온 경우는 요약만)
+  const [retiredAtLoad] = useState(retired)
 
   const { pose, kit } = pickPose(state)
   const drillsLeft = availableDrills(state).length
@@ -112,6 +114,7 @@ export function MainScreen({
   const [shop, setShop] = useState(false)
   const [editNum, setEditNum] = useState(false)
   const look = p.look ?? DEFAULT_LOOK
+  const castMe = { name: p.name, position: p.position, look, kit }
   const recordsRef = useRef<HTMLElement>(null)
   // 커맨드로 기록 패널을 바꾸면 패널이 화면에 보이도록 스크롤
   const show = (t: Tab) => {
@@ -145,16 +148,16 @@ export function MainScreen({
       setTraining(false)
       const season = next.history.at(-1)
       const key = season?.featured.find((g) => KEY_GAME.test(g.label)) ?? null
-      const won = (Object.keys(MVP_SHOW) as (keyof typeof MVP_SHOW)[]).find(
-        (a) => season?.awards.includes(a),
-      )
+      const won = FMVP_AWARDS.find((a) => season?.awards.includes(a))
       // 결과를 먼저 반영하고 오버레이는 페이드아웃(150ms) 뒤 내린다
       setLeaving(true)
       setTimeout(() => {
         setLoadStep(-1)
         setLeaving(false)
-        if (won) setFmvp({ key, award: won })
-        else if (key) setHighlight(key)
+        if (key) {
+          setHighlight(key)
+          setFmvpNext(won ?? null)
+        } else if (won) setFmvp(won)
       }, 150)
     }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return apply()
@@ -200,18 +203,23 @@ export function MainScreen({
         </div>
       )}
       {fmvp && (
-        <FmvpCelebration
+        <FinalsMvp
+          state={state}
           kit={kit}
-          look={p.look}
-          award={fmvp.award}
-          onClose={() => {
-            setHighlight(fmvp.key)
-            setFmvp(null)
-          }}
+          award={fmvp}
+          onClose={() => setFmvp(null)}
         />
       )}
       {highlight && (
-        <Highlight game={highlight} onClose={() => setHighlight(null)} />
+        <Highlight
+          game={highlight}
+          me={castMe}
+          onClose={() => {
+            setHighlight(null)
+            setFmvp(fmvpNext)
+            setFmvpNext(null)
+          }}
+        />
       )}
       {shop && (
         <ShopDialog
@@ -422,12 +430,12 @@ export function MainScreen({
       )}
 
       {retired ? (
-        <section className="panel">
-          <RetiredSummary
-            state={state}
-            onPosted={() => onChange({ ...state, hallPosted: true })}
-          />
-        </section>
+        <Retirement
+          state={state}
+          ceremony={!retiredAtLoad}
+          onPosted={() => onChange({ ...state, hallPosted: true })}
+          onNew={onNew}
+        />
       ) : ev ? (
         <section className="panel event">
           <p className="eyebrow">
@@ -437,7 +445,9 @@ export function MainScreen({
           </p>
           <h2>{tx(ev.title)}</h2>
           <p>{tx(ev.body)}</p>
-          {ev.data?.game ? <GameCast game={ev.data.game as GameLog} /> : null}
+          {ev.data?.game ? (
+            <GameCast game={ev.data.game as GameLog} me={castMe} />
+          ) : null}
           {isDrill(ev.kind) &&
             !matchMedia('(prefers-reduced-motion: reduce)').matches && (
               <DrillGame
@@ -610,6 +620,7 @@ export function MainScreen({
               <GameCast
                 key={`${last.year}-${castIdx}`}
                 game={last.featured[castIdx] ?? last.featured[0]}
+                me={castMe}
               />
             </>
           ) : (
@@ -760,114 +771,19 @@ function Stat({ label, v, d }: { label: string; v: string; d?: number }) {
   )
 }
 
-// 색종이 40장: 위치·색·박자를 인덱스에서 결정적으로 뽑는다 (렌더마다 같다)
-const CONFETTI = Array.from({ length: 40 }, (_, i) => ({
-  '--x': `${(i * 37) % 100}%`,
-  '--y': `${(i * 53) % 90}%`,
-  '--d': `${((i * 7) % 20) / 10}s`,
-  '--t': `${2.2 + ((i * 11) % 10) / 10}s`,
-  '--c': ['#f2c14e', '#f07a2b', '#1d8a57', '#cc3049', '#3b7dd8'][i % 5],
-})) as CSSProperties[]
-
-// 축하 연출을 띄우는 수상과 문구 (수상명은 엔진 식별자라 그대로 쓴다)
-const MVP_SHOW = {
-  'NBA 파이널 MVP': { eyebrow: 'NBA 파이널', title: '파이널 MVP!' },
-  'KBL 챔피언결정전 MVP': { eyebrow: 'KBL 챔피언결정전', title: '챔프전 MVP!' },
-} as const
-
-// 파이널 MVP 축하: 코트 위에서 트로피를 들고, 색종이·폭죽이 흩날린다
-function FmvpCelebration({
-  kit,
-  look,
-  award,
-  onClose,
-}: {
-  kit: Kit
-  look?: Look
-  award: keyof typeof MVP_SHOW
-  onClose: () => void
-}) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    ref.current?.showModal()
-  }, [])
-  return (
-    <dialog
-      ref={ref}
-      className="modal fmvp"
-      aria-label={award}
-      onClose={() => setTimeout(onClose, 150)}
-    >
-      <div className="court">
-        <i className="burst" />
-        <i className="burst two" />
-        <div className="confetti" aria-hidden="true">
-          {CONFETTI.map((style, i) => (
-            <i key={i} style={style} />
-          ))}
-        </div>
-        <div className="sprite">
-          <PixelPlayer pose="trophy" kit={kit} look={look} scale={4} />
-        </div>
-      </div>
-      <p className="eyebrow">{tr(MVP_SHOW[award].eyebrow)}</p>
-      <h2>{tr(MVP_SHOW[award].title)}</h2>
-      <button className="primary big" onClick={() => ref.current?.close()}>
-        {tr('계속')}
-      </button>
-    </dialog>
-  )
-}
-
-function RetiredSummary({
-  state,
-  onPosted,
-}: {
-  state: GameState
-  onPosted: () => void
-}) {
-  const all = state.history.flatMap((h) => h.awards)
-  const n = (a: string) => all.filter((x) => x === a).length
-  const pro = state.history.filter(
-    (h) => h.stage === 'KBL' || h.stage === 'NBA',
-  )
-  const games = pro.reduce((s, h) => s + h.stats.games, 0)
-  const pts = pro.reduce((s, h) => s + h.stats.pts, 0)
-  return (
-    <div className="retired">
-      <p className="eyebrow">{tr('커리어 요약')}</p>
-      <h2>{tr('{name}의 농구 인생', { name: state.player.name })}</h2>
-      <div className="stats">
-        <Stat label={tr('NBA 파이널 MVP')} v={String(n('NBA 파이널 MVP'))} />
-        <Stat label={tr('NBA 챔피언')} v={String(n('NBA 챔피언'))} />
-        <Stat label="NBA MVP" v={String(n('NBA MVP'))} />
-        <Stat label={tr('KBL 우승')} v={String(n('KBL 챔피언결정전 우승'))} />
-        <Stat label="KBL MVP" v={String(n('KBL 국내선수 MVP'))} />
-        <Stat
-          label={tr('아시안게임 금메달')}
-          v={String(
-            state.honors.filter((h) => h.name === '아시안게임 금메달').length,
-          )}
-        />
-        <Stat label={tr('최고 OVR')} v={String(state.peakOvr)} />
-        <Stat label={tr('프로 통산 경기')} v={String(games)} />
-        <Stat label={tr('프로 통산 득점')} v={String(pts)} />
-      </div>
-      <p className="muted">
-        {tr('병역:')} {serviceLabel(state.service)}
-      </p>
-      <p className="muted">
-        {tr('통산 수입:')} {formatMoney(state.earnings.KRW, 'KRW')}
-        {state.earnings.USD > 0 &&
-          ` + ${formatMoney(state.earnings.USD, 'USD')}`}
-      </p>
-      <HallSubmit state={state} onPosted={onPosted} />
-    </div>
-  )
-}
+// 축하 연출을 띄우는 수상 (수상명은 엔진 식별자라 그대로 쓴다)
+const FMVP_AWARDS: FmvpAward[] = ['NBA 파이널 MVP', 'KBL 챔피언결정전 MVP']
 
 // 주요 경기 하이라이트 팝업
-function Highlight({ game, onClose }: { game: GameLog; onClose: () => void }) {
+function Highlight({
+  game,
+  me,
+  onClose,
+}: {
+  game: GameLog
+  me: CastPlayer
+  onClose: () => void
+}) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     ref.current?.showModal()
@@ -876,11 +792,11 @@ function Highlight({ game, onClose }: { game: GameLog; onClose: () => void }) {
     // 닫힘 전환(150ms)이 끝난 뒤 언마운트
     <dialog
       ref={ref}
-      className="modal"
+      className="modal highlight"
       onClose={() => setTimeout(onClose, 150)}
     >
       <p className="eyebrow">{tr('하이라이트')}</p>
-      <GameCast game={game} />
+      <GameCast game={game} me={me} />
       <button className="primary big" onClick={() => ref.current?.close()}>
         {tr('결과 확인')}
       </button>

@@ -1,5 +1,5 @@
 import { LEAGUES } from '../data/leagues'
-import { generatePbp } from './commentary'
+import { generateCast } from './commentary'
 import { overall } from './player'
 import type { Rng } from './rng'
 import { addLine, emptyLine, minutesFor, playGame } from './sim'
@@ -75,7 +75,6 @@ export function playAsianGames(
       myScore: r.myScore,
       oppScore: r.oppScore,
       box: r.box,
-      pbp: [],
     }
     return r.win
   }
@@ -100,7 +99,7 @@ export function playAsianGames(
       finish = gold ? '금메달' : '은메달'
     }
   }
-  last.pbp = generatePbp(
+  last.cast = generateCast(
     rng,
     s.player.name,
     '대한민국',

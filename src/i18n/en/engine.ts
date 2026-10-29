@@ -325,5 +325,16 @@ const text: Record<string, string> = {
   '{p}, 가로채기 성공!': '{p} with the interception!',
   '{p}, 블록슛! 그대로 쳐냅니다!': '{p} swats it away!',
   '{p}, 림 프로텍팅! 블록 기록.': '{p} protects the rim! Block.',
+  '{p}, 공을 잡고 공격을 시작합니다': '{p} brings it up and goes to work',
+  '{p}, 수비수를 앞에 두고 기회를 엿봅니다': '{p} sizes up the defender',
+  '{p}, 페인트존으로 파고듭니다': '{p} attacks the paint',
+  '{p}, 3점 라인 밖에서 슛': '{p} fires from beyond the arc',
+  '{p}, 스텝백 3점 시도': '{p} steps back for three',
+  '{p}, 코너에서 3점을 노립니다': '{p} spots up in the corner',
+  '{p}, 자유투 라인에 섭니다': '{p} steps to the line',
+  '{p}, 패스할 곳을 찾습니다': '{p} looks for the open man',
+  '{t}, 자유투로 1점.': '{t} adds one at the line.',
+  '{t}, 2점 득점.': '{t} scores two.',
+  '{t}, 3점슛 성공!': '{t} hits a three!',
 }
 export default text
