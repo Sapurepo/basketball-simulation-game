@@ -152,6 +152,11 @@ export function DribbleDrill({
               n: DRILL_REPS,
             })}
       </p>
+      {!run.done && (
+        <p className="muted drill-hint">
+          {tr('키보드 ← → 방향키로도 할 수 있어요')}
+        </p>
+      )}
     </div>
   )
 }

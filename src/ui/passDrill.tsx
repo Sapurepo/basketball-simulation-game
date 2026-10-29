@@ -84,6 +84,11 @@ export function PassDrill({
               n: DRILL_REPS,
             })}
       </button>
+      {!run.done && (
+        <p className="muted drill-hint">
+          {tr('키보드 스페이스·엔터 키로도 할 수 있어요')}
+        </p>
+      )}
     </div>
   )
 }
