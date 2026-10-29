@@ -152,7 +152,8 @@ export default function App() {
         )}
         <footer>
           <div className="row">
-            {state && (
+            {/* 저장이 없는 브라우저도 랭킹·선수 만들기 화면에서 처음으로 돌아갈 수 있게 */}
+            {(state || screen !== 'landing') && (
               <button className="ghost" onClick={() => exportSave(state)}>
                 {tr('저장 파일 내보내기')}
               </button>
