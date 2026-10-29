@@ -2753,30 +2753,6 @@ tr.me td {
   transition-timing-function: ease-out;
 }
 
-.hall {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.hall li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 2px;
-  padding: 6px 12px;
-  background: var(--panel-hi);
-  font-variant-numeric: tabular-nums;
-  box-shadow:
-    0 -2px 0 0 var(--ink),
-    0 2px 0 0 var(--ink),
-    -2px 0 0 0 var(--ink),
-    2px 0 0 0 var(--ink),
-    inset 0 -3px 0 0 var(--line);
-}
-
 .hall-submit {
   display: grid;
   gap: 8px;
@@ -3419,6 +3395,26 @@ button.spot:hover {
   }
 }
 
+/* 랜딩 명예의 전당: 랭킹 화면 목록과 같은 잉크 상단 바 + 줄 목록, 아래 금색 전체 랭킹 버튼 */
+.hall-board > .chips {
+  padding: 12px 16px 10px;
+}
+
+.hall-board-note {
+  padding: 14px 16px;
+  border-top: 2px solid #e6dfcf;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hall-board-more {
+  --face: var(--gold);
+  --hi: var(--gold-hi);
+  --lo: #b08a20;
+  margin: 14px 19px 19px;
+  font-size: 14px;
+}
+
 /* 선수 상세 팝업: 위는 받침대 위 선수(베스트 5면 남색 금장 액자), 아래는 기록 6칸 */
 .modal.hall-pop {
   width: min(100% - 32px, 420px);
@@ -3597,6 +3593,11 @@ button.spot:hover {
   margin: 0;
 }
 
+/* 내 기록: 시즌 수·전체 순위가 없어 4칸을 2×2로 */
+.hall-pop-stats.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .hall-pop-stats div {
   container-type: inline-size;
   display: grid;
@@ -3634,22 +3635,6 @@ button.spot:hover {
   button.spot {
     transition: none;
   }
-}
-
-.hall .rank {
-  /* 세 자리 순위까지 같은 폭 */
-  width: 2.2em;
-  color: var(--accent-lo);
-  font: 400 16px var(--font-pixel);
-}
-
-.hall li > b:last-child {
-  font: 400 13px var(--font-pixel);
-}
-
-.hall img.px:not([width]) {
-  width: 22px;
-  height: 22px;
 }
 
 /* 앱 하단 바: 박스 폭 전체에 배경을 깔아 뒤 내용이 비치지 않게.

@@ -6,7 +6,8 @@ import type { HallRow } from './hallApi'
 import { PixelPlayer } from './pixelPlayer'
 import { teamKit } from './pose'
 
-// 랭킹에서 선수를 누르면 여는 상세 기록. 베스트 5에서 열면 베스트 5 안에서, 목록에서 열면 목록 안에서 넘긴다
+// 랭킹에서 선수를 누르면 여는 상세 기록. 베스트 5에서 열면 베스트 5 안에서, 목록에서 열면 목록 안에서 넘긴다.
+// mine: 이 브라우저의 기록. 시즌 수·전체 순위가 없어 4칸만 보여 준다
 export function HallPlayerDialog({
   list,
   index,
@@ -15,6 +16,7 @@ export function HallPlayerDialog({
   leaderId,
   sortLabel,
   total,
+  mine = false,
   onStep,
   onClose,
 }: {
@@ -25,6 +27,7 @@ export function HallPlayerDialog({
   leaderId?: string
   sortLabel: string
   total: number
+  mine?: boolean
   onStep: (d: number) => void
   onClose: () => void
 }) {
@@ -43,9 +46,9 @@ export function HallPlayerDialog({
     [tr('최고 OVR'), String(p.peakOvr)],
     [tr('파이널 MVP'), tr('{n}회', { n: p.fmvp })],
     [tr('트로피'), tr('{n}개', { n: p.trophies })],
-    [tr('시즌 수'), String(p.seasons)],
+    ...(mine ? [] : [[tr('시즌 수'), String(p.seasons)]]),
     [tr('은퇴'), tr('{year}년', { year: p.retiredYear })],
-    [tr('전체 순위'), tr('상위 {n}%', { n: pct })],
+    ...(mine ? [] : [[tr('전체 순위'), tr('상위 {n}%', { n: pct })]]),
   ]
   return (
     <dialog
@@ -115,7 +118,7 @@ export function HallPlayerDialog({
             {p.position} · {pos} · {sortLabel} {tr('{n}위', { n: p.rank })}
           </span>
         </div>
-        <dl className="hall-pop-stats">
+        <dl className={mine ? 'hall-pop-stats two' : 'hall-pop-stats'}>
           {stats.map(([k, v]) => (
             <div key={k}>
               <dt>{k}</dt>

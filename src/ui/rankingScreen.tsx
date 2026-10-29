@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { tr } from '../i18n'
 import { HALL_TOP } from '../engine/hallEntry'
 import { BestFive } from './bestFive'
-import { hallArtURL, type Medal } from './hallArt'
 import {
   BEST_ORDER,
   fetchHall,
@@ -10,10 +9,8 @@ import {
   type HallSort,
   SORTS,
 } from './hallApi'
+import { HallItem } from './hallBoard'
 import { HallPlayerDialog } from './hallPlayerDialog'
-import { PixelPlayer } from './pixelPlayer'
-import { teamKit } from './pose'
-import { iconURL } from './sprite'
 
 // 주소 해시(#ranking?sort=fmvp)에 정렬을 남겨 새로고침해도 같은 정렬로 연다
 const readSort = (): HallSort =>
@@ -22,7 +19,6 @@ const readSort = (): HallSort =>
     : 'ovr'
 
 type Data = Awaited<ReturnType<typeof fetchHall>>
-const MEDALS: Medal[] = ['g', 's', 'b']
 
 // 공용 명예의 전당 랭킹: 포지션별 베스트 5와 상위 100명, 선수를 누르면 상세 팝업
 export function RankingScreen({ onBack }: { onBack: () => void }) {
@@ -137,58 +133,17 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
             </div>
             <ol>
               {data.top.rows.map((r, i) => (
-                <li key={r.id} className={r.rank <= 3 ? 'podium' : undefined}>
-                  <button onClick={() => setSel({ inBest: false, i })}>
-                    <span className="hall-top-rank">
-                      {r.rank <= 3 ? (
-                        <img
-                          className="px"
-                          src={hallArtURL('medal', MEDALS[r.rank - 1])}
-                          alt={tr('{n}위', { n: r.rank })}
-                        />
-                      ) : (
-                        r.rank
-                      )}
-                    </span>
-                    <span className="hall-top-face">
-                      <PixelPlayer
-                        pose="idle"
-                        kit={teamKit(r.name)}
-                        look={r.look}
-                        scale={4 / 3}
-                      />
-                    </span>
-                    <span className="hall-top-name">
-                      <span className="row">
-                        <b>{r.name}</b>
-                        <span className="tag">{r.position}</span>
-                        {bestIds.has(r.id) && (
-                          <span className="tag gold">BEST 5</span>
-                        )}
-                      </span>
-                      {/* 항목 하나("2041년 은퇴")가 두 줄로 갈라지지 않게 항목 단위로 줄바꿈 */}
-                      <small>
-                        <span>{tr('트로피 {n}', { n: r.trophies })}</span> ·{' '}
-                        <span>{tr('{n}시즌', { n: r.seasons })}</span> ·{' '}
-                        <span>
-                          {tr('{year}년 은퇴', { year: r.retiredYear })}
-                        </span>
-                      </small>
-                    </span>
-                    <span className="hall-top-fmvp">
-                      <img
-                        className="px"
-                        src={iconURL('trophy')}
-                        alt={tr('NBA 파이널 MVP')}
-                        title={tr('NBA 파이널 MVP')}
-                      />
-                      {r.fmvp}
-                    </span>
-                    <span className="hall-top-ovr">
-                      OVR <b>{r.peakOvr}</b>
-                    </span>
-                  </button>
-                </li>
+                <HallItem
+                  key={r.id}
+                  {...r}
+                  best={bestIds.has(r.id)}
+                  detail={[
+                    tr('트로피 {n}', { n: r.trophies }),
+                    tr('{n}시즌', { n: r.seasons }),
+                    tr('{year}년 은퇴', { year: r.retiredYear }),
+                  ]}
+                  onOpen={() => setSel({ inBest: false, i })}
+                />
               ))}
             </ol>
           </section>
