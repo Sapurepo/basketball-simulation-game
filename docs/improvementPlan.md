@@ -8,8 +8,8 @@
 
 | #   | 항목                                | 크기 | 상태 | 결정 필요 |
 | --- | ----------------------------------- | ---- | ---- | --------- |
-| 26  | 중계 결과 스포 방지 + 출전시간 표시 | 소형 | [ ]  | —         |
-| 27  | 명예의 전당 정렬 다양화             | 중형 | [ ]  | ①         |
+| 26  | 중계 결과 스포 방지 + 출전시간 표시 | 소형 | [x]  | —         |
+| 27  | 명예의 전당 정렬 다양화             | 중형 | [x]  | ① 결정됨  |
 | 25  | 아이템 다양화 (저가·능력치 분배)    | 중형 | [ ]  | ②         |
 | 24  | 훈련 다양화 + 3개 제공 + 자동훈련   | 대형 | [ ]  | ③         |
 | 23  | 잠재 특성 세분화 + 등급 균등 + 숨김 | 대형 | [ ]  | ④ ⑤       |
@@ -27,22 +27,23 @@
 1. `src/ui/mainScreen.tsx` 하이라이트 팝업 — 뒤에 깔린 메인 화면이 이미 다음 시즌 상태(우승 뱃지·최근 경기 점수·승패)로 바뀐 뒤 뜨고, `.modal::backdrop` 이 반투명(0.55)이라 결과가 비친다.
 2. `src/engine/events.ts` 아시안게임 결과 이벤트(`data: { game: r.last }`) — 제목·본문("아시안게임 금메달 / 대한민국 금메달…")이 중계 **위에** 먼저 나온다.
 
-- [ ] `.modal.highlight::backdrop` 만 불투명하게
-- [ ] `GameCast` 에 `onDone` 추가. 이벤트 패널은 `data.game` 이 있으면 중계가 끝난 뒤 제목·본문을 표시
-- [ ] 출전시간: `GameLog.box.minutes` 를 `gc-me` 영역에 "출전 N분"(중계 종료 후). 중계 중엔 지금처럼 "실시간"
-- [ ] i18n en·ja 키 추가
+- [x] `.modal.highlight::backdrop` 만 불투명하게(0.97)
+- [x] `GameCast` 에 `onDone` 추가(라이브·텍스트 중계 모두). 이벤트 패널은 `data.game` 이 있으면 중계가 끝난 뒤 제목·본문을 표시. 끝난 시점의 이벤트 큐 길이를 기억해 다음 이벤트에서는 다시 숨긴다
+- [x] 출전시간: 라이브 박스스코어 맨 앞에 `MIN` 칸. 장면에는 출전시간이 없어 경기 시각에 비례해 쌓고(`box.minutes × T/total`), 끝나면 기록값과 정확히 맞춘다. 시계가 흐르는 동안(출전 중)은 `m:ss` 로 초를 세고 붉은 점이 깜빡이며, 일시정지·쿼터 사이·종료에는 분 숫자만. 칸이 8개가 되어 좁은 화면에서는 `flex-wrap` 으로 두 줄
+- [x] i18n en·ja 키 추가
 
 ## 27. 명예의 전당 정렬 다양화
 
-- [ ] `migrations/0002_hall_stats.sql`: `league TEXT`, `earnings INTEGER`(KRW 환산 만원), `minutes`·`pts`·`ast INTEGER`(통산) 추가. 기존 행은 NULL → 정렬은 `NULLS LAST`
-- [ ] `src/engine/hallEntry.ts` payload 필드·검증 추가
-- [ ] `functions/api/hall.ts` `ORDER` 6종(ovr·fmvp·earnings·minutes·pts·ast) + `league=KBL|NBA` 필터. 캐시 키·등록 후 캐시 삭제에 반영
-- [ ] `src/ui/hallApi.ts` `SORTS` 확장 + 리그 칩(전체/KBL/NBA). `rankingScreen.tsx`·`hallBoard.tsx` 의 주소 `sort=` 파라미터 확장
-- [ ] `HallItem` 보조 정보가 정렬 기준값을 보여주게, `HallPlayerDialog` 에 통산 칸 추가
-- [ ] 내 기록(`save.ts` `HallEntry`)도 같은 필드 저장(이전 기록은 optional)
-- [ ] `hallEntry.test.ts` 검증 보강
+- [x] `migrations/0002_hall_stats.sql`: `kbl`·`nba INTEGER`(0/1), `earnings INTEGER`(KRW 환산 만원, USD 는 1,400원), `minutes`·`pts`·`ast INTEGER`(정규시즌 통산) 추가. 기존 행은 NULL → 정렬은 `NULLS LAST`, 리그 필터에서는 빠진다
+- [x] `src/engine/hallEntry.ts` payload 필드·검증(시즌당 상한: 수입 1천억 원·출전 5,000분·6,000점·3,000어시). `USD_TO_MANWON` 을 여기로 옮기고 `game.ts` 가 가져다 쓴다
+- [x] `functions/api/hall.ts` `ORDER` 6종(ovr·fmvp·earnings·minutes·pts·ast) + `league=KBL|NBA` 필터(`total` 도 필터 기준). 캐시 키에 리그 포함, 등록 후 6×3×2 키 삭제
+- [x] `src/ui/hallApi.ts` `SORTS`·`LEAGUES` 확장, `rowDetail`(정렬 기준값을 맨 앞에)·`statText`·`compareRows`. `rankingScreen.tsx` 주소 `?sort=&league=`, 리그 칩은 랭킹 화면에만(랜딩은 정렬 칩만)
+- [x] `HallPlayerDialog` 에 통산 4칸(수입·출전·득점·어시스트) 2×2 — 값이 있을 때만
+- [x] 내 기록(`save.ts` `HallEntry`)도 같은 4개 필드 저장(이전 기록은 optional)
+- [x] `hallEntry.test.ts` 검증 보강. 마이그레이션·정렬·필터 SQL 은 로컬 sqlite3 로 확인
+- [ ] **배포 전** 운영 D1 에 `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --remote` (README 참고). 적용 전에 새 코드가 배포되면 등록 INSERT 가 열 없음으로 실패한다
 
-**결정 ①** `league` 정의: NBA 를 한 시즌이라도 뛰면 `NBA`, 아니면 `KBL`(프로에 못 간 선수 포함).
+**결정 ①** (2026-10-29) 리그는 AND — KBL·NBA 둘 다 뛸 수 있으므로 각각 한 시즌이라도 뛰었으면 양쪽 필터에 다 나온다. `kbl`·`nba` 두 열.
 
 ## 25. 아이템 다양화
 
