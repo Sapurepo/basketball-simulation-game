@@ -55,6 +55,25 @@ describe('커리어 전체 진행', () => {
     }
   })
 
+  // 파이널 MVP 팝업은 시리즈 기록과 마지막 하이라이트의 'n차전'으로 시리즈를 그린다
+  test('파이널 MVP 시즌은 결승 기록과 결승 마지막 경기를 남긴다', () => {
+    const fmvp = careers.flatMap((s) =>
+      s.history.filter((h) =>
+        h.awards.some(
+          (a) => a === 'NBA 파이널 MVP' || a === 'KBL 챔피언결정전 MVP',
+        ),
+      ),
+    )
+    expect(fmvp.length).toBeGreaterThan(0)
+    for (const h of fmvp) {
+      const g = Number(h.featured.at(-1)?.label.match(/(\d+)차전/)?.[1])
+      expect(g).toBeGreaterThanOrEqual(4)
+      expect(g).toBeLessThanOrEqual(7)
+      expect(h.finalsStats!.games).toBeGreaterThan(0)
+      expect(h.finalsStats!.games).toBeLessThanOrEqual(g)
+    }
+  })
+
   test('NBA 진출은 가능하지만 드물다', () => {
     const nba = careers.filter((s) => s.history.some((h) => h.stage === 'NBA'))
     expect(nba.length).toBeGreaterThan(0)
