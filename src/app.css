@@ -1858,6 +1858,22 @@ tr.me td {
   animation: gc-flash 1.4s steps(1) both;
 }
 
+/* 출전 중인 MIN 칸: 초가 흐르는 동안 LIVE 뱃지처럼 붉은 점이 깜빡인다 */
+.gc-box span.live b {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ff5a4a;
+}
+
+.gc-box span.live b::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #ff5a4a;
+  animation: gc-blink 1s steps(1) infinite;
+}
+
 @keyframes gc-flash {
   0% {
     background: var(--accent);
@@ -1997,6 +2013,11 @@ tr.me td {
   width: min(100% - 32px, 760px);
 }
 
+/* 뒤에 깔린 메인 화면은 이미 다음 시즌 결과(우승 뱃지·최근 경기 점수)로 바뀌어 있어 비치지 않게 */
+.modal.highlight::backdrop {
+  background: rgb(26 23 21 / 0.97);
+}
+
 @media (max-width: 520px) {
   .gc-teams {
     gap: 6px;
@@ -2042,7 +2063,8 @@ tr.me td {
   .gc-live::before,
   .gc-clutch,
   .gc-dots,
-  .gc-box span.flash {
+  .gc-box span.flash,
+  .gc-box span.live b::before {
     animation: none;
   }
 }

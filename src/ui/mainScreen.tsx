@@ -104,6 +104,9 @@ export function MainScreen({
   const sd = (k: 'minutes' | 'pts' | 'reb' | 'ast' | 'stl' | 'blk') =>
     prev && last ? statDelta(prev.stats, last.stats, k) : undefined
   const ev = state.events[0]
+  // 경기가 딸린 이벤트의 중계가 끝났는지: 끝난 시점의 큐 길이를 기억해 다음 이벤트에서는 다시 숨긴다
+  const [castDoneAt, setCastDoneAt] = useState(-1)
+  const castDone = castDoneAt === state.events.length
   const retired = state.stage === 'RETIRED'
   // 이 화면에서 은퇴를 정했으면 은퇴식 팝업을 띄운다 (은퇴한 저장을 불러온 경우는 요약만)
   const [retiredAtLoad] = useState(retired)
@@ -443,11 +446,21 @@ export function MainScreen({
               season: seasonLabel(state),
             })}
           </p>
-          <h2>{tx(ev.title)}</h2>
-          <p>{tx(ev.body)}</p>
+          {/* 경기가 딸린 이벤트(아시안게임)는 제목·본문이 결과를 말하므로 중계가 끝난 뒤에 보여 준다 */}
           {ev.data?.game ? (
-            <GameCast game={ev.data.game as GameLog} me={castMe} />
+            <GameCast
+              key={state.events.length}
+              game={ev.data.game as GameLog}
+              me={castMe}
+              onDone={() => setCastDoneAt(state.events.length)}
+            />
           ) : null}
+          {(!ev.data?.game || castDone) && (
+            <>
+              <h2>{tx(ev.title)}</h2>
+              <p>{tx(ev.body)}</p>
+            </>
+          )}
           {isDrill(ev.kind) &&
             !matchMedia('(prefers-reduced-motion: reduce)').matches && (
               <DrillGame
