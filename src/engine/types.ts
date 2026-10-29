@@ -95,13 +95,55 @@ export interface StatLine {
   fta: number
 }
 
+// 중계 한 장면. made2~blk 는 내 선수, mate 는 동료, opp 는 상대, 나머지는 구분선
+export type PlayKind =
+  | 'made2'
+  | 'miss2'
+  | 'made3'
+  | 'miss3'
+  | 'ft'
+  | 'reb'
+  | 'ast'
+  | 'stl'
+  | 'blk'
+  | 'mate'
+  | 'opp'
+  | 'start'
+  | 'qend'
+  | 'end'
+
+export interface Play {
+  // 경기 시작부터 지난 초
+  t: number
+  kind: PlayKind
+  pts: number
+  // 이 장면까지의 점수
+  me: number
+  op: number
+  text: Text
+  // 슛 시도: 결과 앞에 먼저 보여 준다 (두 박자 중계)
+  pre?: Text
+  // 중계 목록에 안 나오고 점수·시계에만 반영되는 장면
+  quiet?: boolean
+  // 막판 접전의 득점
+  hot?: boolean
+}
+
+export interface Cast {
+  team: string
+  quarterMinutes: number
+  plays: Play[]
+}
+
 export interface GameLog {
   label: string
   opponent: string
   myScore: number
   oppScore: number
   box: StatLine
-  pbp: Text[]
+  cast?: Cast
+  // 이전 저장의 텍스트 중계 (cast 가 없을 때만)
+  pbp?: Text[]
 }
 
 // 리그 베스트 팀(퍼스트~서드)의 한 자리
@@ -124,6 +166,8 @@ export interface SeasonRecord {
   ovr: number
   stats: StatLine
   playoffStats?: StatLine
+  // 우승한 결승 시리즈 기록 (이전 저장에는 없다)
+  finalsStats?: StatLine
   wins: number
   losses: number
   // 시즌 결과 요약 조각들 (화면에서는 뱃지로 표시)

@@ -45,12 +45,16 @@ export function newGame(
   }
 }
 
-// 순수 함수 형태: 입력 상태를 복제해 다음 상태를 돌려준다
+// 순수 함수 형태: 입력 상태를 복제해 다음 상태를 돌려준다.
+// 지난 시즌 기록은 쌓인 뒤 바뀌지 않으므로 복제하지 않고 공유한다 (커리어가 길수록 복제 비용이 커진다)
 function step(
   state: GameState,
   fn: (rng: Rng, s: GameState) => void,
 ): GameState {
-  const s = structuredClone(state)
+  const s: GameState = {
+    ...structuredClone({ ...state, history: [] }),
+    history: [...state.history],
+  }
   const rng = new Rng(s.rng)
   fn(rng, s)
   s.rng = rng.state

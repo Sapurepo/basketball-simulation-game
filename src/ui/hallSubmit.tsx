@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { tr } from '../i18n'
 import { toHallPayload } from '../engine/hallEntry'
 import type { GameState } from '../engine/types'
@@ -60,13 +60,15 @@ function Turnstile({ onToken }: { onToken: (t: string) => void }) {
   return error ? <p className="error">{error}</p> : <div ref={ref} />
 }
 
-// 은퇴 화면: 공용 명예의 전당에 동의를 받고 등록
+// 은퇴 화면: 공용 명예의 전당에 동의를 받고 등록. children 은 등록 버튼과 같은 줄에 놓인다
 export function HallSubmit({
   state,
   onPosted,
+  children,
 }: {
   state: GameState
   onPosted: () => void
+  children?: ReactNode
 }) {
   const [agree, setAgree] = useState(false)
   const [token, setToken] = useState('')
@@ -76,7 +78,12 @@ export function HallSubmit({
   const [attempt, setAttempt] = useState(0)
 
   if (state.hallPosted)
-    return <p className="muted">{tr('공용 명예의 전당에 이름을 올렸어요.')}</p>
+    return (
+      <div className="hall-submit">
+        <p className="muted">{tr('공용 명예의 전당에 이름을 올렸어요.')}</p>
+        {children}
+      </div>
+    )
 
   const submit = async () => {
     setBusy(true)
@@ -117,13 +124,16 @@ export function HallSubmit({
       </label>
       {agree && <Turnstile key={attempt} onToken={setToken} />}
       {error && <p className="error">{error}</p>}
-      <button
-        className="primary"
-        disabled={!agree || !token || busy}
-        onClick={submit}
-      >
-        {busy ? tr('등록 중…') : tr('명예의 전당에 등록')}
-      </button>
+      <div className="hall-actions">
+        <button
+          className="primary"
+          disabled={!agree || !token || busy}
+          onClick={submit}
+        >
+          {busy ? tr('등록 중…') : tr('명예의 전당에 등록')}
+        </button>
+        {children}
+      </div>
     </div>
   )
 }

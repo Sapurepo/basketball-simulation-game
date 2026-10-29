@@ -13,7 +13,7 @@ const DRAWN: Record<Pose, DrawnPose> = {
   celebrate: 'cheer',
   injured: 'sad',
   salute: 'cheer',
-  wave: 'cheer',
+  wave: 'wave',
   guard: 'guard',
   trophy: 'trophy',
 }

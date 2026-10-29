@@ -12,8 +12,17 @@ export const OUT = '#16130f'
 // 시안에 없는 포즈 — trophy: 슛 포즈의 두 팔로 머리 위 우승컵을 든다 (파비콘)
 // guard: 공 없이 두 팔을 내리고 선다 (훈련의 수비수·패스 받는 동료)
 // bench: 어깨에 수건을 걸치고 벤치에 앉아 있다 (랜딩 첫 장면)
+// wave: 오른손을 들어 흔든다, mic: 오른손 마이크를 입가에 댄다 (은퇴식)
 export type DrawnPose =
-  'idle' | 'shoot' | 'cheer' | 'sad' | 'trophy' | 'guard' | 'bench'
+  | 'idle'
+  | 'shoot'
+  | 'cheer'
+  | 'sad'
+  | 'trophy'
+  | 'guard'
+  | 'bench'
+  | 'wave'
+  | 'mic'
 export const DRAWN_POSES: DrawnPose[] = [
   'idle',
   'shoot',
@@ -22,6 +31,8 @@ export const DRAWN_POSES: DrawnPose[] = [
   'trophy',
   'guard',
   'bench',
+  'wave',
+  'mic',
 ]
 
 export interface Spec extends Look {
@@ -257,6 +268,8 @@ function palette(s: Spec): Record<string, string> {
     y: '#d8433a',
     M: '#2a2c33',
     L: '#fbf7ee',
+    // 마이크 머리 (피부 위에서 보이게 어둡게)
+    R: '#4a4d55',
   }
 }
 
@@ -294,7 +307,8 @@ export function build(
     L = frame ? -3 : 0
   }
   if (pose === 'cheer') L = frame ? -1 : 0
-  if (pose === 'sad' || pose === 'trophy' || pose === 'guard') dy = frame
+  if (pose === 'sad' || pose === 'trophy' || pose === 'guard' || pose === 'mic')
+    dy = frame
   // 앉으면 상체가 내려온다
   if (pose === 'bench') dy = 6 + frame
   const U = dy + L
@@ -461,7 +475,9 @@ export function build(
       ? 'sad'
       : pose === 'cheer' || pose === 'trophy'
         ? 'shout'
-        : s.face
+        : pose === 'wave'
+          ? 'grin'
+          : s.face
   const y = U
   if (face === 'calm') {
     rect(10, 6 + y, 12, 6 + y, 'H')
@@ -552,6 +568,27 @@ export function build(
     upR()
   }
   if (pose === 'cheer') fistR()
+  // 손 흔들기: 곧게 든 팔과 바깥으로 기운 팔을 번갈아
+  if (pose === 'wave' && !frame) upR()
+  if (pose === 'wave' && frame) {
+    rect(19, 16 + U, 20, 18 + U, 'S')
+    rect(21, 10 + U, 22, 15 + U, 'S')
+    rect(22, 4 + U, 23, 9 + U, 'S')
+    rect(23, U, 24, 3 + U, 'S')
+    if (acc.has('wrist')) rect(22, 4 + U, 23, 5 + U, 'X')
+  }
+  // 마이크: 팔꿈치를 옆구리에 붙이고 가슴 위로 팔을 올려 입가에 마이크를 댄다
+  if (pose === 'mic') {
+    rect(20, 16 + U, 21, 21 + U, 'S')
+    rect(19, 20 + U, 20, 21 + U, 'S')
+    rect(18, 19 + U, 19, 20 + U, 'S')
+    rect(17, 18 + U, 18, 19 + U, 'S')
+    rect(16, 17 + U, 17, 18 + U, 'S')
+    if (acc.has('wrist')) rect(16, 17 + U, 17, 18 + U, 'X')
+    rect(15, 15 + U, 16, 16 + U, 'S')
+    rect(15, 13 + U, 16, 14 + U, 'K')
+    rect(15, 11 + U, 16, 12 + U, 'R')
+  }
 
   // 공
   if (pose === 'idle') draw(BALL, 21, frame ? 37 : 29)

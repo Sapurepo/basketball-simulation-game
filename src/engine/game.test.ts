@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { generatePbp } from './commentary'
+import { generateCast } from './commentary'
 import { buildOffseason, isDrill } from './events'
 import { buffed, itemById, itemEffects } from '../data/items'
 import {
@@ -35,6 +35,19 @@ describe('커리어 전체 진행', () => {
     expect(JSON.stringify(playCareer(42))).toBe(JSON.stringify(playCareer(42)))
   })
 
+  test('진행해도 이전 상태는 그대로다 (지난 시즌 기록은 공유한다)', () => {
+    const rng = new Rng(11)
+    let s = newGame(11, createPlayer(rng, 'a', 'PG', 'n/a'), 'yongsan')
+    for (let i = 0; i < 60 && s.stage !== 'RETIRED'; i++) {
+      const before = JSON.stringify(s)
+      const next = s.events.length
+        ? resolveEvent(s, botChoice(s))
+        : advanceSeason(s)
+      expect(JSON.stringify(s)).toBe(before)
+      s = next
+    }
+  })
+
   test('모든 커리어가 은퇴로 끝나고 기록이 정상 범위다', () => {
     for (const s of careers) {
       expect(s.stage).toBe('RETIRED')
@@ -47,9 +60,30 @@ describe('커리어 전체 진행', () => {
         for (const g of h.featured) {
           expect(g.box.pts).toBeLessThanOrEqual(g.myScore)
           expect(g.myScore).not.toBe(g.oppScore)
-          expect(ko(g.pbp.at(-1)!)).toContain(`${g.myScore} : ${g.oppScore}`)
+          expect(ko(g.cast!.plays.at(-1)!.text)).toContain(
+            `${g.myScore} : ${g.oppScore}`,
+          )
         }
       })
+    }
+  })
+
+  // 파이널 MVP 팝업은 시리즈 기록과 마지막 하이라이트의 'n차전'으로 시리즈를 그린다
+  test('파이널 MVP 시즌은 결승 기록과 결승 마지막 경기를 남긴다', () => {
+    const fmvp = careers.flatMap((s) =>
+      s.history.filter((h) =>
+        h.awards.some(
+          (a) => a === 'NBA 파이널 MVP' || a === 'KBL 챔피언결정전 MVP',
+        ),
+      ),
+    )
+    expect(fmvp.length).toBeGreaterThan(0)
+    for (const h of fmvp) {
+      const g = Number(h.featured.at(-1)?.label.match(/(\d+)차전/)?.[1])
+      expect(g).toBeGreaterThanOrEqual(4)
+      expect(g).toBeLessThanOrEqual(7)
+      expect(h.finalsStats!.games).toBeGreaterThan(0)
+      expect(h.finalsStats!.games).toBeLessThanOrEqual(g)
     }
   })
 
@@ -183,10 +217,30 @@ test('중계 로그의 최종 스코어가 박스스코어와 일치한다', () 
     ftm: 3,
     fta: 4,
   }
-  const lines = generatePbp(rng, '홍길동', 'A', 'B', box, 80, 75, 10).map(ko)
-  const last = lines.filter((l) => l.startsWith('['))
-  expect(last.at(-1)).toMatch(/\(\d+-\d+\)/)
-  expect(lines).toContain('— 4쿼터 종료 (80-75) —')
+  const { plays } = generateCast(rng, '홍길동', 'A', 'B', box, 80, 75, 10)
+  const end = plays.at(-1)!
+  expect([end.kind, end.me, end.op]).toEqual(['end', 80, 75])
+  // 시각순이고 점수는 장면 득점의 누적
+  let me = 0
+  let op = 0
+  plays.forEach((p, i) => {
+    if (i) expect(p.t).toBeGreaterThanOrEqual(plays[i - 1].t)
+    if (p.kind === 'opp') op += p.pts
+    else me += p.pts
+    expect([p.me, p.op]).toEqual([me, op])
+  })
+  expect(plays.filter((p) => p.kind === 'qend')).toHaveLength(3)
+  // 내 선수 장면을 더하면 박스스코어가 된다
+  const mine = (k: string) => plays.filter((p) => p.kind === k)
+  const sum = (k: string) => mine(k).reduce((n, p) => n + p.pts, 0)
+  expect(sum('made2') + sum('made3') + sum('ft')).toBe(box.pts)
+  expect(mine('reb')).toHaveLength(box.reb)
+  expect(mine('ast')).toHaveLength(box.ast)
+  expect(mine('made3').length + mine('miss3').length).toBe(box.tpa)
+  // 슛 시도는 두 박자, 조용한 장면은 동료·상대 득점뿐
+  for (const p of mine('made2')) expect(p.pre).toBeDefined()
+  for (const p of plays.filter((p) => p.quiet))
+    expect(['mate', 'opp']).toContain(p.kind)
 })
 
 test('이벤트가 남아 있으면 시즌을 진행하지 않는다', () => {

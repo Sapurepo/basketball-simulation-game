@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { tr } from '../i18n'
 import { KBL_TEAMS, NBA_TEAMS } from '../data/teams'
+import { flagURL } from './flagArt'
 import { teamKit } from './pose'
 
 // 프로 구단만 로고가 있다. 학교·상무 등은 팀 색 배지로 대체.
@@ -38,6 +39,12 @@ export function TeamLogo({
       />
     )
   }
+  // 아시안게임 국가대표는 픽셀 국기
+  const flag = flagURL(name)
+  if (flag)
+    return (
+      <img className="logo flag" src={flag} alt="" width={size} height={size} />
+    )
   return (
     <span
       className="logo badge"

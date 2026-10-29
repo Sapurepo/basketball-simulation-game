@@ -53,7 +53,7 @@ function useMilestoneLoop() {
 }
 
 // 한 글자씩 타이핑. 단계마다 key 로 새로 마운트해 처음부터 친다
-function Typed({ text, instant }: { text: string; instant: boolean }) {
+export function Typed({ text, instant }: { text: string; instant: boolean }) {
   const [n, setN] = useState(instant ? text.length : 0)
   useEffect(() => {
     if (n >= text.length) return
