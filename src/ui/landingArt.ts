@@ -9,6 +9,9 @@ const PAL: Record<string, string> = {
   W: '#fbf7ee',
   w: '#e6dfcf',
   R: '#d8433a',
+  B: '#8a5a34',
+  L: '#4f7ad6',
+  V: '#2f7a4a',
   Y: '#f2c14e',
   y: '#c99a25',
   h: '#ffe08a',
@@ -163,6 +166,70 @@ const ART = {
       '.YYY.YYY.',
       'YY.....YY',
     ]),
+  // 은퇴식 소품: 꽃다발, 트로피 선반의 우승컵·MVP·메달
+  bouquet: () => {
+    const c = canvas(9, 13)
+    for (const [x, y, k] of [
+      [1, 1, 'R'],
+      [4, 0, 'Y'],
+      [7, 1, 'W'],
+      [2, 3, 'q'],
+      [6, 3, 'Y'],
+      [4, 2, 'R'],
+    ] as const)
+      c.rect(x - 1, y, x + 1, y + 1, k)
+    return c
+      .rect(3, 5, 5, 6, 'V')
+      .rect(2, 7, 6, 11, 'W')
+      .rect(2, 9, 6, 9, 'R')
+      .rect(3, 12, 5, 12, 'w')
+  },
+  cup: () =>
+    fromRows([
+      'YYYYYYYYYYY',
+      'YhYYYYYYYyY',
+      'Y.YhYYYYy.Y',
+      'Y.YYYYYYy.Y',
+      '.YYYYYYYyY.',
+      '..YYYYYyY..',
+      '...YYYyY...',
+      '....YyY....',
+      '.....Y.....',
+      '....YyY....',
+      '..BBBBBBB..',
+      '..BwwwwwB..',
+      '..BBBBBBB..',
+    ]),
+  mvp: () =>
+    fromRows([
+      '.....Y.....',
+      '....YYY....',
+      '.YYYYhYYYY.',
+      '..YYYYYYY..',
+      '...YYYYY...',
+      '..YYY.YYY..',
+      '.YY.....YY.',
+      '....YyY....',
+      '.....Y.....',
+      '....YyY....',
+      '..BBBBBBB..',
+      '..BwwwwwB..',
+      '..BBBBBBB..',
+    ]),
+  medal: () =>
+    fromRows([
+      'R.......L',
+      'RR.....LL',
+      '.RR...LL.',
+      '..RR.LL..',
+      '...RLL...',
+      '...YYY...',
+      '..YYhYY..',
+      '.YYhYYYY.',
+      '.YYYYYYy.',
+      '..YYYyY..',
+      '...YyY...',
+    ]),
 }
 export type PropName = keyof typeof ART
 
@@ -182,6 +249,28 @@ export function propSize(name: PropName): [w: number, h: number] {
 export function propURL(name: PropName) {
   let url = cache.get(name)
   if (!url) cache.set(name, (url = shadeURL(ART[name](), PAL, FLAT)))
+  return url
+}
+
+// 영구결번 깃발: 팀 색 바탕에 등번호. 번호·색마다 따로 그려 둔다
+export const BANNER_SIZE: [w: number, h: number] = [17, 25]
+export function bannerURL(n: number, color: string) {
+  const key = `banner:${n}:${color}`
+  let url = cache.get(key)
+  if (url) return url
+  const c = canvas(15, 23)
+  c.rect(0, 0, 14, 1, 'G')
+    .rect(1, 2, 13, 17, 'J')
+    .rect(1, 2, 13, 3, 'Y')
+    .rect(1, 16, 13, 16, 'Y')
+  // 아래쪽 V 자 꼬리
+  for (let y = 17; y <= 21; y++)
+    for (let x = 1; x <= 13; x++)
+      if (Math.abs(x - 7) >= (y - 16) * 1.4) c.put(x, y, 'J')
+  const s = String(n)
+  num(c, s, s.length > 1 ? 4 : 6, 6, 'W')
+  c.rect(4, 13, 10, 13, 'w')
+  cache.set(key, (url = shadeURL(c, { ...PAL, J: color }, FLAT)))
   return url
 }
 

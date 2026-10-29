@@ -645,6 +645,30 @@ const text: Record<string, string> = {
   재생: 'Play',
   '재생 속도': 'Playback speed',
   '처음부터 다시 보기': 'Watch again from the start',
+  '{g}경기 · 평균 {pts}득점': '{g} games · {pts} PPG',
+  은퇴식: 'Retirement ceremony',
+  '커리어 시즌': 'Career seasons',
+  '{a}세': 'Age {a}',
+  '{a}–{b}세': 'Age {a}–{b}',
+  '영구결번 #{num}': '#{num} retired',
+  '{n}시즌을 마치고 코트를 떠나다': 'Leaves the court after {n} seasons',
+  '은퇴식 다시 보기': 'Watch the ceremony again',
+  '고마웠습니다!': 'Thank you!',
+  입장: 'Entrance',
+  '헌정 영상': 'Tribute video',
+  고별사: 'Farewell speech',
+  영구결번: 'Jersey retirement',
+  '마지막 홈경기 · 센터 코트': 'Final home game · center court',
+  '전광판 · 커리어 하이라이트': 'Jumbotron · career highlights',
+  '센터 코트 · 마이크 앞': 'Center court · at the mic',
+  '홈 아레나 천장': 'Home arena rafters',
+  '마지막 홈경기가 끝난 밤, 꺼진 코트 위로 조명 하나':
+    'The night of the final home game, one light on a dark court',
+  '전광판에 흐르는 {n}시즌의 장면들': '{n} seasons of moments on the jumbotron',
+  '“농구가 제 인생이었습니다. 고마웠습니다.”':
+    '“Basketball was my life. Thank you.”',
+  '등번호 {num}번, 천장에 영원히 걸리다':
+    'Number {num}, hung in the rafters forever',
 }
 
 export default text

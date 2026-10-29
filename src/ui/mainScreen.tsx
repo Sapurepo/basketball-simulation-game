@@ -24,9 +24,9 @@ import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { attrDelta, fmtDelta, statDelta } from './delta'
 import { avg, pct, seasonLabel, serviceLabel, stageLabel } from './format'
 import { type CastPlayer, GameCast } from './gameCast'
-import { HallSubmit } from './hallSubmit'
 import { DrillGame } from './drillGame'
 import { PixelPlayer } from './pixelPlayer'
+import { Retirement } from './retirement'
 import { type Kit, pickPose } from './pose'
 import { Decor, ShopDialog, TrophyShelf } from './shop'
 import { fanReaction } from '../data/sns'
@@ -80,9 +80,11 @@ function stageText(s: GameState) {
 export function MainScreen({
   state,
   onChange,
+  onNew,
 }: {
   state: GameState
   onChange: (s: GameState) => void
+  onNew: () => void
 }) {
   const [tab, setTab] = useState<Tab>('season')
   const [castIdx, setCastIdx] = useState(0)
@@ -105,6 +107,8 @@ export function MainScreen({
     prev && last ? statDelta(prev.stats, last.stats, k) : undefined
   const ev = state.events[0]
   const retired = state.stage === 'RETIRED'
+  // 이 화면에서 은퇴를 정했으면 은퇴식 팝업을 띄운다 (은퇴한 저장을 불러온 경우는 요약만)
+  const [retiredAtLoad] = useState(retired)
 
   const { pose, kit } = pickPose(state)
   const drillsLeft = availableDrills(state).length
@@ -427,12 +431,12 @@ export function MainScreen({
       )}
 
       {retired ? (
-        <section className="panel">
-          <RetiredSummary
-            state={state}
-            onPosted={() => onChange({ ...state, hallPosted: true })}
-          />
-        </section>
+        <Retirement
+          state={state}
+          ceremony={!retiredAtLoad}
+          onPosted={() => onChange({ ...state, hallPosted: true })}
+          onNew={onNew}
+        />
       ) : ev ? (
         <section className="panel event">
           <p className="eyebrow">
@@ -824,53 +828,6 @@ function FmvpCelebration({
         {tr('계속')}
       </button>
     </dialog>
-  )
-}
-
-function RetiredSummary({
-  state,
-  onPosted,
-}: {
-  state: GameState
-  onPosted: () => void
-}) {
-  const all = state.history.flatMap((h) => h.awards)
-  const n = (a: string) => all.filter((x) => x === a).length
-  const pro = state.history.filter(
-    (h) => h.stage === 'KBL' || h.stage === 'NBA',
-  )
-  const games = pro.reduce((s, h) => s + h.stats.games, 0)
-  const pts = pro.reduce((s, h) => s + h.stats.pts, 0)
-  return (
-    <div className="retired">
-      <p className="eyebrow">{tr('커리어 요약')}</p>
-      <h2>{tr('{name}의 농구 인생', { name: state.player.name })}</h2>
-      <div className="stats">
-        <Stat label={tr('NBA 파이널 MVP')} v={String(n('NBA 파이널 MVP'))} />
-        <Stat label={tr('NBA 챔피언')} v={String(n('NBA 챔피언'))} />
-        <Stat label="NBA MVP" v={String(n('NBA MVP'))} />
-        <Stat label={tr('KBL 우승')} v={String(n('KBL 챔피언결정전 우승'))} />
-        <Stat label="KBL MVP" v={String(n('KBL 국내선수 MVP'))} />
-        <Stat
-          label={tr('아시안게임 금메달')}
-          v={String(
-            state.honors.filter((h) => h.name === '아시안게임 금메달').length,
-          )}
-        />
-        <Stat label={tr('최고 OVR')} v={String(state.peakOvr)} />
-        <Stat label={tr('프로 통산 경기')} v={String(games)} />
-        <Stat label={tr('프로 통산 득점')} v={String(pts)} />
-      </div>
-      <p className="muted">
-        {tr('병역:')} {serviceLabel(state.service)}
-      </p>
-      <p className="muted">
-        {tr('통산 수입:')} {formatMoney(state.earnings.KRW, 'KRW')}
-        {state.earnings.USD > 0 &&
-          ` + ${formatMoney(state.earnings.USD, 'USD')}`}
-      </p>
-      <HallSubmit state={state} onPosted={onPosted} />
-    </div>
   )
 }
 
