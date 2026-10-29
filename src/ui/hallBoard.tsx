@@ -156,7 +156,6 @@ export function HallBoard({
     <section className="hall-top hall-board">
       <div className="hall-top-bar">
         <div className="row nowrap">
-          <span className="hall-top-badge">HALL OF FAME</span>
           <h2>{tr('명예의 전당')}</h2>
         </div>
         <div className="tabs" role="tablist">
