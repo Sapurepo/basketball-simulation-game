@@ -3,7 +3,14 @@ import type { HallEntry } from '../engine/save'
 import type { Look, Position } from '../engine/types'
 import { tr } from '../i18n'
 import { hallArtURL, type Medal } from './hallArt'
-import { fetchHall, type HallRow, type HallSort, SORTS } from './hallApi'
+import {
+  compareRows,
+  fetchHall,
+  type HallRow,
+  type HallSort,
+  rowDetail,
+  SORTS,
+} from './hallApi'
 import { HallPlayerDialog } from './hallPlayerDialog'
 import { PixelPlayer } from './pixelPlayer'
 import { teamKit } from './pose'
@@ -125,15 +132,10 @@ export function HallBoard({
 
   const sortLabel = tr(SORTS.find(([id]) => id === sort)![1])
   // 내 기록을 상세 팝업이 받는 모양으로. 순위는 이 브라우저 안에서, 시즌 수는 기록에 없다
-  const mineRows: HallRow[] = [...mine]
-    .sort((a, b) =>
-      sort === 'fmvp'
-        ? (b.fmvp ?? 0) - (a.fmvp ?? 0) || b.peakOvr - a.peakOvr
-        : b.peakOvr - a.peakOvr || (b.fmvp ?? 0) - (a.fmvp ?? 0),
-    )
-    .map((e, i) => ({
+  const mineRows: HallRow[] = mine
+    .map((e, i): HallRow => ({
       id: e.id ?? `${e.name}-${e.year}-${i}`,
-      rank: i + 1,
+      rank: 0,
       name: e.name,
       position: e.position,
       look: e.look,
@@ -142,7 +144,13 @@ export function HallBoard({
       trophies: e.trophies,
       seasons: 0,
       retiredYear: e.year,
+      earnings: e.earnings ?? null,
+      minutes: e.minutes ?? null,
+      pts: e.pts ?? null,
+      ast: e.ast ?? null,
     }))
+    .sort(compareRows(sort))
+    .map((r, i) => ({ ...r, rank: i + 1 }))
   const top = all?.rows ?? []
   // 상위 목록에서 포지션마다 처음 나오는 선수가 그 포지션 1위(베스트 5), 1위가 왕관
   const bestIds = new Set(
@@ -204,11 +212,7 @@ export function HallBoard({
                 key={r.id}
                 {...r}
                 best={bestIds.has(r.id)}
-                detail={[
-                  tr('트로피 {n}', { n: r.trophies }),
-                  tr('{n}시즌', { n: r.seasons }),
-                  tr('{year}년 은퇴', { year: r.retiredYear }),
-                ]}
+                detail={rowDetail(sort, r)}
                 onOpen={() => setSel(i)}
               />
             ))}
@@ -226,10 +230,7 @@ export function HallBoard({
             <HallItem
               key={r.id}
               {...r}
-              detail={[
-                tr('트로피 {n}', { n: r.trophies }),
-                tr('{year}년 은퇴', { year: r.retiredYear }),
-              ]}
+              detail={rowDetail(sort, r)}
               onOpen={() => setSel(i)}
             />
           ))}

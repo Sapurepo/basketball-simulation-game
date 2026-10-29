@@ -1,6 +1,7 @@
 import { buffed, itemById, itemEffects } from '../data/items'
 import { HIGH_SCHOOLS } from '../data/schools'
 import { applyDrill, applyEvent, buildOffseason, DRILL_KINDS } from './events'
+import { USD_TO_MANWON } from './hallEntry'
 import { grow, overall } from './player'
 import { Rng } from './rng'
 import { simulateSeason } from './season'
@@ -14,7 +15,6 @@ const ALLOWANCE: Partial<Record<GameState['stage'], number>> = {
   HS: 100,
   COLLEGE: 300,
 }
-const USD_TO_MANWON = 1400 / 10000
 
 export function newGame(
   seed: number,

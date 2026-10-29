@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { tr } from '../i18n'
 import { POSITION_LABELS } from '../engine/player'
 import { hallArtURL } from './hallArt'
-import type { HallRow } from './hallApi'
+import { type HallRow, statText } from './hallApi'
 import { PixelPlayer } from './pixelPlayer'
 import { teamKit } from './pose'
 
@@ -50,6 +50,18 @@ export function HallPlayerDialog({
     [tr('은퇴'), tr('{year}년', { year: p.retiredYear })],
     ...(mine ? [] : [[tr('전체 순위'), tr('상위 {n}%', { n: pct }), 'long']]),
   ]
+  // 통산 기록: 정렬 다양화 전 기록에는 없어 있을 때만
+  const career = (
+    [
+      ['earnings', tr('통산 수입')],
+      ['minutes', tr('통산 출전')],
+      ['pts', tr('통산 득점')],
+      ['ast', tr('통산 어시스트')],
+    ] as const
+  ).flatMap(([k, label]) => {
+    const v = statText(k, p)
+    return v ? [[label, v]] : []
+  })
   return (
     <dialog
       ref={ref}
@@ -126,6 +138,16 @@ export function HallPlayerDialog({
             </div>
           ))}
         </dl>
+        {career.length > 0 && (
+          <dl className="hall-pop-stats two">
+            {career.map(([k, v]) => (
+              <div key={k}>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
         <div className="row between nowrap">
           <button className="ghost" onClick={() => onStep(-1)}>
             {tr('◀ 이전')}

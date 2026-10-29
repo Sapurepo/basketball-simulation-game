@@ -5,26 +5,36 @@ import { BestFive } from './bestFive'
 import {
   BEST_ORDER,
   fetchHall,
+  type HallLeague,
   type HallRow,
   type HallSort,
+  isHallLeague,
+  isHallSort,
+  LEAGUES,
+  rowDetail,
   SORTS,
 } from './hallApi'
 import { HallItem } from './hallBoard'
 import { HallPlayerDialog } from './hallPlayerDialog'
 
-// 주소(/ranking?sort=fmvp)에 정렬을 남겨 새로고침해도 같은 정렬로 연다. #ranking?sort= 는 예전 주소
-const readSort = (): HallSort =>
-  new URLSearchParams(
-    location.search || (location.hash.split('?')[1] ?? ''),
-  ).get('sort') === 'fmvp'
-    ? 'fmvp'
-    : 'ovr'
+// 주소(/ranking?sort=fmvp&league=NBA)에 정렬·리그를 남겨 새로고침해도 같은 화면으로 연다. #ranking?sort= 는 예전 주소
+const readQuery = () =>
+  new URLSearchParams(location.search || (location.hash.split('?')[1] ?? ''))
+const readSort = (): HallSort => {
+  const v = readQuery().get('sort')
+  return isHallSort(v) ? v : 'ovr'
+}
+const readLeague = (): HallLeague => {
+  const v = readQuery().get('league')
+  return isHallLeague(v) ? v : 'all'
+}
 
 type Data = Awaited<ReturnType<typeof fetchHall>>
 
 // 공용 명예의 전당 랭킹: 포지션별 베스트 5와 상위 100명, 선수를 누르면 상세 팝업
 export function RankingScreen({ onBack }: { onBack: () => void }) {
   const [sort, setSort] = useState(readSort)
+  const [league, setLeague] = useState(readLeague)
   const [data, setData] = useState<{ top: Data; best: Data }>()
   const [error, setError] = useState(false)
   // 열린 상세 팝업: 베스트 5 안에서 넘기는지, 몇 번째인지
@@ -37,25 +47,35 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
     setError(false)
     setTick((t) => t + 1)
   }
-  // 정렬을 바꾸면 이전 정렬의 목록을 지운다. 남겨 두면 새 정렬 라벨이 붙은 옛 순위를 눌러 팝업이 열린다
-  const pickSort = (id: HallSort) => {
-    if (id === sort) return
+  // 정렬·리그를 바꾸면 이전 목록을 지운다. 남겨 두면 새 정렬 라벨이 붙은 옛 순위를 눌러 팝업이 열린다
+  const pick = (next: { sort?: HallSort; league?: HallLeague }) => {
+    const s = next.sort ?? sort
+    const l = next.league ?? league
+    if (s === sort && l === league) return
     setData(undefined)
     setError(false)
     setSel(undefined)
-    setSort(id)
+    setSort(s)
+    setLeague(l)
   }
 
   useEffect(() => {
-    history.replaceState(null, '', `/ranking?sort=${sort}`)
+    history.replaceState(
+      null,
+      '',
+      `/ranking?sort=${sort}${league === 'all' ? '' : `&league=${league}`}`,
+    )
     let alive = true
-    Promise.all([fetchHall(sort), fetchHall(sort, { best: true })])
+    Promise.all([
+      fetchHall(sort, { league }),
+      fetchHall(sort, { best: true, league }),
+    ])
       .then(([top, best]) => alive && (setData({ top, best }), setError(false)))
       .catch(() => alive && setError(true))
     return () => {
       alive = false
     }
-  }, [sort, tick])
+  }, [sort, league, tick])
 
   const sortLabel = tr(SORTS.find(([id]) => id === sort)![1])
   const best = BEST_ORDER.flat()
@@ -95,7 +115,17 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
             <button
               key={id}
               className={sort === id ? 'chip on' : 'chip'}
-              onClick={() => pickSort(id)}
+              onClick={() => pick({ sort: id })}
+            >
+              {tr(label)}
+            </button>
+          ))}
+          <span className="chips-gap" aria-hidden="true" />
+          {LEAGUES.map(([id, label]) => (
+            <button
+              key={id}
+              className={league === id ? 'chip on' : 'chip'}
+              onClick={() => pick({ league: id })}
             >
               {tr(label)}
             </button>
@@ -113,11 +143,20 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
         <>
           <BestFive
             rows={best}
-            desc={tr(
+            desc={
               sort === 'fmvp'
-                ? '포지션마다 파이널 MVP를 가장 많이 받은 선수로 짠 라인업이에요.'
-                : '포지션마다 최고 OVR이 가장 높은 선수로 짠 라인업이에요.',
-            )}
+                ? tr(
+                    '포지션마다 파이널 MVP를 가장 많이 받은 선수로 짠 라인업이에요.',
+                  )
+                : sort === 'ovr'
+                  ? tr(
+                      '포지션마다 최고 OVR이 가장 높은 선수로 짠 라인업이에요.',
+                    )
+                  : tr(
+                      '포지션마다 {label} 기준으로 가장 앞선 선수로 짠 라인업이에요.',
+                      { label: sortLabel },
+                    )
+            }
             onOpen={(r) => setSel({ inBest: true, i: best.indexOf(r) })}
           />
           <section className="hall-top">
@@ -134,11 +173,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
                   key={r.id}
                   {...r}
                   best={bestIds.has(r.id)}
-                  detail={[
-                    tr('트로피 {n}', { n: r.trophies }),
-                    tr('{n}시즌', { n: r.seasons }),
-                    tr('{year}년 은퇴', { year: r.retiredYear }),
-                  ]}
+                  detail={rowDetail(sort, r)}
                   onOpen={() => setSel({ inBest: false, i })}
                 />
               ))}

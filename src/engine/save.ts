@@ -1,5 +1,5 @@
 import { START_CASH } from './game'
-import { hallFmvp, hallTrophies } from './hallEntry'
+import { hallFmvp, hallTrophies, toHallPayload } from './hallEntry'
 import { idealWeight } from './player'
 import type {
   Accessory,
@@ -122,6 +122,11 @@ export interface HallEntry {
   // NBA 파이널 MVP 횟수. 이전 기록에는 없다
   fmvp?: number
   year: number
+  // 통산 수입(만원)·출전시간·득점·어시스트. 이전 기록에는 없다
+  earnings?: number
+  minutes?: number
+  pts?: number
+  ast?: number
 }
 
 export function loadHall(): HallEntry[] {
@@ -140,6 +145,7 @@ export function recordHall(s: GameState): HallEntry[] {
   const hall = loadHall()
   if (s.stage !== 'RETIRED' || hall.some((e) => e.id && e.id === s.careerId))
     return hall
+  const payload = toHallPayload(s)
   const entry: HallEntry = {
     id: s.careerId,
     name: s.player.name,
@@ -150,6 +156,10 @@ export function recordHall(s: GameState): HallEntry[] {
     trophies: hallTrophies(s),
     fmvp: hallFmvp(s),
     year: s.year,
+    earnings: payload.earnings,
+    minutes: payload.minutes,
+    pts: payload.pts,
+    ast: payload.ast,
   }
   const next = [...hall, entry].sort(
     (a, b) => b.peakOvr - a.peakOvr || b.trophies - a.trophies,

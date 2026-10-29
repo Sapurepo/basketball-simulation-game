@@ -1,8 +1,9 @@
 import { HALL_TOP, validateHall } from '../../src/engine/hallEntry'
 
 // 공용 명예의 전당 API (Cloudflare Pages Function, D1 바인딩 DB)
-// GET  /api/hall?sort=ovr|fmvp&size=N → { rows(순위 포함), total }, 상위 100명까지
-// GET  /api/hall?sort=ovr|fmvp&best=1 → 포지션별 1위 (베스트 5), rank 는 전체 순위
+// GET  /api/hall?sort=ovr|fmvp|earnings|minutes|pts|ast&size=N → { rows(순위 포함), total }, 상위 100명까지
+// GET  /api/hall?sort=…&best=1 → 포지션별 1위 (베스트 5), rank 는 전체 순위
+//      &league=KBL|NBA 는 그 리그를 한 시즌이라도 뛴 선수만 (total 도 그 기준)
 // POST /api/hall { entry, token }       → Turnstile 확인 후 등록
 
 // ponytail: 쓰는 메서드만 최소 타입으로 둔다. 더 쓰면 @cloudflare/workers-types 도입
@@ -27,10 +28,21 @@ const RATE_LIMIT = 5
 const HOUR = 3_600_000
 const IP_HASH_TTL = 24 * HOUR
 
+// 이전 행(마이그레이션 전 등록)은 새 열이 NULL 이라 그 정렬에서는 뒤로 보낸다
 const ORDER = {
   ovr: 'peak_ovr DESC, fmvp DESC, created_at',
   fmvp: 'fmvp DESC, peak_ovr DESC, created_at',
+  earnings: 'earnings DESC NULLS LAST, peak_ovr DESC, created_at',
+  minutes: 'minutes DESC NULLS LAST, peak_ovr DESC, created_at',
+  pts: 'pts DESC NULLS LAST, peak_ovr DESC, created_at',
+  ast: 'ast DESC NULLS LAST, peak_ovr DESC, created_at',
 }
+type Sort = keyof typeof ORDER
+const SORTS = Object.keys(ORDER) as Sort[]
+const LEAGUES = ['', 'KBL', 'NBA'] as const
+type League = (typeof LEAGUES)[number]
+const isLeague = (v: string): v is League =>
+  (LEAGUES as readonly string[]).includes(v)
 
 const json = (body: unknown, status = 200, cacheControl?: string) =>
   new Response(JSON.stringify(body), {
@@ -45,16 +57,29 @@ const json = (body: unknown, status = 200, cacheControl?: string) =>
 // 등록되면 지워서 방금 올린 기록이 바로 보이게 한다 (캐시는 데이터센터마다 따로라 같은 곳만)
 const CACHE_TTL = 60
 const edge = () => (caches as unknown as { default: Cache }).default
-const cacheKey = (request: Request, sort: string, best: boolean) =>
+const cacheKey = (
+  request: Request,
+  sort: Sort,
+  league: League,
+  best: boolean,
+) =>
   new Request(
-    new URL(`/api/hall?sort=${sort}${best ? '&best=1' : ''}`, request.url),
+    new URL(
+      `/api/hall?sort=${sort}&league=${league}${best ? '&best=1' : ''}`,
+      request.url,
+    ),
   )
 type HallBody = { total: number; rows: unknown[] }
 
 export async function onRequestGet(ctx: Ctx) {
   const { request, env } = ctx
   const url = new URL(request.url)
-  const sort = url.searchParams.get('sort') === 'fmvp' ? 'fmvp' : 'ovr'
+  const sortParam = url.searchParams.get('sort') ?? ''
+  const sort: Sort = (SORTS as string[]).includes(sortParam)
+    ? (sortParam as Sort)
+    : 'ovr'
+  const leagueParam = url.searchParams.get('league') ?? ''
+  const league: League = isLeague(leagueParam) ? leagueParam : ''
   const size = Math.max(
     1,
     Math.min(
@@ -63,11 +88,11 @@ export async function onRequestGet(ctx: Ctx) {
     ),
   )
   const best = !!url.searchParams.get('best')
-  const key = cacheKey(request, sort, best)
+  const key = cacheKey(request, sort, league, best)
   const hit = await edge().match(key)
   const body: HallBody = hit
     ? await hit.json()
-    : await queryHall(env, sort, best)
+    : await queryHall(env, sort, league, best)
   if (!hit)
     ctx.waitUntil(
       edge().put(key, json(body, 200, `public, s-maxage=${CACHE_TTL}`)),
@@ -77,25 +102,29 @@ export async function onRequestGet(ctx: Ctx) {
 
 async function queryHall(
   env: Env,
-  sort: keyof typeof ORDER,
+  sort: Sort,
+  league: League,
   best: boolean,
 ): Promise<HallBody> {
   const cols = `id, name, position, look, peak_ovr AS peakOvr, fmvp, trophies, seasons,
-    retired_year AS retiredYear`
+    retired_year AS retiredYear, earnings, minutes, pts, ast`
+  const where = league ? `WHERE ${league === 'NBA' ? 'nba' : 'kbl'} = 1` : ''
   // 베스트 5: 전체 순위를 매긴 뒤 포지션마다 가장 앞선 한 명
   const sql = best
     ? `SELECT ${cols}, rank FROM (
          SELECT *, ROW_NUMBER() OVER (ORDER BY ${ORDER[sort]}) AS rank,
            ROW_NUMBER() OVER (PARTITION BY position ORDER BY ${ORDER[sort]}) AS pos_rank
-         FROM hall)
+         FROM hall ${where})
        WHERE pos_rank = 1 ORDER BY rank`
     : `SELECT ${cols}, ROW_NUMBER() OVER (ORDER BY ${ORDER[sort]}) AS rank
-       FROM hall ORDER BY ${ORDER[sort]} LIMIT ${HALL_TOP}`
+       FROM hall ${where} ORDER BY ${ORDER[sort]} LIMIT ${HALL_TOP}`
   const [{ results }, count] = await Promise.all([
     env.DB.prepare(sql).all<
       Record<string, unknown> & { look: string | null }
     >(),
-    env.DB.prepare('SELECT COUNT(*) AS n FROM hall').first<{ n: number }>(),
+    env.DB.prepare(`SELECT COUNT(*) AS n FROM hall ${where}`).first<{
+      n: number
+    }>(),
   ])
   return {
     total: count?.n ?? 0,
@@ -159,7 +188,8 @@ export async function onRequestPost({ request, env }: Ctx) {
   // 같은 커리어는 한 번만 (id 기본키)
   const { meta } = await env.DB.prepare(
     `INSERT OR IGNORE INTO hall (id, name, position, look, peak_ovr, fmvp, trophies,
-       seasons, retired_year, ip_hash, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       seasons, retired_year, ip_hash, created_at, kbl, nba, earnings, minutes, pts, ast)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       entry.id,
@@ -173,13 +203,21 @@ export async function onRequestPost({ request, env }: Ctx) {
       entry.retiredYear,
       ipHash,
       now,
+      entry.kbl ? 1 : 0,
+      entry.nba ? 1 : 0,
+      entry.earnings,
+      entry.minutes,
+      entry.pts,
+      entry.ast,
     )
     .run()
   if (meta.changes)
     await Promise.all(
-      (['ovr', 'fmvp'] as const).flatMap((sort) =>
-        [false, true].map((best) =>
-          edge().delete(cacheKey(request, sort, best)),
+      SORTS.flatMap((sort) =>
+        LEAGUES.flatMap((league) =>
+          [false, true].map((best) =>
+            edge().delete(cacheKey(request, sort, league, best)),
+          ),
         ),
       ),
     )

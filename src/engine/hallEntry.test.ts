@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { toHallPayload, validateHall } from './hallEntry'
+import { toHallPayload, USD_TO_MANWON, validateHall } from './hallEntry'
 import { playCareer } from './testBot'
 
 const career = () => ({
@@ -17,6 +17,9 @@ test('조작된 값과 부적절한 이름은 거부한다', () => {
   const bad = (patch: object) => validateHall({ ...p, ...patch })
   expect(bad({ peakOvr: 120 })).toBeTypeOf('string')
   expect(bad({ fmvp: p.seasons + 1 })).toBeTypeOf('string')
+  expect(bad({ kbl: 1 })).toBeTypeOf('string')
+  expect(bad({ earnings: -1 })).toBeTypeOf('string')
+  expect(bad({ pts: p.seasons * 6000 + 1 })).toBeTypeOf('string')
   expect(bad({ id: 'x' })).toBeTypeOf('string')
   expect(bad({ name: '' })).toBeTypeOf('string')
   expect(bad({ name: '열한글자이름입니다요요' })).toBeTypeOf('string')
@@ -28,4 +31,16 @@ test('조작된 값과 부적절한 이름은 거부한다', () => {
   expect(validateHall({ ...p, name: ' 김\u0000코트  선수 ' })).toMatchObject({
     name: '김코트 선수',
   })
+})
+
+test('통산 기록은 정규시즌 합, 수입은 달러를 만원으로 환산해 더한다', () => {
+  const s = career()
+  const p = toHallPayload(s)
+  expect(p.pts).toBe(s.history.reduce((n, h) => n + h.stats.pts, 0))
+  expect(p.earnings).toBe(
+    s.earnings.KRW + Math.round(s.earnings.USD * USD_TO_MANWON),
+  )
+  expect(p.kbl || p.nba).toBe(
+    s.history.some((h) => h.stage === 'KBL' || h.stage === 'NBA'),
+  )
 })
