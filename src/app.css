@@ -4209,6 +4209,11 @@ button.spot:hover {
   white-space: nowrap;
 }
 
+/* 전체 순위('상위 99.9%')는 글자 크기의 5.6배 폭이라 다른 칸 비율로는 칸을 넘는다 */
+.hall-pop-stats dd.long {
+  font-size: min(20px, 17cqi);
+}
+
 .hall-pop .ghost {
   font: 12px var(--font-pixel);
 }

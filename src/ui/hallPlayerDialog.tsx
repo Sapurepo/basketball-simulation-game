@@ -48,7 +48,7 @@ export function HallPlayerDialog({
     [tr('트로피'), tr('{n}개', { n: p.trophies })],
     ...(mine ? [] : [[tr('시즌 수'), String(p.seasons)]]),
     [tr('은퇴'), tr('{year}년', { year: p.retiredYear })],
-    ...(mine ? [] : [[tr('전체 순위'), tr('상위 {n}%', { n: pct })]]),
+    ...(mine ? [] : [[tr('전체 순위'), tr('상위 {n}%', { n: pct }), 'long']]),
   ]
   return (
     <dialog
@@ -119,10 +119,10 @@ export function HallPlayerDialog({
           </span>
         </div>
         <dl className={mine ? 'hall-pop-stats two' : 'hall-pop-stats'}>
-          {stats.map(([k, v]) => (
+          {stats.map(([k, v, cls]) => (
             <div key={k}>
               <dt>{k}</dt>
-              <dd>{v}</dd>
+              <dd className={cls}>{v}</dd>
             </div>
           ))}
         </dl>
