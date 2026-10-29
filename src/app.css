@@ -1883,6 +1883,16 @@ tr.me td {
   background: rgb(26 23 21 / 0.55);
 }
 
+/* 팝업 안에서는 드래그로 글자를 선택하거나 이미지를 끌어 가지 못하게 (입력란은 위 input 예외 그대로) */
+.modal {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.modal img {
+  -webkit-user-drag: none;
+}
+
 .modal .primary {
   margin-top: 16px;
 }
