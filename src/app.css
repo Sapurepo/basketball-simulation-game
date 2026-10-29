@@ -2990,6 +2990,10 @@ tr.me td {
   vertical-align: middle;
 }
 
+.logo.flag {
+  image-rendering: pixelated;
+}
+
 .logo.badge {
   display: inline-grid;
   place-items: center;
