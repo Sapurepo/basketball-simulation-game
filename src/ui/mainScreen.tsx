@@ -90,11 +90,9 @@ export function MainScreen({
   const [castIdx, setCastIdx] = useState(0)
   const [loadStep, setLoadStep] = useState(-1)
   const [highlight, setHighlight] = useState<GameLog | null>(null)
-  // 파이널 MVP 축하 오버레이(NBA 파엠·KBL 챔결 MVP). 닫으면 보류해 둔 하이라이트(key)를 이어서 띄운다
-  const [fmvp, setFmvp] = useState<{
-    key: GameLog | null
-    award: keyof typeof MVP_SHOW
-  } | null>(null)
+  // 파이널 MVP 축하 오버레이(NBA 파엠·KBL 챔결 MVP). 하이라이트 중계가 있으면 그 결과를 본 뒤(fmvpNext) 띄운다
+  const [fmvp, setFmvp] = useState<keyof typeof MVP_SHOW | null>(null)
+  const [fmvpNext, setFmvpNext] = useState<keyof typeof MVP_SHOW | null>(null)
   // 방금 진행한 시즌의 능력치 증감. 다음 진행 때 교체되고 새로고침하면 사라진다
   const [delta, setDelta] = useState<Attributes | null>(null)
   const [leaving, setLeaving] = useState(false)
@@ -158,8 +156,10 @@ export function MainScreen({
       setTimeout(() => {
         setLoadStep(-1)
         setLeaving(false)
-        if (won) setFmvp({ key, award: won })
-        else if (key) setHighlight(key)
+        if (key) {
+          setHighlight(key)
+          setFmvpNext(won ?? null)
+        } else if (won) setFmvp(won)
       }, 150)
     }
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return apply()
@@ -208,18 +208,19 @@ export function MainScreen({
         <FmvpCelebration
           kit={kit}
           look={p.look}
-          award={fmvp.award}
-          onClose={() => {
-            setHighlight(fmvp.key)
-            setFmvp(null)
-          }}
+          award={fmvp}
+          onClose={() => setFmvp(null)}
         />
       )}
       {highlight && (
         <Highlight
           game={highlight}
           me={castMe}
-          onClose={() => setHighlight(null)}
+          onClose={() => {
+            setHighlight(null)
+            setFmvp(fmvpNext)
+            setFmvpNext(null)
+          }}
         />
       )}
       {shop && (
