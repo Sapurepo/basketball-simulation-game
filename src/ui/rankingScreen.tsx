@@ -29,14 +29,17 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   const [sel, setSel] = useState<{ inBest: boolean; i: number }>()
   // 새로고침 버튼: 값을 올리면 같은 정렬로 다시 불러온다
   const [tick, setTick] = useState(0)
+  // 다시 불러오는 동안은 이전 오류 문구 대신 '불러오는 중…'
   const refresh = () => {
     setData(undefined)
+    setError(false)
     setTick((t) => t + 1)
   }
   // 정렬을 바꾸면 이전 정렬의 목록을 지운다. 남겨 두면 새 정렬 라벨이 붙은 옛 순위를 눌러 팝업이 열린다
   const pickSort = (id: HallSort) => {
     if (id === sort) return
     setData(undefined)
+    setError(false)
     setSel(undefined)
     setSort(id)
   }
