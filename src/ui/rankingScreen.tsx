@@ -99,13 +99,14 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
               </button>
             ))}
           </div>
-          {!!data?.top.total && (
-            <small>
-              {tr('총 {n}명 등록 · 선수를 누르면 상세 기록이 열려요', {
-                n: data.top.total.toLocaleString(),
-              })}
-            </small>
-          )}
+          {/* 불러오는 동안에도 줄을 비워 둔다. 줄이 빠지면 헤더 높이가 줄어 바닥 정렬된 제목이 위로 튄다 */}
+          <small>
+            {data?.top.total
+              ? tr('총 {n}명 등록 · 선수를 누르면 상세 기록이 열려요', {
+                  n: data.top.total.toLocaleString(),
+                })
+              : '\u00a0'}
+          </small>
         </div>
       </header>
 
