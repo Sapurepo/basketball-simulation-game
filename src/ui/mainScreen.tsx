@@ -15,7 +15,6 @@ import type {
   Attributes,
   GameLog,
   GameState,
-  Look,
   SeasonRecord,
 } from '../engine/types'
 import { T, tr, tx } from '../i18n'
@@ -25,9 +24,10 @@ import { attrDelta, fmtDelta, statDelta } from './delta'
 import { avg, pct, seasonLabel, serviceLabel, stageLabel } from './format'
 import { type CastPlayer, GameCast } from './gameCast'
 import { DrillGame } from './drillGame'
+import { FinalsMvp, type FmvpAward } from './finalsMvp'
 import { PixelPlayer } from './pixelPlayer'
 import { Retirement } from './retirement'
-import { type Kit, pickPose } from './pose'
+import { pickPose } from './pose'
 import { Decor, ShopDialog, TrophyShelf } from './shop'
 import { fanReaction } from '../data/sns'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
@@ -91,8 +91,8 @@ export function MainScreen({
   const [loadStep, setLoadStep] = useState(-1)
   const [highlight, setHighlight] = useState<GameLog | null>(null)
   // 파이널 MVP 축하 오버레이(NBA 파엠·KBL 챔결 MVP). 하이라이트 중계가 있으면 그 결과를 본 뒤(fmvpNext) 띄운다
-  const [fmvp, setFmvp] = useState<keyof typeof MVP_SHOW | null>(null)
-  const [fmvpNext, setFmvpNext] = useState<keyof typeof MVP_SHOW | null>(null)
+  const [fmvp, setFmvp] = useState<FmvpAward | null>(null)
+  const [fmvpNext, setFmvpNext] = useState<FmvpAward | null>(null)
   // 방금 진행한 시즌의 능력치 증감. 다음 진행 때 교체되고 새로고침하면 사라진다
   const [delta, setDelta] = useState<Attributes | null>(null)
   const [leaving, setLeaving] = useState(false)
@@ -148,9 +148,7 @@ export function MainScreen({
       setTraining(false)
       const season = next.history.at(-1)
       const key = season?.featured.find((g) => KEY_GAME.test(g.label)) ?? null
-      const won = (Object.keys(MVP_SHOW) as (keyof typeof MVP_SHOW)[]).find(
-        (a) => season?.awards.includes(a),
-      )
+      const won = FMVP_AWARDS.find((a) => season?.awards.includes(a))
       // 결과를 먼저 반영하고 오버레이는 페이드아웃(150ms) 뒤 내린다
       setLeaving(true)
       setTimeout(() => {
@@ -205,9 +203,9 @@ export function MainScreen({
         </div>
       )}
       {fmvp && (
-        <FmvpCelebration
+        <FinalsMvp
+          state={state}
           kit={kit}
-          look={p.look}
           award={fmvp}
           onClose={() => setFmvp(null)}
         />
@@ -773,64 +771,8 @@ function Stat({ label, v, d }: { label: string; v: string; d?: number }) {
   )
 }
 
-// 색종이 40장: 위치·색·박자를 인덱스에서 결정적으로 뽑는다 (렌더마다 같다)
-const CONFETTI = Array.from({ length: 40 }, (_, i) => ({
-  '--x': `${(i * 37) % 100}%`,
-  '--y': `${(i * 53) % 90}%`,
-  '--d': `${((i * 7) % 20) / 10}s`,
-  '--t': `${2.2 + ((i * 11) % 10) / 10}s`,
-  '--c': ['#f2c14e', '#f07a2b', '#1d8a57', '#cc3049', '#3b7dd8'][i % 5],
-})) as CSSProperties[]
-
-// 축하 연출을 띄우는 수상과 문구 (수상명은 엔진 식별자라 그대로 쓴다)
-const MVP_SHOW = {
-  'NBA 파이널 MVP': { eyebrow: 'NBA 파이널', title: '파이널 MVP!' },
-  'KBL 챔피언결정전 MVP': { eyebrow: 'KBL 챔피언결정전', title: '챔프전 MVP!' },
-} as const
-
-// 파이널 MVP 축하: 코트 위에서 트로피를 들고, 색종이·폭죽이 흩날린다
-function FmvpCelebration({
-  kit,
-  look,
-  award,
-  onClose,
-}: {
-  kit: Kit
-  look?: Look
-  award: keyof typeof MVP_SHOW
-  onClose: () => void
-}) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    ref.current?.showModal()
-  }, [])
-  return (
-    <dialog
-      ref={ref}
-      className="modal fmvp"
-      aria-label={award}
-      onClose={() => setTimeout(onClose, 150)}
-    >
-      <div className="court">
-        <i className="burst" />
-        <i className="burst two" />
-        <div className="confetti" aria-hidden="true">
-          {CONFETTI.map((style, i) => (
-            <i key={i} style={style} />
-          ))}
-        </div>
-        <div className="sprite">
-          <PixelPlayer pose="trophy" kit={kit} look={look} scale={4} />
-        </div>
-      </div>
-      <p className="eyebrow">{tr(MVP_SHOW[award].eyebrow)}</p>
-      <h2>{tr(MVP_SHOW[award].title)}</h2>
-      <button className="primary big" onClick={() => ref.current?.close()}>
-        {tr('계속')}
-      </button>
-    </dialog>
-  )
-}
+// 축하 연출을 띄우는 수상 (수상명은 엔진 식별자라 그대로 쓴다)
+const FMVP_AWARDS: FmvpAward[] = ['NBA 파이널 MVP', 'KBL 챔피언결정전 MVP']
 
 // 주요 경기 하이라이트 팝업
 function Highlight({

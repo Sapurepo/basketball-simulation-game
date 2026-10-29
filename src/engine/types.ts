@@ -166,6 +166,8 @@ export interface SeasonRecord {
   ovr: number
   stats: StatLine
   playoffStats?: StatLine
+  // 우승한 결승 시리즈 기록 (이전 저장에는 없다)
+  finalsStats?: StatLine
   wins: number
   losses: number
   // 시즌 결과 요약 조각들 (화면에서는 뱃지로 표시)

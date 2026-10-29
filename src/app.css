@@ -3666,20 +3666,110 @@ tr.me td {
   background: var(--accent);
 }
 
-/* NBA 파이널 MVP 축하: 코트 무대 + 색종이 + 폭죽 */
+/* 파이널 MVP 축하: 0~1.8초 암전·스포트라이트·두구두구 → 1.8초 플래시와 공개 → 4.5초에 '계속'.
+   지연은 이 타임라인 기준이고 건너뛰기는 finalsMvp.tsx 가 모든 애니메이션을 4.5초로 감는다 */
 .modal.fmvp {
-  width: min(100% - 32px, 480px);
-  padding: 0 0 20px;
-  text-align: center;
-  overflow: hidden;
+  /* 금장 테두리(12px)와 그림자(18px)가 잘리지 않게 여백을 두고 대화상자 자체는 투명 */
+  width: min(100% - 8px, 562px);
+  max-width: none;
+  max-height: none;
+  padding: 12px 30px 30px 12px;
+  overflow: visible;
+  background: none;
+  box-shadow: none;
+  color: var(--ink);
+  word-break: keep-all;
 }
 
-.fmvp .court {
+.modal.fmvp::backdrop {
+  background: rgb(17 18 15 / 0.85)
+    repeating-conic-gradient(
+      rgb(242 193 78 / 0.09) 0deg 7deg,
+      transparent 7deg 15deg
+    );
+}
+
+/* 키가 작은 화면은 통째로 줄인다 */
+@media (max-height: 860px) {
+  .modal.fmvp {
+    zoom: 0.9;
+  }
+}
+
+@media (max-height: 760px) {
+  .modal.fmvp {
+    zoom: 0.8;
+  }
+}
+
+@media (max-height: 680px) {
+  .modal.fmvp {
+    zoom: 0.7;
+  }
+}
+
+@media (max-height: 590px) {
+  .modal.fmvp {
+    zoom: 0.6;
+  }
+}
+
+.fmvp img {
+  image-rendering: pixelated;
+}
+
+.fm-card {
   position: relative;
-  height: 260px;
-  margin-bottom: 16px;
+  background: var(--panel-hi);
+  box-shadow:
+    0 0 0 3px var(--ink),
+    0 0 0 6px var(--gold),
+    0 0 0 9px var(--gold-lo),
+    0 0 0 12px var(--ink),
+    18px 18px 0 0 var(--ink-deep);
+  animation: fm-shake 0.36s steps(6) 2.1s both;
+}
+
+.fm-stage {
+  position: relative;
+  height: 340px;
   overflow: hidden;
-  border-bottom: 3px solid var(--ink);
+  background: #11141c;
+}
+
+.fm-stage > * {
+  position: absolute;
+}
+
+.fm-crowd {
+  inset: 0 0 auto;
+  width: 100%;
+  height: 144px;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+
+.fm-band {
+  inset: 144px 0 auto;
+  height: 24px;
+  overflow: hidden;
+  background: var(--ink);
+  border-block: 3px solid var(--accent);
+}
+
+.fm-marq {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font: 400 12px var(--font-pixel);
+  letter-spacing: 1px;
+  color: var(--gold);
+  animation: fm-marq 36s linear infinite;
+}
+
+.fm-floor {
+  inset: 174px 0 0;
   background: repeating-linear-gradient(
     90deg,
     #d49a5e 0 28px,
@@ -3687,137 +3777,826 @@ tr.me td {
   );
 }
 
-/* 센터 서클과 하프 라인 */
-.fmvp .court::before {
-  content: '';
-  position: absolute;
+.fm-circle {
   left: 50%;
-  top: 56%;
-  width: 150px;
+  top: 236px;
+  width: 300px;
   height: 150px;
-  translate: -50% -50%;
-  border: 3px solid rgb(255 255 255 / 0.85);
-  border-radius: 50%;
-}
-
-.fmvp .court::after {
-  content: '';
-  position: absolute;
-  inset: 56% 0 auto;
-  border-top: 3px solid rgb(255 255 255 / 0.85);
-}
-
-.fmvp .sprite {
-  position: absolute;
-  left: 50%;
-  bottom: 28px;
-  z-index: 2;
   translate: -50%;
-  animation: fmvp-pop 0.5s steps(4) both;
-}
-
-.fmvp .burst {
-  position: absolute;
-  left: 22%;
-  top: 30%;
-  z-index: 1;
-  width: 90px;
-  height: 90px;
-  translate: -50% -50%;
+  border: 3px solid rgb(255 255 255 / 0.7);
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    var(--gold-hi) 0 10%,
-    transparent 11% 30%,
-    var(--accent) 31% 36%,
-    transparent 37% 60%,
-    var(--gold) 61% 64%,
-    transparent 65%
+}
+
+/* 공개 순간 뒤로 도는 햇살 */
+.fm-rays {
+  left: 50%;
+  top: 150px;
+  z-index: 2;
+  animation: fm-in 0.3s steps(3) 1.8s both;
+}
+
+.fm-rays > div {
+  width: 820px;
+  height: 820px;
+  background: repeating-conic-gradient(
+    rgb(255 224 138 / 0.3) 0deg 9deg,
+    transparent 9deg 18deg
   );
-  animation: fmvp-burst 1.6s steps(6) infinite;
+  animation: fm-spin 20s linear infinite;
 }
 
-.fmvp .burst.two {
-  left: 78%;
-  top: 22%;
-  animation-delay: 0.8s;
+.fm-glow {
+  left: 50%;
+  bottom: 22px;
+  z-index: 2;
+  width: 280px;
+  height: 56px;
+  translate: -50%;
+  border-radius: 50%;
+  background: rgb(255 224 138 / 0.45);
+  animation: fm-in 0.2s 1.8s both;
 }
 
-.fmvp .confetti {
-  position: absolute;
+.fm-fx {
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
 }
 
-.fmvp .confetti i {
+.fm-pop {
   position: absolute;
-  top: -10px;
-  left: var(--x);
-  width: 8px;
-  height: 8px;
-  background: var(--c);
-  animation: confetti-fall var(--t) linear var(--d) infinite;
+  width: 22px;
+  height: 22px;
+  animation: fm-twinkle 1.5s steps(1) infinite both;
 }
 
-.fmvp .confetti i:nth-child(odd) {
+.fm-burst {
+  position: absolute;
+}
+
+.fm-burst img {
+  position: absolute;
+  left: -16px;
+  top: -16px;
+  width: 33px;
+  height: 33px;
+  opacity: 0;
+  animation: fm-core 1.4s steps(5) infinite;
+}
+
+.fm-burst i {
+  position: absolute;
+  left: -3px;
+  top: -3px;
   width: 6px;
-  height: 12px;
+  height: 6px;
+  opacity: 0;
+  animation: fm-spark 1.4s steps(7) infinite;
 }
 
-.fmvp h2 {
-  margin: 0 20px;
-  font: 400 28px var(--font-pixel);
-  color: var(--gold-ink);
+.fm-pedestal {
+  left: 50%;
+  bottom: 22px;
+  z-index: 3;
+  width: 128px;
+  height: 48px;
+  translate: -50%;
 }
 
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(0) rotate(0);
-    opacity: 1;
+/* 공개 순간 퍼지는 마름모 충격파 두 겹 */
+.fm-ring {
+  left: 50%;
+  top: 150px;
+  z-index: 4;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 4px solid var(--gold-hi);
+  animation: fm-ring 0.55s steps(6) 1.8s both;
+}
+
+.fm-ring.two {
+  border-color: var(--accent);
+  animation-delay: 1.95s;
+}
+
+.fm-hero,
+.fm-silhouette {
+  left: 50%;
+  bottom: 66px;
+  translate: -50%;
+  line-height: 0;
+}
+
+.fm-hero {
+  z-index: 4;
+  transform-origin: 50% 100%;
+  animation: fm-hop 0.6s ease-out 1.8s both;
+}
+
+.fm-twinkle {
+  z-index: 4;
+  animation: fm-twinkle 1.6s steps(1) infinite both;
+}
+
+/* 암전 동안 무대를 훑는 스포트라이트 두 줄기. 공개 뒤엔 은은하게 남는다 */
+.fm-spots {
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  animation: fm-dim 0.3s 1.8s both;
+}
+
+.fm-spots > div {
+  position: absolute;
+  top: -16px;
+  width: 180px;
+  height: 470px;
+  transform-origin: 50% 0;
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  background: linear-gradient(rgb(255 244 214 / 0.5), rgb(255 244 214 / 0.06));
+}
+
+.fm-spots .l {
+  left: calc(16% - 90px);
+  animation: fm-spot-l 1.8s ease-in-out both;
+}
+
+.fm-spots .r {
+  right: calc(16% - 90px);
+  animation: fm-spot-r 1.8s ease-in-out both;
+}
+
+.fm-lamp {
+  top: -4px;
+  z-index: 7;
+  width: 36px;
+  height: 21px;
+}
+
+.fm-lamp.l {
+  left: calc(16% - 18px);
+}
+
+.fm-lamp.r {
+  right: calc(16% - 18px);
+}
+
+/* 스포트라이트가 멈춘 자리에 잠깐 비치는 바닥 빛과 검은 실루엣 */
+.fm-preglow {
+  left: 50%;
+  bottom: 50px;
+  z-index: 6;
+  width: 200px;
+  height: 40px;
+  translate: -50%;
+  border-radius: 50%;
+  background: rgb(255 236 170 / 0.3);
+  animation:
+    fm-in 0.12s steps(2) 1.1s both,
+    fm-out 0.1s 1.8s forwards;
+}
+
+.fm-silhouette {
+  z-index: 7;
+  filter: brightness(0);
+  animation:
+    fm-in 0.2s 0.2s both,
+    fm-out 0.01s 1.8s forwards;
+}
+
+.fm-plate {
+  inset: 12px 0 auto;
+  z-index: 8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  animation: fm-slam 0.32s steps(5) 2.05s both;
+}
+
+.fm-plate img {
+  width: 33px;
+  height: 27px;
+}
+
+.fm-plate span {
+  padding: 8px 16px 6px;
+  background: var(--gold);
+  font: 400 26px/1.2 var(--font-pixel);
+  letter-spacing: 3px;
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 3px var(--ink),
+    inset 0 3px 0 0 var(--gold-hi),
+    inset 0 -4px 0 0 var(--gold-lo),
+    6px 6px 0 0 var(--ink);
+}
+
+.fm-body {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 42px 22px 22px;
+  text-align: center;
+}
+
+.fm-body p {
+  margin: 0;
+}
+
+.fm-eyebrow {
+  font: 400 12px var(--font-pixel);
+  letter-spacing: 1px;
+  color: var(--accent-lo);
+  animation: fm-rise 0.3s steps(3) 2.5s both;
+}
+
+.fm-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fm-name img {
+  width: 28px;
+  height: 48px;
+  animation: fm-laurel-l 0.3s steps(3) 2.75s both;
+}
+
+.fm-name img.r {
+  animation-name: fm-laurel-r;
+}
+
+.fm-name h2 {
+  margin: 0;
+  font: 400 38px/1.15 var(--font-pixel);
+  text-shadow: 3px 3px 0 var(--gold);
+  animation: fm-pop 0.4s steps(5) 2.6s both;
+}
+
+.fm-sub {
+  font-size: 13px;
+  color: var(--muted);
+  animation: fm-rise 0.3s steps(3) 2.75s both;
+}
+
+.fm-stats {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.fm-stats > p {
+  font-size: 12px;
+  color: var(--muted);
+  animation: fm-in 0.2s 2.95s both;
+}
+
+.fm-stats > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.fm-stats > div > div {
+  display: grid;
+  gap: 2px;
+  padding: 10px 4px 11px;
+  background: var(--panel-sunk);
+  box-shadow:
+    inset 0 0 0 2px var(--ink),
+    inset 0 -5px 0 0 var(--line);
+  animation: fm-pop 0.3s steps(4) 3s both;
+}
+
+.fm-stats > div > div:nth-child(2) {
+  animation-delay: 3.15s;
+}
+
+.fm-stats > div > div:nth-child(3) {
+  animation-delay: 3.3s;
+}
+
+.fm-stats span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.fm-stats b {
+  font: 400 26px var(--font-pixel);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 트로피 진열장: 이번 트로피가 떨어져 쌓인다 */
+.fm-shelf {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--panel-hi);
+  animation: fm-rise 0.3s steps(3) 3.55s both;
+}
+
+.fm-shelf > div:first-child {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  min-height: 33px;
+}
+
+.fm-shelf img {
+  display: block;
+  width: 33px;
+  height: 33px;
+}
+
+.fm-shelf .fresh {
+  position: relative;
+  animation: fm-drop 0.5s 3.8s both;
+}
+
+.fm-shelf .spark {
+  position: absolute;
+  right: -14px;
+  top: -12px;
+  width: 22px;
+  height: 22px;
+  animation: fm-twinkle 1.4s steps(1) 4.1s infinite both;
+}
+
+.fm-shelf > div:last-child {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  text-align: right;
+}
+
+.fm-shelf b {
+  font: 400 15px var(--font-pixel);
+  color: var(--gold);
+}
+
+.fm-shelf span {
+  font-size: 11px;
+  color: var(--muted-on-dark);
+}
+
+/* 끝나기 전엔 안내 문구, 끝나면 같은 자리에 '계속' */
+.fm-foot {
+  width: 100%;
+  display: grid;
+  margin-top: 12px;
+}
+
+.fm-foot > * {
+  grid-area: 1 / 1;
+}
+
+.fm-foot p {
+  align-self: center;
+  font-size: 12px;
+  color: var(--muted);
+  animation:
+    fm-in 0.3s 1.9s both,
+    fm-out 0.2s 4s forwards;
+}
+
+.modal.fmvp .fm-foot .primary {
+  margin: 3px;
+  animation: fm-pop 0.35s steps(4) 4.15s both;
+}
+
+.fm-foot .primary span {
+  display: inline-block;
+  animation: fm-nudge 0.6s steps(2) 4.5s infinite;
+}
+
+.fm-badge {
+  position: absolute;
+  inset: 319px 0 auto;
+  z-index: 8;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.fm-badge span {
+  position: relative;
+  padding: 8px 20px 7px;
+  background: var(--gold);
+  font: 400 15px/1.2 var(--font-pixel);
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 3px var(--ink),
+    inset 0 3px 0 0 var(--gold-hi),
+    inset 0 -4px 0 0 var(--gold-lo);
+  animation: fm-stamp 0.36s steps(5) 2.3s both;
+}
+
+/* 리본 꼬리 */
+.fm-badge span::before,
+.fm-badge span::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  z-index: -1;
+  width: 36px;
+  height: 30px;
+  background: var(--gold-ink);
+}
+
+.fm-badge span::before {
+  left: -24px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 38% 50%);
+}
+
+.fm-badge span::after {
+  right: -24px;
+  clip-path: polygon(0 0, 100% 0, 62% 50%, 100% 100%, 0 100%);
+}
+
+/* 예고 화면: 무대는 어둡게 비치고 아래는 두구두구 */
+.fm-dark {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-rows: 340px 1fr;
+  background: linear-gradient(rgb(14 14 20 / 0.86) 0 340px, #121218 340px);
+  pointer-events: none;
+  animation: fm-out 0.08s 1.8s forwards;
+}
+
+.fm-dark > div {
+  grid-row: 2;
+  align-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 0 20px 30px;
+  text-align: center;
+}
+
+.fm-dark p {
+  margin: 0;
+  font-family: var(--font-pixel);
+}
+
+.fm-dark > div > p:nth-child(1) {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--muted-on-dark);
+  animation: fm-in 0.3s 0.1s both;
+}
+
+.fm-dark > div > p:nth-child(2) {
+  font-size: 24px;
+  line-height: 1.3;
+  color: var(--panel-hi);
+  animation: fm-rise 0.35s steps(4) 0.35s both;
+}
+
+.fm-dark > div > p:nth-child(2) span {
+  animation: fm-blink 0.5s steps(1) 0.7s infinite;
+}
+
+.fm-dark > div > p:nth-child(3) {
+  font-size: 20px;
+  color: var(--gold);
+  animation:
+    fm-in 0.1s 1s both,
+    fm-drum 0.12s steps(2) 1s 7;
+}
+
+.fm-dark > p {
+  position: absolute;
+  inset: auto 0 22px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--muted-on-dark);
+  animation: fm-in 0.3s 0.8s both;
+}
+
+.fm-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fm-confetti i {
+  position: absolute;
+  top: -16px;
+  animation: fm-fall 3s linear infinite both;
+}
+
+.fm-corner {
+  position: absolute;
+  z-index: 11;
+  width: 33px;
+  height: 33px;
+}
+
+.fm-corner.cTL {
+  left: 6px;
+  top: 6px;
+}
+
+.fm-corner.cR {
+  right: 6px;
+  top: 6px;
+}
+
+.fm-corner.cB {
+  left: 6px;
+  bottom: 6px;
+}
+
+.fm-corner.cRB {
+  right: 6px;
+  bottom: 6px;
+}
+
+.fm-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: #fff8e6;
+  opacity: 0;
+  pointer-events: none;
+  animation: fm-flash 0.5s steps(5) 1.8s forwards;
+}
+
+@keyframes fm-in {
+  from {
+    opacity: 0;
   }
-  100% {
-    transform: translateY(290px) rotate(720deg);
-    opacity: 0.7;
+}
+
+@keyframes fm-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
   }
 }
 
-@keyframes fmvp-burst {
+@keyframes fm-dim {
+  to {
+    opacity: 0.38;
+  }
+}
+
+@keyframes fm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes fm-pop {
   0% {
-    scale: 0.2;
-    opacity: 1;
+    opacity: 0;
+    transform: scale(0.4);
   }
   60% {
     opacity: 1;
+    transform: scale(1.14);
+  }
+}
+
+@keyframes fm-slam {
+  0% {
+    opacity: 0;
+    transform: translateY(-46px) scale(1.9);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(2px) scale(0.92);
+  }
+}
+
+@keyframes fm-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-12deg) scale(2.2);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(1deg) scale(0.94);
+  }
+}
+
+@keyframes fm-shake {
+  17% {
+    transform: translate(-5px, 3px);
+  }
+  34% {
+    transform: translate(5px, -2px);
+  }
+  51% {
+    transform: translate(-4px, -2px);
+  }
+  68% {
+    transform: translate(3px, 2px);
+  }
+  85% {
+    transform: translate(-1px, 1px);
+  }
+}
+
+@keyframes fm-drum {
+  50% {
+    transform: translate(2px, -1px);
+  }
+}
+
+@keyframes fm-flash {
+  0% {
+    opacity: 0.95;
   }
   100% {
-    scale: 1.3;
     opacity: 0;
   }
 }
 
-@keyframes fmvp-pop {
-  from {
-    scale: 0.4;
+@keyframes fm-blink {
+  0% {
     opacity: 0;
   }
-  to {
-    scale: 1;
+  50% {
     opacity: 1;
   }
 }
 
-/* 파엠 축하 동작 줄이기: 기본 규칙과 명시도가 같아 반드시 그 뒤에 온다.
-   색종이는 흩어진 자리에 멈춰 있고 폭죽·등장 연출은 없다 */
-@media (prefers-reduced-motion: reduce) {
-  .fmvp .confetti i {
-    animation: none;
-    top: var(--y);
+@keyframes fm-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0);
   }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
 
-  .fmvp .burst,
-  .fmvp .sprite {
-    animation: none;
+@keyframes fm-marq {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fm-spot-l {
+  0% {
+    opacity: 0;
+    transform: rotate(38deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  28% {
+    transform: rotate(-8deg);
+  }
+  46% {
+    transform: rotate(24deg);
+  }
+  62%,
+  100% {
+    opacity: 1;
+    transform: rotate(-30deg);
+  }
+}
+
+@keyframes fm-spot-r {
+  0% {
+    opacity: 0;
+    transform: rotate(-38deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  28% {
+    transform: rotate(8deg);
+  }
+  46% {
+    transform: rotate(-24deg);
+  }
+  62%,
+  100% {
+    opacity: 1;
+    transform: rotate(30deg);
+  }
+}
+
+@keyframes fm-hop {
+  0% {
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  35% {
+    transform: translateY(-28px);
+  }
+  62% {
+    transform: scale(1.06, 0.9);
+  }
+  80% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes fm-ring {
+  0% {
+    opacity: 1;
+    transform: rotate(45deg) scale(0.2);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(45deg) scale(9);
+  }
+}
+
+@keyframes fm-twinkle {
+  0%,
+  60%,
+  100% {
+    opacity: 0;
+  }
+  70%,
+  90% {
+    opacity: 1;
+  }
+}
+
+@keyframes fm-spark {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+
+@keyframes fm-core {
+  0% {
+    opacity: 1;
+    transform: scale(0.3);
+  }
+  35%,
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+@keyframes fm-fall {
+  to {
+    transform: translateY(820px) rotate(620deg);
+  }
+}
+
+@keyframes fm-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-44px);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.15, 0.8);
+  }
+  70% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes fm-laurel-l {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+}
+
+@keyframes fm-laurel-r {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
+@keyframes fm-nudge {
+  50% {
+    transform: translateX(3px);
   }
 }
 
