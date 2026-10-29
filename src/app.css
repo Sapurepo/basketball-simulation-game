@@ -3365,27 +3365,26 @@ tr.me td {
   color: #f3eee2;
 }
 
+/* 제목은 왼쪽 위에 고정, 도구는 언어·폭과 관계없이 늘 그 오른쪽. 긴 제목(번역)은 제목 칸 안에서 줄바꿈.
+   도구 칸은 최대 절반: 안 그러면 좁은 화면에서 긴 안내문 한 줄 폭만큼 제목 칸이 눌린다 */
 .ranking-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) fit-content(50%);
+  align-items: start;
   gap: 16px;
   padding-bottom: 16px;
   border-bottom: 3px solid var(--ink-hover);
 }
 
-.ranking-head .eyebrow {
-  color: var(--accent);
-  letter-spacing: 2px;
-}
-
-/* 제목이 길어(번역) 도구가 다음 줄로 내려가도 오른쪽 끝에 붙인다 */
 .ranking-tools {
   display: grid;
   justify-items: end;
   gap: 8px;
-  margin-left: auto;
+  text-align: right;
+}
+
+.ranking-tools .chips {
+  justify-content: flex-end;
 }
 
 .ranking-tools small,

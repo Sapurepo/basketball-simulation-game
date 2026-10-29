@@ -69,12 +69,9 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   return (
     <main className="ranking">
       <header className="ranking-head">
-        <div>
-          <p className="eyebrow">COURT CAREER · HALL OF FAME</p>
-          <h1>
-            {tr('명예의 전당')} · {tr('전체 랭킹')}
-          </h1>
-        </div>
+        <h1>
+          {tr('명예의 전당')} · {tr('전체 랭킹')}
+        </h1>
         <div className="ranking-tools">
           <div className="row">
             <button
@@ -99,7 +96,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
               </button>
             ))}
           </div>
-          {/* 불러오는 동안에도 줄을 비워 둔다. 줄이 빠지면 헤더 높이가 줄어 바닥 정렬된 제목이 위로 튄다 */}
+          {/* 불러오는 동안에도 줄을 비워 둔다. 줄이 빠지면 헤더 높이가 줄어 아래 목록이 들썩인다 */}
           <small>
             {data?.top.total
               ? tr('총 {n}명 등록 · 선수를 누르면 상세 기록이 열려요', {
