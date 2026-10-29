@@ -35,6 +35,19 @@ describe('커리어 전체 진행', () => {
     expect(JSON.stringify(playCareer(42))).toBe(JSON.stringify(playCareer(42)))
   })
 
+  test('진행해도 이전 상태는 그대로다 (지난 시즌 기록은 공유한다)', () => {
+    const rng = new Rng(11)
+    let s = newGame(11, createPlayer(rng, 'a', 'PG', 'n/a'), 'yongsan')
+    for (let i = 0; i < 60 && s.stage !== 'RETIRED'; i++) {
+      const before = JSON.stringify(s)
+      const next = s.events.length
+        ? resolveEvent(s, botChoice(s))
+        : advanceSeason(s)
+      expect(JSON.stringify(s)).toBe(before)
+      s = next
+    }
+  })
+
   test('모든 커리어가 은퇴로 끝나고 기록이 정상 범위다', () => {
     for (const s of careers) {
       expect(s.stage).toBe('RETIRED')
