@@ -68,7 +68,9 @@ export function setLang(l: Lang) {
 function applyToDocument() {
   if (typeof document === 'undefined') return
   document.documentElement.lang = lang
-  document.title = tr('벤치에서 파엠까지')
+  document.title = tr(
+    '벤치에서 파엠까지 - 국내 고교 유망주가 꿈꾸는 NBA 입성, 그리고 파이널 MVP',
+  )
 }
 
 export const useLang = () =>

@@ -1,6 +1,8 @@
 // 영어 카탈로그. 키는 한국어 원문. 섹션: UI → 엔진(수상·결과·라벨) → 이벤트 → 중계 → 고유명사
 const text: Record<string, string> = {
   // ── 공통 ──
+  '벤치에서 파엠까지 - 국내 고교 유망주가 꿈꾸는 NBA 입성, 그리고 파이널 MVP':
+    'Bench to MVP - From Korean high school prospect to the NBA, and Finals MVP',
   '벤치에서 파엠까지': 'Bench to MVP',
   '나만의 농구 인생': 'Your own basketball life',
   닫기: 'Close',
