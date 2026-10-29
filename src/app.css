@@ -3365,29 +3365,68 @@ tr.me td {
   color: #f3eee2;
 }
 
-/* 제목은 왼쪽 위에 고정, 도구는 언어·폭과 관계없이 늘 그 오른쪽. 긴 제목(번역)은 제목 칸 안에서 줄바꿈.
-   도구 칸은 최대 절반: 안 그러면 좁은 화면에서 긴 안내문 한 줄 폭만큼 제목 칸이 눌린다 */
+/* 2×2 줄 맞춤: 제목 ↔ 새로고침·뒤로, 총 n명 ↔ 정렬 칩. 긴 제목(번역)은 제목 칸 안에서 줄바꿈 */
 .ranking-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) fit-content(50%);
-  align-items: start;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'title btns'
+    'count chips';
+  align-items: center;
+  gap: 8px 16px;
   padding-bottom: 16px;
   border-bottom: 3px solid var(--ink-hover);
 }
 
-.ranking-tools {
-  display: grid;
-  justify-items: end;
-  gap: 8px;
-  text-align: right;
+.ranking-head h1 {
+  grid-area: title;
 }
 
-.ranking-tools .chips {
+.ranking-btns {
+  grid-area: btns;
   justify-content: flex-end;
 }
 
-.ranking-tools small,
+.ranking-count {
+  grid-area: count;
+  margin: 0;
+  color: var(--muted-on-dark);
+  font: 20px var(--font-pixel);
+}
+
+.ranking-head .chips {
+  grid-area: chips;
+  justify-content: flex-end;
+}
+
+/* 모바일: 칩과 버튼을 한 줄에 두면 390px 폭에서도 넘쳐(한국어 376px 필요) 칩이 두 줄로 깨진다.
+   버튼은 데스크톱처럼 제목 오른쪽(제목은 그 옆에서 줄바꿈), 총 n명 아래 정렬 칩을 한 줄로 */
+@media (max-width: 520px) {
+  .ranking-head {
+    grid-template-areas:
+      'title btns'
+      'count count'
+      'chips chips';
+  }
+
+  .ranking-btns {
+    align-self: start;
+  }
+
+  .ranking-head h1 {
+    font-size: 22px;
+  }
+
+  .ranking-count {
+    margin-bottom: 4px;
+    font-size: 17px;
+  }
+
+  .ranking-head .chips {
+    justify-content: flex-start;
+  }
+}
+
 .ranking-note {
   color: var(--muted-on-dark);
   font-size: 12px;

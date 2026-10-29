@@ -69,41 +69,35 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   return (
     <main className="ranking">
       <header className="ranking-head">
-        <h1>
-          {tr('명예의 전당')} · {tr('전체 랭킹')}
-        </h1>
-        <div className="ranking-tools">
-          <div className="row">
+        <h1>{tr('명예의 전당')}</h1>
+        <div className="row ranking-btns">
+          <button
+            className="ghost"
+            onClick={refresh}
+            disabled={!data && !error}
+          >
+            {tr('새로고침')}
+          </button>
+          <button className="ghost" onClick={onBack}>
+            {tr('뒤로')}
+          </button>
+        </div>
+        {/* 불러오는 동안에도 줄을 비워 둔다. 줄이 빠지면 헤더 높이가 줄어 아래 목록이 들썩인다 */}
+        <p className="ranking-count">
+          {data?.top.total
+            ? tr('총 {n}명 등록', { n: data.top.total.toLocaleString() })
+            : '\u00a0'}
+        </p>
+        <div className="chips">
+          {SORTS.map(([id, label]) => (
             <button
-              className="ghost"
-              onClick={refresh}
-              disabled={!data && !error}
+              key={id}
+              className={sort === id ? 'chip on' : 'chip'}
+              onClick={() => pickSort(id)}
             >
-              {tr('새로고침')}
+              {tr(label)}
             </button>
-            <button className="ghost" onClick={onBack}>
-              {tr('뒤로')}
-            </button>
-          </div>
-          <div className="chips">
-            {SORTS.map(([id, label]) => (
-              <button
-                key={id}
-                className={sort === id ? 'chip on' : 'chip'}
-                onClick={() => pickSort(id)}
-              >
-                {tr(label)}
-              </button>
-            ))}
-          </div>
-          {/* 불러오는 동안에도 줄을 비워 둔다. 줄이 빠지면 헤더 높이가 줄어 아래 목록이 들썩인다 */}
-          <small>
-            {data?.top.total
-              ? tr('총 {n}명 등록 · 선수를 누르면 상세 기록이 열려요', {
-                  n: data.top.total.toLocaleString(),
-                })
-              : '\u00a0'}
-          </small>
+          ))}
         </div>
       </header>
 

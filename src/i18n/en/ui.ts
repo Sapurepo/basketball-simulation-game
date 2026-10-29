@@ -326,8 +326,7 @@ const text: Record<string, string> = {
   '포지션별 베스트 5': 'Best five by position',
   '{n}위': '#{n}',
   '비어 있음': 'Vacant',
-  '총 {n}명 등록 · 선수를 누르면 상세 기록이 열려요':
-    '{n} players registered · Tap a player for details',
+  '총 {n}명 등록': '{n} players registered',
   '첫 등록을 기다려요': 'Awaiting first entry',
   'OVR {ovr} · 파이널 MVP {n}': 'OVR {ovr} · Finals MVP {n}',
   '{name} 상세 기록': '{name} details',
