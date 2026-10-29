@@ -72,7 +72,21 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- JS 실행 전에도 검색엔진이 읽는 본문. createRoot 가 마운트하며 지운다 -->
+    <div id="root">
+      <main class="landing">
+        <section class="panel">
+          <p class="eyebrow">
+            국내 고교 유망주가 꿈꾸는 NBA 입성, 그리고 파이널 MVP.
+          </p>
+          <h1 class="title">벤치에서<br />파엠까지</h1>
+          <p class="muted">
+            한 시즌의 활약과 선택이 쌓여 커리어가 돼요.<br />KBL 데뷔, 국가대표,
+            NBA 파이널 MVP까지 도전해 보세요.
+          </p>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
