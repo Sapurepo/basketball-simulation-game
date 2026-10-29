@@ -7,7 +7,7 @@ import { tr } from '../i18n'
 import { teamKit } from './pose'
 import { iconURL } from './sprite'
 
-// 랭킹 한 줄. 랜딩 미리보기와 랭킹 화면이 함께 쓴다 (detail 은 트로피·시즌·은퇴 연도)
+// 랜딩 미리보기의 랭킹 한 줄
 export function HallItem({
   rank,
   name,
@@ -15,7 +15,6 @@ export function HallItem({
   look,
   peakOvr,
   fmvp,
-  detail,
 }: {
   rank: number
   name: string
@@ -23,7 +22,6 @@ export function HallItem({
   look?: Look
   peakOvr: number
   fmvp: number
-  detail?: { trophies: number; seasons: number; retiredYear: number }
 }) {
   return (
     <li>
@@ -32,13 +30,6 @@ export function HallItem({
       <span className="grow">
         {name} <small className="muted">{position}</small>
       </span>
-      {detail && (
-        <span className="hall-detail muted">
-          <span>{tr('트로피 {n}', { n: detail.trophies })}</span>
-          <span>{tr('{n}시즌', { n: detail.seasons })}</span>
-          <span>{tr('{year}년 은퇴', { year: detail.retiredYear })}</span>
-        </span>
-      )}
       <span className="row nowrap">
         <img
           className="px"

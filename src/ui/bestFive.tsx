@@ -1,90 +1,120 @@
 import { tr } from '../i18n'
-import type { Position } from '../engine/types'
-import type { HallRow } from './hallApi'
+import { POSITION_LABELS } from '../engine/player'
+import { hallArtURL } from './hallArt'
+import { BEST_ORDER, type HallRow } from './hallApi'
 import { PixelPlayer } from './pixelPlayer'
 import { teamKit } from './pose'
-import { iconURL } from './sprite'
 
-// 3-2 배치: 링 가까운 앞줄 SF·C·PF, 3점 라인 밖 뒷줄 PG·SG (코트 대비 %)
-const SPOTS: { pos: Position; x: number; y: number }[] = [
-  { pos: 'SF', x: 17, y: 30 },
-  { pos: 'C', x: 50, y: 20 },
-  { pos: 'PF', x: 83, y: 30 },
-  { pos: 'PG', x: 32, y: 74 },
-  { pos: 'SG', x: 68, y: 74 },
-]
-
-// 하프 코트(FIBA 비율, 1칸 = 10cm, 가로 15m × 세로 14m). 위쪽이 엔드라인과 림
-function Court() {
-  // 3점 라인: 사이드라인에서 0.9m 들어온 직선이 림 중심 반지름 6.75m 호와 만나는 높이
-  const corner = 15.75 + Math.sqrt(67.5 ** 2 - 66 ** 2)
+// 랭킹 화면 맨 위: 금장 액자 안 포지션별 1위 진열대. 가장 순위가 높은 선수에게 왕관
+export function BestFive({
+  rows,
+  desc,
+  onOpen,
+}: {
+  rows: HallRow[]
+  desc: string
+  onOpen: (r: HallRow) => void
+}) {
+  const leader = Math.min(...rows.map((r) => r.rank))
   return (
-    <svg className="court-lines" viewBox="0 0 150 140" aria-hidden="true">
-      <g fill="none" strokeWidth="1">
-        <rect x="0.5" y="0.5" width="149" height="139" />
-        {/* 페인트존과 자유투 서클 */}
-        <rect x="50.5" y="0.5" width="49" height="57.5" className="paint" />
-        <path d="M57 58 A18 18 0 0 0 93 58" />
-        <path d="M57 58 A18 18 0 0 1 93 58" strokeDasharray="3 3" />
-        {/* 3점 라인 */}
-        <path d={`M9 0 V${corner} A67.5 67.5 0 0 0 141 ${corner} V0`} />
-        {/* 제한 구역, 백보드, 림 */}
-        <path d="M62.5 15.75 A12.5 12.5 0 0 0 87.5 15.75" />
-        <line x1="66" y1="12" x2="84" y2="12" strokeWidth="1.5" />
-        <circle cx="75" cy="15.75" r="2.25" className="rim" />
-        {/* 하프 라인과 센터 서클 */}
-        <path d="M57 140 A18 18 0 0 1 93 140" />
-      </g>
-    </svg>
-  )
-}
-
-// 랭킹 화면 맨 위: 포지션별 1위로 짠 베스트 5 라인업
-export function BestFive({ rows }: { rows: HallRow[] }) {
-  return (
-    <div className="best-five" aria-label={tr('포지션별 베스트 5')}>
-      <Court />
-      {SPOTS.map(({ pos, x, y }) => {
-        const p = rows.find((r) => r.position === pos)
-        return (
-          <div
-            key={pos}
-            className={p ? 'spot' : 'spot empty'}
-            style={{ left: `${x}%`, top: `${y}%` }}
-          >
-            {p ? (
-              <>
-                <PixelPlayer
-                  pose="idle"
-                  kit={teamKit(p.name)}
-                  look={p.look}
-                  scale={2}
-                />
-                <span className="plate">
-                  <b>{pos}</b>
-                  <span>{p.name}</span>
-                </span>
-                <small>
-                  {tr('{n}위', { n: p.rank })} OVR {p.peakOvr}
-                  <img
-                    className="px"
-                    src={iconURL('trophy')}
-                    width={14}
-                    height={14}
-                    alt={tr('NBA 파이널 MVP')}
-                  />
-                  {p.fmvp}
-                </small>
-              </>
-            ) : (
-              <>
-                <span className="vacant">{pos}</span>
-                <small>{tr('비어 있음')}</small>
-              </>
-            )}
+    <section className="best-five" aria-label={tr('포지션별 베스트 5')}>
+      <div className="best-five-bg" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+      {(
+        [
+          ['', 'cTL'],
+          ['R', 'cTR'],
+          ['B', 'cBL'],
+          ['RB', 'cBR'],
+        ] as const
+      ).map(([f, at]) => (
+        <img
+          key={at}
+          className={`px corner ${at}`}
+          src={hallArtURL('corner', f)}
+          alt=""
+        />
+      ))}
+      <div className="best-five-head">
+        <div className="row nowrap">
+          <img className="px laurel" src={hallArtURL('laurel', 'L')} alt="" />
+          <div className="best-five-title">
+            <img className="px crown" src={hallArtURL('crown')} alt="" />
+            <span className="ribbon">BEST 5</span>
           </div>
-        )
-      })}
-    </div>
+          <img className="px laurel" src={hallArtURL('laurel', 'R')} alt="" />
+        </div>
+        <p>{desc}</p>
+      </div>
+      {BEST_ORDER.map((line) => (
+        <div key={line.join()} className="best-five-row">
+          {line.map((pos) => {
+            const p = rows.find((r) => r.position === pos)
+            return p ? (
+              <button
+                key={pos}
+                className="spot"
+                aria-label={tr('{name} 상세 기록', { name: p.name })}
+                onClick={() => onOpen(p)}
+              >
+                <span className="spot-pos">
+                  <span>{pos}</span>
+                </span>
+                <span className="spot-frame">
+                  <span className="spot-inner" />
+                  <span className="spot-beam" />
+                  <i />
+                  <i />
+                  <i />
+                  {p.rank === leader && (
+                    <img
+                      className="px crown"
+                      src={hallArtURL('crown')}
+                      alt=""
+                    />
+                  )}
+                  <img
+                    className="px pedestal"
+                    src={hallArtURL('pedestal')}
+                    alt=""
+                  />
+                  <span className="spot-sprite">
+                    <PixelPlayer
+                      pose="idle"
+                      kit={teamKit(p.name)}
+                      look={p.look}
+                      scale={2.5}
+                    />
+                  </span>
+                </span>
+                <span className="spot-plate">
+                  <b>{p.name}</b>
+                  <small>
+                    {tr('OVR {ovr} · 파이널 MVP {n}', {
+                      ovr: p.peakOvr,
+                      n: p.fmvp,
+                    })}
+                  </small>
+                </span>
+              </button>
+            ) : (
+              <div key={pos} className="spot empty">
+                <span className="spot-pos">{pos}</span>
+                <span className="spot-frame">
+                  <span>{tr('비어 있음')}</span>
+                </span>
+                <span className="spot-plate">
+                  <b>{tr('첫 등록을 기다려요')}</b>
+                  <small>{tr(POSITION_LABELS[pos])}</small>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      ))}
+    </section>
   )
 }

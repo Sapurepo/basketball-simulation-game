@@ -7,6 +7,11 @@ export const SORTS: [HallSort, string][] = [
   ['ovr', '최고 OVR순'],
   ['fmvp', '파이널 MVP순'],
 ]
+// 베스트 5 3-2 배치: 앞줄 SF·C·PF, 뒷줄 PG·SG. 상세 팝업의 이전·다음도 이 순서
+export const BEST_ORDER: Position[][] = [
+  ['SF', 'C', 'PF'],
+  ['PG', 'SG'],
+]
 export interface HallRow {
   id: string
   rank: number

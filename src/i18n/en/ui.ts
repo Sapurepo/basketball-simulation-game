@@ -284,7 +284,6 @@ const text: Record<string, string> = {
   '3순위': 'Pick 3',
   '새로운 인생 시작하기': 'Start a new life',
   // ── 명예의 전당·랭킹 ──
-  '(총 {n}명)': '({n} players)',
   '({n}명)': '({n} players)',
   뒤로: 'Back',
   '최고 OVR순': 'By peak OVR',
@@ -312,6 +311,20 @@ const text: Record<string, string> = {
   '포지션별 베스트 5': 'Best five by position',
   '{n}위': '#{n}',
   '비어 있음': 'Vacant',
+  '총 {n}명 등록 · 선수를 누르면 상세 기록이 열려요':
+    '{n} players registered · Tap a player for details',
+  '첫 등록을 기다려요': 'Awaiting first entry',
+  'OVR {ovr} · 파이널 MVP {n}': 'OVR {ovr} · Finals MVP {n}',
+  '{name} 상세 기록': '{name} details',
+  '파이널 MVP': 'Finals MVP',
+  '{n}회': '{n}',
+  '{n}개': '{n}',
+  '{year}년': '{year}',
+  '전체 순위': 'Overall rank',
+  '상위 {n}%': 'Top {n}%',
+  '시즌 수': 'Seasons',
+  '◀ 이전': '◀ Prev',
+  '다음 ▶': 'Next ▶',
   '공용 명예의 전당 등록': 'Register in the public Hall of Fame',
   '선수 이름, 포지션, 외형, 최고 OVR, 파이널 MVP 횟수, 트로피 수, 시즌 수, 은퇴 연도가 모든 플레이어에게 공개됩니다. 자세한 내용은 개인정보처리방침을 확인해 주세요.':
     'Player name, position, look, peak OVR, Finals MVP count, trophy count, seasons and retirement year are shown to all players. See the privacy policy for details.',
