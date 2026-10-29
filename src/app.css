@@ -3027,7 +3027,7 @@ tr.me td {
   margin-bottom: 4px;
   box-shadow:
     0 0 0 3px var(--ink),
-    6px 6px 0 0 var(--ink-deep);
+    0 6px 0 0 var(--ink-deep);
 }
 
 .card-art .tier {
@@ -3457,7 +3457,7 @@ tr.me td {
     0 0 0 6px var(--gold),
     0 0 0 9px var(--gold-lo),
     0 0 0 12px var(--ink),
-    20px 20px 0 0 var(--ink-deep);
+    0 20px 0 0 var(--ink-deep);
 }
 
 /* 바탕 사선 무늬와 흐린 코트 라인(페인트존·3점 호·센터 서클) */
@@ -3862,7 +3862,7 @@ button.spot:hover {
     0 3px 0 0 var(--ink),
     -3px 0 0 0 var(--ink),
     3px 0 0 0 var(--ink),
-    9px 9px 0 0 var(--ink-deep);
+    0 9px 0 0 var(--ink-deep);
 }
 
 .hall-top-bar {
@@ -4054,7 +4054,7 @@ button.spot:hover {
     0 3px 0 0 var(--ink),
     -3px 0 0 0 var(--ink),
     3px 0 0 0 var(--ink),
-    12px 12px 0 0 var(--ink-deep);
+    0 12px 0 0 var(--ink-deep);
 }
 
 .hall-pop-stage {
@@ -4524,7 +4524,7 @@ button.spot:hover {
     0 0 0 6px var(--gold),
     0 0 0 9px var(--gold-lo),
     0 0 0 12px var(--ink),
-    18px 18px 0 0 var(--ink-deep);
+    0 18px 0 0 var(--ink-deep);
   animation: fm-shake 0.36s steps(6) 2.1s both;
 }
 
@@ -4788,7 +4788,7 @@ button.spot:hover {
     0 0 0 3px var(--ink),
     inset 0 3px 0 0 var(--gold-hi),
     inset 0 -4px 0 0 var(--gold-lo),
-    6px 6px 0 0 var(--ink);
+    0 6px 0 0 var(--ink);
 }
 
 .fm-body {
