@@ -590,6 +590,27 @@ const text: Record<string, string> = {
   '2026년 10월 28일': 'October 28, 2026',
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
+  // ── 공지 1.3.0 ──
+  '경기 중계가 새로워졌어요. 스코어보드에서 점수·경기 시계·쿼터별 점수를 보며 슛 시도와 결과를 차례로 볼 수 있어요.':
+    'Game broadcasts are redesigned. Follow the score, game clock and quarter scores on the scoreboard as each shot is taken and lands.',
+  '중계를 멈추거나 1x·2x·4x 속도로 보고, 건너뛰거나 처음부터 다시 볼 수 있어요.':
+    'Pause the broadcast, watch at 1x, 2x or 4x, skip ahead, or watch again from the start.',
+  '중계 중에 내 선수의 기록이 실시간으로 쌓여요.':
+    "Your player's stats add up live during the broadcast.",
+  '은퇴하면 입장부터 헌정 영상, 고별사, 영구결번까지 이어지는 은퇴식이 열려요.':
+    'Retiring now opens a ceremony: entrance, tribute video, farewell speech and jersey retirement.',
+  '은퇴 화면에서 커리어 타임라인·통산 기록·트로피를 한눈에 보고, 은퇴식을 다시 볼 수 있어요.':
+    'The retirement screen shows your career timeline, career totals and trophies at a glance, and lets you rewatch the ceremony.',
+  '아시안게임 경기에서 참가국 국기가 보여요.':
+    "Asian Games games now show each nation's flag.",
+  '명예의 전당 랭킹이 새로워졌어요. 베스트 5는 금장 진열대에, 상위 100명은 메달과 함께 보여요.':
+    'The Hall of Fame rankings are redesigned. The Best 5 stand in a gold showcase, and the top 100 are listed with medals.',
+  '랭킹에서 선수를 누르면 상세 기록을 볼 수 있고, 이전·다음 버튼이나 ←/→ 키로 넘겨 볼 수 있어요.':
+    'Tap a player in the rankings to see their detailed record, and flip through with the previous/next buttons or the ←/→ keys.',
+  '파이널 MVP 축하 연출이 결승 하이라이트보다 먼저 뜨던 문제를 고쳤어요.':
+    'Fixed the Finals MVP celebration appearing before the Finals highlights.',
+  '팝업을 드래그할 때 글자가 선택되거나 이미지가 끌려 나오던 문제를 고쳤어요.':
+    'Fixed dragging in pop-ups selecting text or pulling images out.',
   // ── 공지 1.1.0 ──
   '상점이 새로워졌어요. 아이템을 고르면 내 무대에 미리 놓아 보고 살 수 있어요.':
     'The shop is redesigned. Pick an item to try it on your stage before you buy.',
