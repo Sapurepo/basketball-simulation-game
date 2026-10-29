@@ -1,19 +1,8 @@
-import { T, type Text, type Vars } from '../i18n'
+import { T } from '../i18n'
 import type { Rng } from './rng'
-import type { StatLine } from './types'
+import type { Cast, Play, PlayKind, StatLine } from './types'
 
-type Kind =
-  | 'made2'
-  | 'miss2'
-  | 'made3'
-  | 'miss3'
-  | 'ft'
-  | 'reb'
-  | 'ast'
-  | 'stl'
-  | 'blk'
-  | 'mate'
-  | 'opp'
+type Kind = Exclude<PlayKind, 'start' | 'qend' | 'end'>
 
 interface Ev {
   t: number
@@ -52,6 +41,20 @@ const TEXT: Record<Exclude<Kind, 'mate' | 'opp' | 'ft'>, string[]> = {
   blk: ['{p}, 블록슛! 그대로 쳐냅니다!', '{p}, 림 프로텍팅! 블록 기록.'],
 }
 
+// 슛 시도 문장: 결과를 미리 말하지 않는다
+const PRE2 = [
+  '{p}, 공을 잡고 공격을 시작합니다',
+  '{p}, 수비수를 앞에 두고 기회를 엿봅니다',
+  '{p}, 페인트존으로 파고듭니다',
+]
+const PRE3 = [
+  '{p}, 3점 라인 밖에서 슛',
+  '{p}, 스텝백 3점 시도',
+  '{p}, 코너에서 3점을 노립니다',
+]
+// 동료·상대 득점은 팀 단위로 중계한다 (득점 1~3점)
+const TEAM_TEXT = ['{t}, 자유투로 1점.', '{t}, 2점 득점.', '{t}, 3점슛 성공!']
+
 function chunks(rng: Rng, total: number): number[] {
   const out: number[] = []
   let left = total
@@ -63,7 +66,7 @@ function chunks(rng: Rng, total: number): number[] {
   return out
 }
 
-export function generatePbp(
+export function generateCast(
   rng: Rng,
   name: string,
   myTeam: string,
@@ -72,7 +75,7 @@ export function generatePbp(
   myScore: number,
   oppScore: number,
   quarterMinutes: number,
-): Text[] {
+): Cast {
   const qSec = quarterMinutes * 60
   const total = qSec * 4
   const t = () => rng.int(0, total - 1)
@@ -109,63 +112,89 @@ export function generatePbp(
     evs.push({ t: t(), kind: 'opp', pts: c })
   evs.sort((a, b) => a.t - b.t)
 
-  const lines: Text[] = [
-    { k: '{a} vs {b} — 경기 시작!', v: { a: T(myTeam), b: T(opp) } },
-  ]
   let me = 0
   let op = 0
   let q = 1
-  const clock = (sec: number) => {
-    const left = qSec - (sec % qSec)
-    const m = Math.floor(left / 60)
-    const s = left % 60
-    return `${Math.floor(sec / qSec) + 1}Q ${m}:${String(s).padStart(2, '0')}`
-  }
-  for (const e of evs) {
-    const eq = Math.floor(e.t / qSec) + 1
-    while (q < eq) {
-      lines.push({ k: '— {q}쿼터 종료 ({me}-{op}) —', v: { q, me, op } })
-      q++
-    }
-    if (e.kind === 'opp') {
-      op += e.pts
-      continue
-    }
-    me += e.pts
-    if (e.kind === 'mate') continue
-    // 중계 문장은 템플릿 안에 템플릿: text 의 {p} 는 선수 이름을 원문 그대로 넣는다
-    let text: Text
-    if (e.kind === 'ft') {
-      const [m, a] = e.ft!
-      text = { k: '{p}, 자유투 {a}개 중 {m}개 성공.', v: { p: name, a, m } }
-    } else {
-      text = { k: rng.pick(TEXT[e.kind]), v: { p: name } }
-    }
-    const v: Vars = { text, me, op, clock: clock(e.t) }
-    const late = e.t >= total - 60 && Math.abs(me - op) <= 3 && e.pts >= 2
-    lines.push({
-      k: late
-        ? '[{clock}] {text} ({me}-{op}) ★ 승부처!'
-        : '[{clock}] {text} ({me}-{op})',
-      v,
+  const plays: Play[] = [
+    {
+      t: 0,
+      kind: 'start',
+      pts: 0,
+      me,
+      op,
+      text: { k: '{a} vs {b} — 경기 시작!', v: { a: T(myTeam), b: T(opp) } },
+    },
+  ]
+  const quarterEnd = () => {
+    plays.push({
+      t: q * qSec,
+      kind: 'qend',
+      pts: 0,
+      me,
+      op,
+      text: { k: '— {q}쿼터 종료 ({me}-{op}) —', v: { q, me, op } },
     })
-  }
-  while (q <= 4) {
-    lines.push({ k: '— {q}쿼터 종료 ({me}-{op}) —', v: { q, me, op } })
     q++
   }
-  lines.push({
-    k: '경기 종료. {a} {as} : {bs} {b} — {p} {pts}득점 {reb}리바운드 {ast}어시스트',
-    v: {
-      a: T(myTeam),
-      as: myScore,
-      bs: oppScore,
-      b: T(opp),
-      p: name,
-      pts: box.pts,
-      reb: box.reb,
-      ast: box.ast,
+  // 시도 문장은 시각으로 고른다 (공유 난수를 더 쓰면 시즌 결과가 바뀐다)
+  const at = (list: string[], sec: number) => list[sec % list.length]
+  for (const e of evs) {
+    while (q < Math.floor(e.t / qSec) + 1) quarterEnd()
+    if (e.kind === 'opp') op += e.pts
+    else me += e.pts
+    const play: Play = { t: e.t, kind: e.kind, pts: e.pts, me, op, text: '' }
+    // 중계 문장은 템플릿 안에 템플릿: text 의 {p} 는 선수 이름을 원문 그대로 넣는다
+    if (e.kind === 'mate' || e.kind === 'opp') {
+      play.text = {
+        k: TEAM_TEXT[e.pts - 1],
+        v: { t: T(e.kind === 'opp' ? opp : myTeam) },
+      }
+      // 3점과 마지막 2분만 중계하고 나머지는 점수·시계에만 반영한다
+      if (e.pts < 3 && e.t < total - 120) play.quiet = true
+    } else if (e.kind === 'ft') {
+      const [m, a] = e.ft!
+      play.text = {
+        k: '{p}, 자유투 {a}개 중 {m}개 성공.',
+        v: { p: name, a, m },
+      }
+      play.pre = { k: '{p}, 자유투 라인에 섭니다', v: { p: name } }
+    } else {
+      play.text = { k: rng.pick(TEXT[e.kind]), v: { p: name } }
+      const pre =
+        e.kind === 'made2' || e.kind === 'miss2'
+          ? at(PRE2, e.t)
+          : e.kind === 'made3' || e.kind === 'miss3'
+            ? at(PRE3, e.t)
+            : e.kind === 'ast'
+              ? '{p}, 패스할 곳을 찾습니다'
+              : null
+      if (pre) play.pre = { k: pre, v: { p: name } }
+    }
+    if (e.t >= total - 60 && Math.abs(me - op) <= 3 && e.pts >= 2)
+      play.hot = true
+    plays.push(play)
+  }
+  // 4쿼터 종료는 경기 종료 장면이 대신한다
+  while (q < 4) quarterEnd()
+  plays.push({
+    t: total,
+    kind: 'end',
+    pts: 0,
+    me,
+    op,
+    text: {
+      k: '경기 종료. {a} {as} : {bs} {b} — {p} {pts}득점 {reb}리바운드 {ast}어시스트',
+      v: {
+        a: T(myTeam),
+        as: myScore,
+        bs: oppScore,
+        b: T(opp),
+        p: name,
+        pts: box.pts,
+        reb: box.reb,
+        ast: box.ast,
+      },
     },
   })
-  return lines
+  return { team: myTeam, quarterMinutes, plays }
 }

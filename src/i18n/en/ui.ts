@@ -630,6 +630,21 @@ const text: Record<string, string> = {
   '스카우팅 리포트를 횟수 제한 없이 다시 뽑을 수 있어요.':
     'Scouting reports can be rerolled without limit.',
   '상점 가격이 15% 내렸어요.': 'Shop prices are 15% lower.',
+  // ── 경기 중계·은퇴식 ──
+  하프타임: 'Halftime',
+  '{q}Q 종료': 'End Q{q}',
+  공격: 'Possession',
+  '★ 승부처!': '★ Clutch!',
+  '점프볼을 기다리는 중': 'Waiting for tip-off',
+  '★ 승부처': '★ Clutch',
+  '오늘의 기록 · 실시간': "Today's stats · live",
+  '중계 기록': 'Play-by-play',
+  '{n} / {total} 플레이': '{n} / {total} plays',
+  '다시 보기': 'Replay',
+  일시정지: 'Pause',
+  재생: 'Play',
+  '재생 속도': 'Playback speed',
+  '처음부터 다시 보기': 'Watch again from the start',
 }
 
 export default text

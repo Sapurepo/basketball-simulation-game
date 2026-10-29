@@ -23,7 +23,7 @@ import { AttrBars } from './attrBars'
 import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { attrDelta, fmtDelta, statDelta } from './delta'
 import { avg, pct, seasonLabel, serviceLabel, stageLabel } from './format'
-import { GameCast } from './gameCast'
+import { type CastPlayer, GameCast } from './gameCast'
 import { HallSubmit } from './hallSubmit'
 import { DrillGame } from './drillGame'
 import { PixelPlayer } from './pixelPlayer'
@@ -112,6 +112,7 @@ export function MainScreen({
   const [shop, setShop] = useState(false)
   const [editNum, setEditNum] = useState(false)
   const look = p.look ?? DEFAULT_LOOK
+  const castMe = { name: p.name, position: p.position, look, kit }
   const recordsRef = useRef<HTMLElement>(null)
   // 커맨드로 기록 패널을 바꾸면 패널이 화면에 보이도록 스크롤
   const show = (t: Tab) => {
@@ -211,7 +212,11 @@ export function MainScreen({
         />
       )}
       {highlight && (
-        <Highlight game={highlight} onClose={() => setHighlight(null)} />
+        <Highlight
+          game={highlight}
+          me={castMe}
+          onClose={() => setHighlight(null)}
+        />
       )}
       {shop && (
         <ShopDialog
@@ -437,7 +442,9 @@ export function MainScreen({
           </p>
           <h2>{tx(ev.title)}</h2>
           <p>{tx(ev.body)}</p>
-          {ev.data?.game ? <GameCast game={ev.data.game as GameLog} /> : null}
+          {ev.data?.game ? (
+            <GameCast game={ev.data.game as GameLog} me={castMe} />
+          ) : null}
           {isDrill(ev.kind) &&
             !matchMedia('(prefers-reduced-motion: reduce)').matches && (
               <DrillGame
@@ -610,6 +617,7 @@ export function MainScreen({
               <GameCast
                 key={`${last.year}-${castIdx}`}
                 game={last.featured[castIdx] ?? last.featured[0]}
+                me={castMe}
               />
             </>
           ) : (
@@ -867,7 +875,15 @@ function RetiredSummary({
 }
 
 // 주요 경기 하이라이트 팝업
-function Highlight({ game, onClose }: { game: GameLog; onClose: () => void }) {
+function Highlight({
+  game,
+  me,
+  onClose,
+}: {
+  game: GameLog
+  me: CastPlayer
+  onClose: () => void
+}) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     ref.current?.showModal()
@@ -876,11 +892,11 @@ function Highlight({ game, onClose }: { game: GameLog; onClose: () => void }) {
     // 닫힘 전환(150ms)이 끝난 뒤 언마운트
     <dialog
       ref={ref}
-      className="modal"
+      className="modal highlight"
       onClose={() => setTimeout(onClose, 150)}
     >
       <p className="eyebrow">{tr('하이라이트')}</p>
-      <GameCast game={game} />
+      <GameCast game={game} me={me} />
       <button className="primary big" onClick={() => ref.current?.close()}>
         {tr('결과 확인')}
       </button>

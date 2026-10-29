@@ -16,7 +16,7 @@ import {
   NCAA_GAMES,
   UNIV_LEAGUE_GAMES,
 } from '../data/leagues'
-import { generatePbp } from './commentary'
+import { generateCast } from './commentary'
 import { overall, POSITION_LABELS } from './player'
 import { clamp, sigmoid, type Rng } from './rng'
 import {
@@ -164,7 +164,7 @@ class SeasonCtx {
       myScore: p.myScore,
       oppScore: p.oppScore,
       box: p.box,
-      pbp: generatePbp(
+      cast: generateCast(
         this.rng,
         this.s.player.name,
         this.team.name,

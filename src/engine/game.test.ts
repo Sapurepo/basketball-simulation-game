@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { generatePbp } from './commentary'
+import { generateCast } from './commentary'
 import { buildOffseason, isDrill } from './events'
 import { buffed, itemById, itemEffects } from '../data/items'
 import {
@@ -47,7 +47,9 @@ describe('커리어 전체 진행', () => {
         for (const g of h.featured) {
           expect(g.box.pts).toBeLessThanOrEqual(g.myScore)
           expect(g.myScore).not.toBe(g.oppScore)
-          expect(ko(g.pbp.at(-1)!)).toContain(`${g.myScore} : ${g.oppScore}`)
+          expect(ko(g.cast!.plays.at(-1)!.text)).toContain(
+            `${g.myScore} : ${g.oppScore}`,
+          )
         }
       })
     }
@@ -183,10 +185,30 @@ test('중계 로그의 최종 스코어가 박스스코어와 일치한다', () 
     ftm: 3,
     fta: 4,
   }
-  const lines = generatePbp(rng, '홍길동', 'A', 'B', box, 80, 75, 10).map(ko)
-  const last = lines.filter((l) => l.startsWith('['))
-  expect(last.at(-1)).toMatch(/\(\d+-\d+\)/)
-  expect(lines).toContain('— 4쿼터 종료 (80-75) —')
+  const { plays } = generateCast(rng, '홍길동', 'A', 'B', box, 80, 75, 10)
+  const end = plays.at(-1)!
+  expect([end.kind, end.me, end.op]).toEqual(['end', 80, 75])
+  // 시각순이고 점수는 장면 득점의 누적
+  let me = 0
+  let op = 0
+  plays.forEach((p, i) => {
+    if (i) expect(p.t).toBeGreaterThanOrEqual(plays[i - 1].t)
+    if (p.kind === 'opp') op += p.pts
+    else me += p.pts
+    expect([p.me, p.op]).toEqual([me, op])
+  })
+  expect(plays.filter((p) => p.kind === 'qend')).toHaveLength(3)
+  // 내 선수 장면을 더하면 박스스코어가 된다
+  const mine = (k: string) => plays.filter((p) => p.kind === k)
+  const sum = (k: string) => mine(k).reduce((n, p) => n + p.pts, 0)
+  expect(sum('made2') + sum('made3') + sum('ft')).toBe(box.pts)
+  expect(mine('reb')).toHaveLength(box.reb)
+  expect(mine('ast')).toHaveLength(box.ast)
+  expect(mine('made3').length + mine('miss3').length).toBe(box.tpa)
+  // 슛 시도는 두 박자, 조용한 장면은 동료·상대 득점뿐
+  for (const p of mine('made2')) expect(p.pre).toBeDefined()
+  for (const p of plays.filter((p) => p.quiet))
+    expect(['mate', 'opp']).toContain(p.kind)
 })
 
 test('이벤트가 남아 있으면 시즌을 진행하지 않는다', () => {

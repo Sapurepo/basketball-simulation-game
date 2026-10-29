@@ -1433,7 +1433,7 @@ tr.me td {
   gap: 14px;
 }
 
-/* ── 텍스트 중계 ─────────────────────────── */
+/* ── 경기 중계 (.cast·.pbp 는 이전 저장의 텍스트 중계) ── */
 
 .cast {
   display: grid;
@@ -1469,6 +1469,582 @@ tr.me td {
 .pbp .hot {
   color: var(--gold);
   font-weight: 700;
+}
+
+/* 경기 중계: 스코어보드 → 실시간 한 줄 → 내 기록 → 중계 기록 → 컨트롤 */
+.gc {
+  display: grid;
+  margin: 3px;
+  background: #f3eee2;
+  color: var(--ink);
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink);
+}
+
+.gc-bar {
+  padding: 10px 16px;
+  background: var(--ink);
+  border-bottom: 2px solid var(--ink-hover);
+  color: var(--accent);
+  font: 12px var(--font-pixel);
+  letter-spacing: 1px;
+}
+
+.gc-board {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  background: var(--ink);
+  color: #f3eee2;
+  font-family: var(--font-pixel);
+}
+
+.gc-teams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+/* 윗줄 로고·점수, 아랫줄 팀 이름. 이름을 점수와 한 줄에 두면 긴 이름이 점수 박스 뒤로 숨는다 */
+.gc-team {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'logo score'
+    'name name';
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+}
+
+.gc-team.op {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'score logo'
+    'name name';
+}
+
+.gc-team > .logo {
+  grid-area: logo;
+}
+
+.gc-team-name {
+  grid-area: name;
+  min-width: 0;
+}
+
+.gc-team-name b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.gc-team.op .gc-team-name b {
+  flex-direction: row-reverse;
+}
+
+.gc-team-name img {
+  width: 11px;
+  height: 11px;
+  image-rendering: pixelated;
+}
+
+.gc-score {
+  grid-area: score;
+  justify-self: end;
+  position: relative;
+  min-width: 76px;
+  padding: 6px 10px 4px;
+  background: #0d0e0b;
+  box-shadow: inset 0 0 0 2px var(--ink-hover);
+  color: var(--gold-hi);
+  text-align: center;
+  font-size: 44px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.gc-team.op .gc-score {
+  justify-self: start;
+}
+
+.gc-pop {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  padding: 2px 6px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.2;
+  animation: gc-pop 1.1s steps(6) both;
+}
+
+.gc-team.op .gc-pop {
+  right: auto;
+  left: -8px;
+}
+
+@keyframes gc-pop {
+  0% {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  25% {
+    transform: none;
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+}
+
+.gc-mid {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 104px;
+}
+
+.gc-mid .row {
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.gc-q {
+  padding: 2px 7px;
+  background: var(--accent);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.gc-live,
+.gc-pause {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ff5a4a;
+  font-size: 11px;
+}
+
+.gc-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #ff5a4a;
+  animation: gc-blink 1s steps(1) infinite;
+}
+
+.gc-pause {
+  color: var(--muted-on-dark);
+}
+
+.gc-clock {
+  color: #ff5a4a;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.gc-clutch {
+  padding: 1px 6px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 11px;
+  animation: gc-blink 1.2s steps(1) infinite;
+}
+
+@keyframes gc-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.gc-segs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.gc-segs span {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1px;
+}
+
+.gc-segs i {
+  height: 4px;
+  background: var(--ink-hover);
+}
+
+.gc-segs i.on {
+  background: var(--accent);
+}
+
+.gc-lines {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(4, minmax(28px, 40px)) minmax(
+      36px,
+      48px
+    );
+  row-gap: 5px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.gc-lines span {
+  color: var(--muted-on-dark);
+  text-align: center;
+}
+
+.gc-lines .name {
+  overflow: hidden;
+  color: #f3eee2;
+  text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.gc-lines .dim {
+  color: var(--muted);
+}
+
+.gc-lines .dim:first-child {
+  text-align: left;
+}
+
+.gc-lines .cur {
+  color: var(--accent);
+}
+
+.gc-lines .total {
+  color: var(--gold-hi);
+}
+
+.gc-tick {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px 12px;
+  background: #fbf7ee;
+  border-block: 3px solid var(--ink);
+}
+
+.gc-tick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+}
+
+.gc-clock-sm {
+  color: var(--muted);
+  font: 12px var(--font-pixel);
+}
+
+.gc-tag {
+  padding: 1px 6px;
+  background: var(--ink);
+  color: #f3eee2;
+  font: 11px var(--font-pixel);
+}
+
+.gc-tag.hot {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+.gc-tag.gold {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.gc-tick-text {
+  margin: 0;
+  min-height: 2.9em;
+  font: 18px/1.45 var(--font-pixel);
+  text-wrap: pretty;
+}
+
+.gc-dots {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  white-space: nowrap;
+  color: var(--accent);
+  animation: gc-dots 0.9s steps(4) infinite;
+}
+
+@keyframes gc-dots {
+  from {
+    width: 0;
+  }
+  to {
+    width: 1.5em;
+  }
+}
+
+.gc-me {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 16px 12px;
+  border-bottom: 3px solid var(--ink);
+}
+
+.gc-me-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.gc-me-id .px {
+  margin: -14px 0 -8px;
+}
+
+.gc-me-id div {
+  display: grid;
+  gap: 3px;
+}
+
+.gc-me-id b {
+  font: 400 15px var(--font-pixel);
+}
+
+.gc-me-id small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.gc-me-id b small {
+  font: 12px var(--font-pixel);
+}
+
+.gc-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.gc-box span {
+  display: grid;
+  justify-items: center;
+  min-width: 42px;
+  padding: 4px 6px 3px;
+  background: #fbf7ee;
+  box-shadow: inset 0 0 0 2px var(--ink);
+  font-family: var(--font-pixel);
+}
+
+.gc-box span.flash {
+  animation: gc-flash 1.4s steps(1) both;
+}
+
+@keyframes gc-flash {
+  0% {
+    background: var(--accent);
+  }
+  100% {
+    background: #fbf7ee;
+  }
+}
+
+.gc-box b {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.gc-box small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.gc-feed {
+  display: grid;
+  gap: 8px;
+  padding: 12px 16px 14px;
+  font-family: var(--font-pixel);
+}
+
+.gc-feed .row b {
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.gc-feed .row small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.gc-feed ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  align-content: start;
+  height: 260px;
+  overflow: auto;
+  background: #fbf7ee;
+  box-shadow: inset 0 0 0 2px #d9d1bf;
+}
+
+.gc-feed li {
+  display: grid;
+  grid-template-columns: 58px 18px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 10px;
+  border-top: 1px solid #e6dfcf;
+  font:
+    13px/1.45 'Noto Sans KR',
+    system-ui,
+    sans-serif;
+}
+
+.gc-feed li.new {
+  background: #fff3c9;
+}
+
+.gc-feed li.hot {
+  background: #ffe9a8;
+}
+
+.gc-feed li.sep {
+  display: block;
+  padding: 6px 10px;
+  background: #e6dfcf;
+  color: var(--muted);
+  text-align: center;
+  font: 12px var(--font-pixel);
+}
+
+.gc-feed li small {
+  color: var(--muted);
+  font: 11px var(--font-pixel);
+  white-space: nowrap;
+}
+
+.gc-feed li small:last-child {
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.gc-feed li .mine {
+  font-weight: 700;
+}
+
+.gc-ctrl {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  border-top: 3px solid var(--ink);
+}
+
+.gc-ctrl .ghost {
+  font-size: 12px;
+}
+
+.gc-ctrl .link {
+  color: var(--muted);
+  font: 12px var(--font-pixel);
+}
+
+.gc-mults {
+  display: flex;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.gc-mults button {
+  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 12px var(--font-pixel);
+}
+
+.gc-mults button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--gold);
+}
+
+.gc-mults button:hover:not([aria-pressed='true']) {
+  background: var(--gold-hi);
+}
+
+/* 하이라이트 팝업은 중계 카드 폭에 맞춘다 */
+.modal.highlight {
+  width: min(100% - 32px, 760px);
+}
+
+@media (max-width: 520px) {
+  .gc-teams {
+    gap: 6px;
+  }
+
+  /* 좁은 화면은 로고 · 점수 · 이름을 세로로 */
+  .gc-team,
+  .gc-team.op {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'logo' 'score' 'name';
+    justify-items: start;
+    gap: 6px;
+  }
+
+  .gc-team.op {
+    justify-items: end;
+  }
+
+  .gc-score,
+  .gc-team.op .gc-score {
+    justify-self: auto;
+    font-size: 34px;
+  }
+
+  .gc-mid {
+    min-width: 0;
+  }
+
+  .gc-clock {
+    font-size: 24px;
+  }
+
+  .gc-box {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-pop {
+    display: none;
+  }
+
+  .gc-live::before,
+  .gc-clutch,
+  .gc-dots,
+  .gc-box span.flash {
+    animation: none;
+  }
 }
 
 /* ── 훈련 미니게임 (슈팅·패스·드리블) ───────── */

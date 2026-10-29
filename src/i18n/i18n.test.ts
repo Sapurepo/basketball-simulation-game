@@ -4,7 +4,7 @@ import { createPlayer } from '../engine/player'
 import { Rng } from '../engine/rng'
 import { botChoice } from '../engine/testBot'
 import type { GameState } from '../engine/types'
-import { generatePbp } from '../engine/commentary'
+import { generateCast } from '../engine/commentary'
 import { ROSTER } from '../ui/sprite'
 import { formatMoney } from '../engine/events'
 import { ko, loadLang, setLang, type Text, tr, tx } from './index'
@@ -42,7 +42,10 @@ function collect(n: number) {
       for (const r of h.result) keys.add(r)
       for (const g of h.featured) {
         keys.add(g.label)
-        for (const l of g.pbp) add(l)
+        for (const l of g.cast?.plays ?? []) {
+          add(l.text)
+          add(l.pre)
+        }
       }
       keys.add(h.team)
     }
@@ -94,7 +97,7 @@ describe('선수 이름은 번역·치환하지 않는다', () => {
   }
   it.each(['{text}', '{pts}', '슈터', '$&'])('이름 %s', (name) => {
     setLang('en')
-    const lines = generatePbp(
+    const { plays } = generateCast(
       new Rng(3),
       name,
       '서울 SK 나이츠',
@@ -104,7 +107,9 @@ describe('선수 이름은 번역·치환하지 않는다', () => {
       75,
       10,
     )
-    const out = lines.map(tx)
+    const out = plays
+      .flatMap((l) => (l.pre ? [l.pre, l.text] : [l.text]))
+      .map(tx)
     setLang('ko')
     // 이름이 원문 그대로 들어가고, 팀명은 번역된다
     expect(out.at(-1)).toContain(`${name}: 21 pts`)
