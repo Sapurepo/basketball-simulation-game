@@ -101,10 +101,6 @@ function download(json: string, filename: string) {
   URL.revokeObjectURL(a.href)
 }
 
-export function exportSave(s: GameState) {
-  download(JSON.stringify(s), `career-${s.player.name}-${s.year}.json`)
-}
-
 // 오류 화면용: 해석이 안 되는 세이브라도 저장된 그대로 내려받는다. 저장된 게 없으면 false
 export function exportRawSave(): boolean {
   const raw = localStorage.getItem(KEY)

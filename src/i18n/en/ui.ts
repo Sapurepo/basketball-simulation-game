@@ -7,7 +7,6 @@ const text: Record<string, string> = {
   확인: 'OK',
   // ── App 푸터·사이트맵 ──
   '저장 파일 내보내기': 'Export save',
-  가져오기: 'Import',
   랭킹: 'Rankings',
   처음으로: 'Home',
   공지사항: 'News',
@@ -22,7 +21,6 @@ const text: Record<string, string> = {
     '© 2026 imhyun. School, team and tournament names and logos belong to their respective owners. This service is not affiliated with or endorsed by them.',
   '서버비 후원하기: 토스뱅크 {account}':
     'Support server costs: Toss Bank {account}',
-  '불러오기 실패': 'Import failed',
   '현재 커리어를 끝내고 새로 시작할까요?':
     'End the current career and start over?',
   게임: 'Game',

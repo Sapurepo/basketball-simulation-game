@@ -1,12 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  exportSave,
-  loadGame,
-  loadHall,
-  parseSave,
-  recordHall,
-  saveGame,
-} from './engine/save'
+import { loadGame, loadHall, recordHall, saveGame } from './engine/save'
 import type { GameState } from './engine/types'
 import {
   CONTACT_EMAIL,
@@ -41,11 +34,8 @@ export default function App() {
     location.hash.startsWith('#ranking') ? 'ranking' : 'landing',
   )
   const [rankingFrom, setRankingFrom] = useState<Screen>('landing')
-  const [error, setError] = useState('')
   const [legal, setLegal] = useState<LegalDoc | null>(null)
   const [sitemap, setSitemap] = useState(false)
-  // 세이브를 가져올 때마다 올라간다. MainScreen 의 key 에 넣어 화면 상태(시즌 증감 등)를 새로 시작
-  const [loadCount, setLoadCount] = useState(0)
   // 아직 안 본 새 버전이면 푸터 버전 옆에 점. 공지를 열면 사라진다
   const [unseen, setUnseen] = useState(() => {
     try {
@@ -63,7 +53,6 @@ export default function App() {
       // 저장 못 해도 팝업은 연다
     }
   }
-  const fileRef = useRef<HTMLInputElement>(null)
   const screenRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => saveGame(state), [state])
@@ -75,17 +64,6 @@ export default function App() {
     if (screen !== 'ranking' && location.hash.startsWith('#ranking'))
       history.replaceState(null, '', location.pathname + location.search)
   }, [screen])
-
-  const importFile = async (file: File) => {
-    try {
-      change(parseSave(await file.text()))
-      setLoadCount((n) => n + 1)
-      setScreen('game')
-      setError('')
-    } catch (e) {
-      setError(e instanceof Error ? e.message : tr('불러오기 실패'))
-    }
-  }
 
   // 새 커리어: 생성 화면으로. 은퇴하지 않은 커리어는 기록에 남지 않는다
   const reset = () => {
@@ -128,7 +106,6 @@ export default function App() {
             </p>
           </div>
         )}
-        {error && <p className="error">{error}</p>}
         {screen === 'landing' && (
           <LandingScreen
             state={state}
@@ -144,7 +121,7 @@ export default function App() {
         {screen === 'ranking' && <RankingScreen onBack={closeRanking} />}
         {screen === 'game' && state && (
           <MainScreen
-            key={`${state.careerId}-${loadCount}`}
+            key={state.careerId}
             state={state}
             onChange={change}
             onNew={reset}
@@ -152,34 +129,15 @@ export default function App() {
         )}
         <footer>
           <div className="row">
-            {/* 저장이 없는 브라우저도 랭킹·선수 만들기 화면에서 처음으로 돌아갈 수 있게 */}
-            {(state || screen !== 'landing') && (
-              <button className="ghost" onClick={() => exportSave(state)}>
-                {tr('저장 파일 내보내기')}
-              </button>
-            )}
-            <button className="ghost" onClick={() => fileRef.current?.click()}>
-              {tr('가져오기')}
-            </button>
             <button className="ghost" onClick={openRanking}>
               {tr('랭킹')}
             </button>
-            {state && (
+            {/* 저장이 없는 브라우저도 랭킹·선수 만들기 화면에서 처음으로 돌아갈 수 있게 */}
+            {(state || screen !== 'landing') && (
               <button className="ghost" onClick={() => setScreen('landing')}>
                 {tr('처음으로')}
               </button>
             )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="application/json"
-              hidden
-              onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (f) void importFile(f)
-                e.target.value = ''
-              }}
-            />
           </div>
           <div className="site-info">
             <b>{tr('벤치에서 파엠까지')}</b>
