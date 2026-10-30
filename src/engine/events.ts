@@ -975,7 +975,11 @@ export function applyEvent(
       return
     case 'camp':
       if (optionId === 'yes') {
-        const k = rng.pick(ATTR_KEYS)
+        // 이미 99 인 능력치는 빼고 뽑는다. 전부 99 면 올릴 게 없다
+        const open = ATTR_KEYS.filter((k) => s.player.attrs[k] < 99)
+        if (!open.length)
+          return front(notice('캠프 성과', '모든 능력치가 이미 최고치예요'))
+        const k = rng.pick(open)
         s.player.attrs[k] = Math.min(99, s.player.attrs[k] + 2)
         return front(
           notice('캠프 성과', {

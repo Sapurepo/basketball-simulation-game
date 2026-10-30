@@ -316,6 +316,7 @@ const text: Record<string, string> = {
   '{attr} +{n}': '{attr} +{n}',
   '{attr} +2': '{attr} +2',
   '{attr} 이미 최고치예요': '{attr} is already maxed',
+  '모든 능력치가 이미 최고치예요': 'Every attribute is already maxed',
   '아쉽지만 감각은 익혔습니다.': 'Not this time, but you got the feel for it.',
   '개인 트레이너 제안': 'A personal trainer’s offer',
   '유명 스킬 트레이너가 비시즌 1:1 훈련을 제안했습니다.':

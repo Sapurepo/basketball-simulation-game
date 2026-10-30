@@ -866,6 +866,8 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.4.0 ──
+  '해외 스킬 캠프는 이미 99인 능력치를 빼고 올려요. 전부 99면 최고치 안내가 나와요.':
+    'The overseas skill camp skips attributes already at 99. If every attribute is 99, it says so instead.',
   '은퇴식을 「건너뛰기」로 바로 마지막 장면까지 넘길 수 있어요.':
     'The retirement ceremony has a "Skip" button that jumps straight to the final scene.',
   '상점 아이템 효과 상한이 올라갔어요. 같은 능력치 버프는 합쳐서 +5, 성장 보너스는 합쳐서 +2.5까지 쌓여요.':

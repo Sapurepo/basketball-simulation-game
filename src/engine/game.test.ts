@@ -13,16 +13,17 @@ import {
   toggleAccessory,
 } from './game'
 import {
+  ATTR_KEYS,
+  EV_MAX,
+  EV_TOTAL,
+  START_TOTAL,
+  WEIGHT_RANGE,
   addEv,
   createPlayer,
   ethicBonus,
-  EV_MAX,
-  EV_TOTAL,
   grow,
   overall,
   potentialGrade,
-  START_TOTAL,
-  WEIGHT_RANGE,
   weightSpeedMod,
 } from './player'
 import { Rng } from './rng'
@@ -356,6 +357,24 @@ describe('훈련 미니게임', () => {
     expect(ko(resolveEvent(s, 'made:5').events[0].body)).toBe(
       '아쉽지만 감각은 익혔습니다.',
     )
+  })
+
+  test('해외 스킬 캠프는 99 가 아닌 능력치 중에서 올린다', () => {
+    const camp = (s: GameState) => {
+      s.events = [{ kind: 'camp', title: '', body: '', options: [] }]
+      return resolveEvent(s, 'yes')
+    }
+    const s = base()
+    for (const k of ATTR_KEYS) s.player.attrs[k] = 99
+    s.player.attrs.speed = 50
+    const next = camp(s)
+    expect(next.player.attrs.speed).toBe(52)
+    expect(ko(next.events[0].body)).toBe('스피드 +2')
+    // 전부 99 면 아무것도 오르지 않고 최고치 안내
+    s.player.attrs.speed = 99
+    const full = camp(s)
+    expect(ATTR_KEYS.every((k) => full.player.attrs[k] === 99)).toBe(true)
+    expect(ko(full.events[0].body)).toBe('모든 능력치가 이미 최고치예요')
   })
 
   test('은퇴하면 훈련이 없다', () => {
