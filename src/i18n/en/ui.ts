@@ -884,8 +884,10 @@ const text: Record<string, string> = {
     'Mid-range drill is gone, and passing the three-point drill now gives Shooting +2. Drill cards show how much a pass raises.',
   '명예의 전당을 일간·주간·월간(한국 시간 기준 등록일)으로 볼 수 있어요. 첫 화면에는 오늘 등록된 기록이 보여요.':
     "Browse the Hall of Fame by day, week or month (registration date, Korea Standard Time). The first screen shows today's entries.",
-  '메인 화면 나이·신장 줄에 특성(천재형·노력형·보통형)이 보여요.':
-    'The type (gifted, steady, balanced) now appears in the age and height row on the main screen.',
+  '메인 화면 이름 옆에 성장 기질(천재형·노력형·보통형) 뱃지가 보여요.':
+    'A growth-type badge (gifted, steady, balanced) now appears next to the name on the main screen.',
+  '메인 화면의 성장 기질 뱃지가 나이·신장 줄의 「특성」 칸으로 옮겨졌어요.':
+    'The growth-type badge on the main screen moved into the "Type" plate in the age and height row.',
   '벤치 프레스·스쿼트에서 내 선수 얼굴로 운동해요. 버튼과 스페이스바를 같이 눌러도 게이지가 두 배로 차지 않아요.':
     "Bench press and squat now use your player's face. Pressing the button and the spacebar together no longer fills the bar twice as fast.",
   '훈련이 6종목 11가지 미니게임으로 늘었어요. 오프시즌마다 최대 4개까지 할 수 있고, 코치에게 맡기면 바로 결과가 나와요.':
