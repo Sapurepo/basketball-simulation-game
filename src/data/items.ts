@@ -452,7 +452,8 @@ export const ITEMS: Item[] = [
     kind: 'furniture',
     price: 6000,
     growth: 0.1,
-    pos: [10, 4],
+    // 오른쪽 위, OVR 방패 왼쪽 (예전 고정 진열대 자리)
+    pos: [66, 5],
     line: '첫 트로피 자리를 미리 비워 둔다.',
   },
   {

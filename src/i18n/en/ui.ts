@@ -866,6 +866,8 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.4.0 ──
+  '무대의 트로피는 상점에서 「트로피 선반」을 사야 보여요. 산 선반 위에 팀 우승·아시안게임 금메달 트로피가 쌓이고, 사기 전 미리보기에서도 내 트로피가 올라간 모습을 볼 수 있어요.':
+    'Trophies on the stage now appear only after buying the Trophy Shelf in the shop. Team titles and Asian Games golds stack on the shelf you own, and the preview shows your trophies on it before you buy.',
   '해외 스킬 캠프는 이미 99인 능력치를 빼고 올려요. 전부 99면 최고치 안내가 나와요.':
     'The overseas skill camp skips attributes already at 99. If every attribute is 99, it says so instead.',
   '은퇴식을 「건너뛰기」로 바로 마지막 장면까지 넘길 수 있어요.':

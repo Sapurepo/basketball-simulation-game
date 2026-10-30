@@ -89,6 +89,13 @@ const BANNED = ['시발', '씨발', '병신', '좆', '개새', '섹스', 'fuck',
 export const hallTrophies = (s: GameState) =>
   s.history.reduce((n, h) => n + h.awards.length, 0) + s.honors.length
 
+// 무대의 트로피 선반에 올라가는 트로피 수: 팀 우승과 아시안게임 금메달
+export const trophyCount = (s: GameState) =>
+  s.history
+    .flatMap((h) => h.awards)
+    .filter((a) => a.endsWith(' 우승') || a === 'NBA 챔피언').length +
+  s.honors.filter((h) => h.name === '아시안게임 금메달').length
+
 export const hallFmvp = (s: GameState) =>
   s.history.filter((h) => h.awards.includes('NBA 파이널 MVP')).length
 

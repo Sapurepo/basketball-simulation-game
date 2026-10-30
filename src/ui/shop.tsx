@@ -2,12 +2,14 @@ import {
   type ComponentProps,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
   useEffect,
   useRef,
   useState,
 } from 'react'
 import { type Item, itemById, itemEffects, ITEMS, tierOf } from '../data/items'
 import { formatMoney } from '../engine/events'
+import { trophyCount } from '../engine/hallEntry'
 import { buyItem, toggleAccessory } from '../engine/game'
 import { ATTR_LABELS } from '../engine/player'
 import type { AttrKey, GameState } from '../engine/types'
@@ -89,6 +91,7 @@ function Piece({
   preview,
   drop,
   edit,
+  children,
 }: {
   id: ArtName
   place: Place
@@ -96,6 +99,8 @@ function Piece({
   preview?: boolean
   drop?: boolean
   edit?: StageEdit
+  // 아트 위에 얹는 것 (트로피 선반의 트로피)
+  children?: ReactNode
 }) {
   const [w, h] = artSize(id)
   const { x, y } = place
@@ -132,6 +137,7 @@ function Piece({
       ) : (
         <img src={artURL(id)} {...img} />
       )}
+      {children}
       {preview && <b className="preview-tag">{tr('미리보기')}</b>}
       {picked && edit?.sel === id && <b className="preview-tag">{alt}</b>}
     </span>
@@ -144,6 +150,7 @@ export function Decor({
   preview,
   drop,
   edit,
+  trophies = 0,
 }: {
   items?: string[]
   layout?: Layout
@@ -153,6 +160,8 @@ export function Decor({
   drop?: string
   // 배치 편집 중이면 끌어서 옮긴다
   edit?: StageEdit
+  // 트로피 선반에 얹을 트로피 수 (trophyCount)
+  trophies?: number
 }) {
   const shown = [...items, ...(preview ? [preview] : [])]
     .map((id) => itemById(id))
@@ -179,7 +188,9 @@ export function Decor({
             preview={it.id === preview}
             drop={it.id === drop}
             edit={it.id === preview ? undefined : edit}
-          />
+          >
+            {it.id === 'trophyShelf' && <ShelfTrophies n={trophies} />}
+          </Piece>
         ))}
       {pets.length > 0 && (
         <div className="pets">
@@ -705,6 +716,7 @@ export function ShopDialog({
             <Decor
               items={owned}
               layout={shownLayout}
+              trophies={trophyCount(state)}
               preview={
                 !editing && !has && !it.acc && !it.slot ? it.id : undefined
               }
@@ -933,29 +945,25 @@ export function ShopDialog({
   )
 }
 
-// 트로피 진열대: 팀 우승과 아시안게임 금메달. 칸이 넘치면 ×N
+// 선반 위 트로피. 칸이 넘치면 ×N
 const SHELF_SLOTS = 5
-export function TrophyShelf({ state }: { state: GameState }) {
-  const n =
-    state.history
-      .flatMap((h) => h.awards)
-      .filter((a) => a.endsWith(' 우승') || a === 'NBA 챔피언').length +
-    state.honors.filter((h) => h.name === '아시안게임 금메달').length
+function ShelfTrophies({ n }: { n: number }) {
   return (
-    <div className="shelf" aria-label={tr('팀 우승 트로피 {n}개', { n })}>
-      <div className="shelf-items">
-        {[...Array(Math.min(n, SHELF_SLOTS))].map((_, i) => (
-          <img
-            key={i}
-            className="px"
-            src={iconURL('trophy')}
-            width={22}
-            height={22}
-            alt=""
-          />
-        ))}
-        {n > SHELF_SLOTS && <b>×{n}</b>}
-      </div>
-    </div>
+    <span
+      className="shelf-items"
+      aria-label={tr('팀 우승 트로피 {n}개', { n })}
+    >
+      {[...Array(Math.min(n, SHELF_SLOTS))].map((_, i) => (
+        <img
+          key={i}
+          className="px"
+          src={iconURL('trophy')}
+          width={22}
+          height={22}
+          alt=""
+        />
+      ))}
+      {n > SHELF_SLOTS && <b>×{n}</b>}
+    </span>
   )
 }

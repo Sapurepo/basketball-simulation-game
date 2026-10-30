@@ -29,7 +29,8 @@ import { FinalsMvp, type FmvpAward } from './finalsMvp'
 import { PixelPlayer } from './pixelPlayer'
 import { Retirement } from './retirement'
 import { pickPose } from './pose'
-import { Decor, ShopDialog, TrophyShelf } from './shop'
+import { trophyCount } from '../engine/hallEntry'
+import { Decor, ShopDialog } from './shop'
 import { fanReaction } from '../data/sns'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
 import { TeamLogo } from './teamLogo'
@@ -273,8 +274,11 @@ export function MainScreen({
               </>
             )}
           </div>
-          <Decor items={state.items} layout={state.layout} />
-          <TrophyShelf state={state} />
+          <Decor
+            items={state.items}
+            layout={state.layout}
+            trophies={trophyCount(state)}
+          />
           <div className="ovr-shield">
             <div>
               <small>OVR</small>

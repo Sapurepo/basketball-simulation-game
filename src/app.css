@@ -1216,23 +1216,22 @@ button.plate:hover > span {
 }
 
 /* 트로피 진열대: 오른쪽 위, OVR 뱃지 왼쪽 */
-.shelf {
+/* 트로피 선반(상점 가구) 위에 얹는 트로피: 아트의 판자(아래 4줄 × 4배) 바로 위 */
+.stage .decor .shelf-items {
   position: absolute;
-  right: 74px;
-  top: 20px;
-  z-index: 200;
-  min-width: 132px;
-  padding: 0 6px;
-  border-bottom: 8px solid #8a5a34;
-  box-shadow: 0 3px 0 0 var(--ink);
-}
-
-.shelf-items {
+  left: 4px;
+  right: 4px;
+  bottom: 17px;
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  min-height: 26px;
   font: 12px var(--font-pixel);
+}
+
+.stage .decor .shelf-items b {
+  padding: 0 3px;
+  background: var(--ink);
+  color: var(--gold);
 }
 
 .contract {
