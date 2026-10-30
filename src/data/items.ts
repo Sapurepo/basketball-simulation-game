@@ -452,7 +452,8 @@ export const ITEMS: Item[] = [
     kind: 'furniture',
     price: 6000,
     growth: 0.1,
-    pos: [10, 4],
+    // 오른쪽 위, OVR 방패 왼쪽 (예전 고정 진열대 자리)
+    pos: [66, 5],
     line: '첫 트로피 자리를 미리 비워 둔다.',
   },
   {
@@ -553,9 +554,9 @@ export const tierOf = (price: number) =>
 
 export const itemById = (id: string) => ITEMS.find((i) => i.id === id)
 
-// 아이템 효과 상한: 능력치별 버프 합 +3, 시즌 성장 보너스 합 +2.0
-export const BUFF_CAP = 3
-export const GROWTH_CAP = 2
+// 아이템 효과 상한: 능력치별 버프 합 +5, 시즌 성장 보너스 합 +2.5
+export const BUFF_CAP = 5
+export const GROWTH_CAP = 2.5
 
 export type ItemSlots = Partial<Record<NonNullable<Item['slot']>, string>>
 

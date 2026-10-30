@@ -1,4 +1,4 @@
-// 훈련 미니게임 10종의 진행·판정·연출. 화면(drillPlay.tsx)과 분리해 타이머·Web Animations 를 여기서 든다.
+// 훈련 미니게임 12종의 진행·판정·연출. 화면(drillPlay.tsx)과 분리해 타이머·Web Animations 를 여기서 든다.
 // 드문 상태(포즈·판정 문구·회차 결과)는 st 로 React 에 넘기고, 매 프레임 바뀌는 값(게이지·공 위치)은 ref 요소에 직접 그린다.
 import { DRILL_REPS, type DrillCtl, DRILLS } from '../engine/events'
 import type { DrillKind } from '../engine/types'
@@ -36,6 +36,9 @@ export interface RunState {
   zone: [number, number]
   dist: number
   holding: boolean
+  // 박스아웃: 버티는 중 · 속공: 헛발
+  boxing: boolean
+  trip: boolean
 }
 
 // 조작 이름 (카드 칩·플레이 안내)
@@ -47,6 +50,8 @@ export const CTL_LABEL: Record<DrillCtl, string> = {
   fake: '페이크 + 돌파',
   lamp: '켜진 등 누르기',
   mash: '버튼 연타',
+  box: '누르고 버티다 떼기',
+  alt: '좌우 번갈아 연타',
 }
 
 export const SHOOT_K: Partial<Record<DrillKind, number>> = {
@@ -73,12 +78,22 @@ const SHAKE = [
   { transform: 'translate(-2px,1px)' },
   { transform: 'none' },
 ]
+// 리바운드·박스아웃 점프
+const JUMP: Keyframe[] = [
+  { transform: 'none', easing: 'ease-out' },
+  { transform: 'translateY(-46px)', offset: 0.38 },
+  { transform: 'translateY(-46px)', offset: 0.58, easing: 'ease-in' },
+  { transform: 'none' },
+]
+// 속공 레이스: 출발 x, 레이업 지점 x (선수 왼쪽 위 기준)
+const RACE_START = 20
+const RACE_FIN = 300
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a)
 const now = () => performance.now()
 
 const poses = (kind: DrillKind): Pick<RunState, 'me' | 'o' | 'mates'> => ({
-  me: ['reb', 'foot', 'react', 'team'].includes(kind) ? 'guard' : 'idle',
+  me: ['reb', 'box', 'foot', 'react', 'team'].includes(kind) ? 'guard' : 'idle',
   o: kind === 'foot' ? 'idle' : 'guard',
   mates: ['stand', 'stand'],
 })
@@ -101,6 +116,8 @@ export const initialState = (kind: DrillKind): RunState => ({
   zone: [0, 0],
   dist: 0.5,
   holding: false,
+  boxing: false,
+  trip: false,
 })
 
 interface Seg {
@@ -155,6 +172,19 @@ export class DrillEngine {
   private lp = 1
   private tLast = 0
   private lastTap = 0
+  // 박스아웃: 버튼을 누르고 있는지 (st.boxing 은 화면용 사본)
+  private boxing = false
+  // 속공: 내 목표 x·그려지는 x·수비 x, 마지막 발(-1·1·0), 헛발 경직 끝, 마지막 걸음 시각, 보폭, 수비 속도
+  private fx = 0
+  private dx = 0
+  private ox = 0
+  private foot = 0
+  private stun = 0
+  private lastStep = 0
+  private step = 0
+  private ov = 0
+  // 회차 토큰: 지난 회차의 타이머가 다음 회차를 건드리지 않게 (박스아웃·속공)
+  private tok = 0
 
   readonly kind: DrillKind
   readonly skill: number
@@ -210,6 +240,7 @@ export class DrillEngine {
     this.hold = null
     this.inp = false
     this.phase = ''
+    this.boxing = false
   }
   private anim(k: string, fr: Keyframe[], o: KeyframeAnimationOptions) {
     const el = this.r[k]
@@ -305,12 +336,17 @@ export class DrillEngine {
     this.inp = false
     this.onPress = null
     this.onRel = null
+    this.boxing = false
+    this.tok++
     if (this.r.p) this.r.p.style.translate = ''
+    if (this.r.o) this.r.o.style.translate = ''
     this.set({
       call: null,
       open: -1,
       swish: false,
       holding: false,
+      boxing: false,
+      trip: false,
       ...poses(this.kind),
     })
     const i = this.st.res.length
@@ -324,12 +360,16 @@ export class DrillEngine {
         return this.rTeam(i)
       case 'reb':
         return this.rReb()
+      case 'box':
+        return this.rBox()
       case 'drib':
         return this.rDrib(i)
       case 'foot':
         return this.rFoot(i)
       case 'react':
         return this.rReact()
+      case 'fast':
+        return this.rFast(i)
       case 'bench':
       case 'squat':
         return this.rLift(i)
@@ -382,19 +422,25 @@ export class DrillEngine {
     const k = e.key
     const down = e.type === 'keydown'
     if (k === ' ' || k === 'Enter') {
-      if (c !== 'hold' && c !== 'tap' && c !== 'mash') return
+      if (c !== 'hold' && c !== 'tap' && c !== 'mash' && c !== 'box') return
       e.preventDefault()
       if (down) {
         if (e.repeat) return
         if (c === 'hold') this.press()
+        else if (c === 'box') this.boxDown()
         else if (c === 'mash') this.mash()
         else this.tap()
       } else if (c === 'hold') this.release()
+      else if (c === 'box') this.boxUp()
       return
     }
     if (!down) return
     const L = k === 'ArrowLeft'
     const R = k === 'ArrowRight'
+    if (c === 'alt' && (L || R)) {
+      e.preventDefault()
+      if (!e.repeat) this.stepRun(L ? -1 : 1)
+    }
     if (c === 'lr' && (L || R)) {
       e.preventDefault()
       this.choose(L ? -1 : 1)
@@ -681,16 +727,7 @@ export class DrillEngine {
     const b = tp + 320
     const w = this.win
     const tc = this.tc
-    this.anim(
-      'p',
-      [
-        { transform: 'none', easing: 'ease-out' },
-        { transform: 'translateY(-46px)', offset: 0.38 },
-        { transform: 'translateY(-46px)', offset: 0.58, easing: 'ease-in' },
-        { transform: 'none' },
-      ],
-      { duration: 560 },
-    )
+    this.anim('p', JUMP, { duration: 560 })
     if (tc >= a - w && tc <= b + w) {
       const at = Math.max(120, Math.min(320, tc - tp))
       this.later(() => {
@@ -712,6 +749,293 @@ export class DrillEngine {
         () => this.judge(false, tc > b + w ? '너무 빨라요' : '늦었어요'),
         620,
       )
+  }
+  // ── 박스아웃 리바운드 (누르고 버티다 떼서 점프) ──
+  // set: 슛 전, 누르면 자리를 잡는다 · air1: 공이 림으로 가는 중, 누르고 있어야 한다 · air2: 림에 맞고 떨어지는 중, 떼면 점프
+  private rBox() {
+    const tk = this.tok
+    const lead = rnd(800, 1500)
+    const lx = rnd(318, 352)
+    const h = rnd(64, 118)
+    const D1 = 700
+    const D2 = rnd(760, 1000)
+    this.phase = 'set'
+    this.inp = true
+    this.tc = 0
+    this.win = 30 + (this.skill - 20) * 0.75
+    this.later(() => {
+      if (this.tok !== tk || this.phase === 'done') return
+      this.phase = 'air1'
+      this.tc = now() + D1 + D2 * (1 - 30.5 / h)
+      this.set({ call: '슛!', good: false })
+      this.fly(
+        [-20, 40],
+        [
+          { to: [398, 114], h: 70, ms: D1 },
+          { to: [lx, 236], h, ms: D2 },
+          { to: [lx - 40, 236], h: 22, ms: 380, fade: true },
+        ],
+      )
+      this.later(() => {
+        if (this.tok !== tk) return
+        this.anim('hoop', SHAKE, { duration: 240, easing: 'steps(3)' })
+        if (this.st.call === '슛!') this.set({ call: null })
+        if (this.phase !== 'air1') return
+        if (!this.boxing) return this.boxLost('자리를 뺏겼어요', false)
+        this.phase = 'air2'
+      }, D1)
+      this.later(
+        () => {
+          if (this.tok !== tk || this.phase !== 'air2') return
+          this.phase = 'done'
+          this.boxEnd()
+          this.judge(false, '점프를 안 했어요')
+        },
+        D1 + D2 + 120,
+      )
+    }, lead)
+  }
+  boxDown = () => {
+    if (
+      !this.inp ||
+      this.kind !== 'box' ||
+      this.boxing ||
+      (this.phase !== 'set' && this.phase !== 'air1')
+    )
+      return
+    this.boxing = true
+    this.set({ boxing: true })
+    // 버티는 동안 둘이 밀고 당기는 떨림
+    const loop = () => {
+      if (!this.boxing) return
+      const f = Math.floor(now() / 90) % 2
+      if (this.r.p) this.r.p.style.translate = f ? '-2px 0px' : '0px 0px'
+      if (this.r.o) this.r.o.style.translate = f ? '4px 0px' : '2px 0px'
+      this.raf = requestAnimationFrame(loop)
+    }
+    this.raf = requestAnimationFrame(loop)
+  }
+  boxUp = () => {
+    if (!this.boxing) return
+    this.boxEnd()
+    if (this.phase === 'air1') this.boxLost('너무 일찍 떴어요', true)
+    else if (this.phase === 'air2') this.boxJump()
+  }
+  private boxEnd() {
+    this.boxing = false
+    cancelAnimationFrame(this.raf)
+    if (this.r.p) this.r.p.style.translate = ''
+    if (this.r.o) this.r.o.style.translate = ''
+    if (this.st.boxing) this.set({ boxing: false })
+  }
+  private boxJump() {
+    this.phase = 'done'
+    this.inp = false
+    const tp = now()
+    const a = tp + 200
+    const b = tp + 320
+    const w = this.win
+    const tc = this.tc
+    this.anim('p', JUMP, { duration: 560 })
+    if (tc >= a - w && tc <= b + w) {
+      const at = Math.max(120, Math.min(320, tc - tp))
+      this.later(() => {
+        this.ballHide()
+        this.set({ me: 'shoot0', o: 'sad' })
+      }, at)
+      this.later(
+        () =>
+          this.judge(
+            true,
+            Math.abs(tc - (a + b) / 2) < w * 0.6
+              ? '완벽한 박스아웃!'
+              : '리바운드 확보!',
+          ),
+        620,
+      )
+    } else {
+      const early = tc > b + w
+      if (early) this.oppGrab(20)
+      this.later(
+        () => this.judge(false, early ? '너무 빨리 뛰었어요' : '늦었어요'),
+        620,
+      )
+    }
+  }
+  // 자리를 뺏김: 내가 밀려나고 상대가 공을 잡는다
+  private boxLost(msg: string, jumped: boolean) {
+    this.phase = 'done'
+    this.inp = false
+    this.boxEnd()
+    this.anim(
+      'p',
+      jumped
+        ? [
+            { transform: 'none' },
+            { transform: 'translate(-24px,-40px)', offset: 0.4 },
+            { transform: 'translateX(-50px)' },
+          ]
+        : [{ transform: 'none' }, { transform: 'translateX(-50px)' }],
+      { duration: jumped ? 520 : 220, easing: 'steps(5)' },
+    )
+    this.anim('o', [{ transform: 'none' }, { transform: 'translateX(60px)' }], {
+      duration: 220,
+      easing: 'steps(3)',
+    })
+    const at = this.tc ? this.oppGrab(60) : 0
+    this.later(() => this.judge(false, msg), Math.max(300, at + 80))
+  }
+  // 상대가 dx 만큼 옮겨 서서 공이 떨어질 때 점프해 잡는다. 잡는 시각(ms 뒤)을 돌려준다
+  private oppGrab(dx: number) {
+    const at = Math.max(0, this.tc - now())
+    const j = Math.max(220, at - 250)
+    this.later(
+      () =>
+        this.anim(
+          'o',
+          [
+            { transform: `translateX(${dx}px)` },
+            { transform: `translate(${dx}px,-46px)`, offset: 0.45 },
+            { transform: `translate(${dx}px,-46px)`, offset: 0.6 },
+            { transform: `translateX(${dx}px)` },
+          ],
+          { duration: 560, easing: 'steps(6)' },
+        ),
+      j,
+    )
+    this.later(() => {
+      this.ballHide()
+      this.set({ o: 'shoot0' })
+    }, j + 250)
+    return j + 250
+  }
+  // ── 속공 레이스 (좌우 번갈아 연타). 수비는 회차가 갈수록 빨라진다 ──
+  private rFast(i: number) {
+    const tk = this.tok
+    const s = Math.max(0, Math.min(1, (this.skill - 20) / 80))
+    this.step = 13 + s * 9
+    this.fx = this.dx = RACE_START
+    this.ox = -40
+    this.foot = 0
+    this.stun = 0
+    this.lastStep = 0
+    this.ov = (RACE_FIN + 40) / Math.max(2.3, 3.2 - i * 0.09)
+    this.paintRace(now())
+    this.set({ call: '준비…', good: false })
+    this.later(
+      () => {
+        if (this.tok !== tk) return
+        this.set({ call: '출발!', good: true })
+        this.later(() => {
+          if (this.tok === tk && this.st.call === '출발!')
+            this.set({ call: null })
+        }, 500)
+        this.phase = 'run'
+        this.inp = true
+        this.tLast = now()
+        const loop = () => {
+          if (this.phase !== 'run' || this.tok !== tk) return
+          const t = now()
+          const dt = Math.min(0.05, (t - this.tLast) / 1000)
+          this.tLast = t
+          this.dx += (this.fx - this.dx) * Math.min(1, dt * 16)
+          this.ox += this.ov * dt
+          this.paintRace(t)
+          if (this.fx >= RACE_FIN && this.dx >= RACE_FIN - 3)
+            return this.fastWin()
+          if (this.ox >= RACE_FIN) return this.fastLose()
+          this.raf = requestAnimationFrame(loop)
+        }
+        this.raf = requestAnimationFrame(loop)
+      },
+      rnd(800, 1300),
+    )
+  }
+  stepRun = (dir: -1 | 1) => {
+    if (!this.inp || this.kind !== 'fast' || this.phase !== 'run') return
+    const t = now()
+    if (t < this.stun) return
+    // 같은 발을 연달아 디디면 헛발: 잠깐 멈추고 반 걸음 물러난다
+    if (dir === this.foot) {
+      this.stun = t + 280
+      this.foot = 0
+      this.fx = Math.max(RACE_START, this.fx - this.step * 0.5)
+      this.set({ trip: true })
+      this.later(() => this.set({ trip: false }), 420)
+      return
+    }
+    this.foot = dir
+    this.lastStep = t
+    this.fx = Math.min(RACE_FIN + 6, this.fx + this.step)
+  }
+  private paintRace(t: number) {
+    const p = this.r.p
+    const o = this.r.o
+    if (p)
+      p.style.translate = `${Math.round(this.dx - RACE_START)}px ${t - this.lastStep < 90 ? -3 : 0}px`
+    if (o)
+      o.style.translate = `${Math.round(this.ox + 40)}px ${Math.floor(t / 110) % 2 ? -2 : 0}px`
+  }
+  private fastWin() {
+    this.phase = 'done'
+    this.inp = false
+    cancelAnimationFrame(this.raf)
+    const gap = RACE_FIN - this.ox
+    const x = Math.round(this.dx)
+    if (this.r.p) this.r.p.style.translate = `${x - RACE_START}px 0px`
+    this.set({ me: 'shoot0', trip: false })
+    this.anim(
+      'p',
+      [
+        { transform: 'none' },
+        { transform: 'translate(14px,-34px)', offset: 0.5 },
+        { transform: 'translateX(20px)' },
+      ],
+      { duration: 560, easing: 'steps(6)' },
+    )
+    this.later(() => {
+      this.set({ me: 'shoot1' })
+      this.fly(
+        [x + 40, 96],
+        [
+          { to: [414, 116], h: 30, ms: 300 },
+          { to: [414, 168], h: 0, ms: 200 },
+          { to: [404, 226], h: 0, ms: 240, fade: true },
+        ],
+      )
+    }, 200)
+    this.later(() => this.set({ swish: true }), 540)
+    this.later(() => this.set({ swish: false }), 800)
+    this.later(
+      () =>
+        this.judge(
+          true,
+          gap > 100
+            ? '여유 있는 속공!'
+            : gap > 36
+              ? '속공 레이업!'
+              : '간발의 차!',
+        ),
+      600,
+    )
+  }
+  private fastLose() {
+    this.phase = 'done'
+    this.inp = false
+    cancelAnimationFrame(this.raf)
+    const x = Math.round(this.dx)
+    this.set({ me: 'guard', o: 'cheer', trip: false })
+    this.anim(
+      'o',
+      [
+        { transform: 'none' },
+        { transform: 'translateY(-30px)', offset: 0.45 },
+        { transform: 'none' },
+      ],
+      { duration: 420, easing: 'steps(5)' },
+    )
+    this.fly([x + 52, 200], [{ to: [x - 30, 236], h: 34, ms: 460, fade: true }])
+    this.judge(false, x < RACE_FIN - 120 ? '한참 늦었어요' : '따라잡혔어요')
   }
   // ── 드리블 돌파 (페이크) ──
   private rDrib(i: number) {

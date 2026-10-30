@@ -126,6 +126,7 @@ const text: Record<string, string> = {
   '계약 마지막 시즌': 'Final contract season',
   '{season} 시즌 대기': 'Waiting for the {season} season',
   '{season} 시즌 진행 중': '{season} season in progress',
+  특성: 'Type',
   나이: 'Age',
   신장: 'Height',
   체중: 'Weight',
@@ -301,6 +302,10 @@ const text: Record<string, string> = {
   뒤로: 'Back',
   '최고 OVR순': 'By peak OVR',
   '파이널 MVP순': 'By Finals MVPs',
+  'KBL 챔피언결정전 MVP순': 'By KBL Finals MVPs',
+  '챔결 MVP': 'KBL Finals MVP',
+  '챔결 MVP {n}회': '{n} KBL Finals MVPs',
+  'OVR {ovr} · 챔결 MVP {n}': 'OVR {ovr} · KBL Finals MVP {n}',
   '누르고 떼기': 'Hold & release',
   '타이밍 맞춰 누르기': 'Timed tap',
   '방향 고르기': 'Pick a side',
@@ -316,6 +321,32 @@ const text: Record<string, string> = {
   '키보드 ← → 돌파 · A D 페이크': 'Keyboard ← → drive · A D fake',
   '등을 직접 누르거나 방향키 ↑ ← → ↓': 'Tap a lamp or use arrow keys ↑ ← → ↓',
   '스페이스바 연타도 돼요': 'Mashing the space bar works too',
+  '누르고 버티다 떼기': 'Hold, then release',
+  '좌우 번갈아 연타': 'Alternate left & right',
+  '스페이스바를 누르고 있다가 떼도 돼요':
+    'Hold and release the space bar works too',
+  '키보드 ← → 번갈아 눌러도 돼요': 'Alternating keyboard ← → works too',
+  '버티는 중… 떼면 점프!': 'Holding… release to jump!',
+  '박스아웃!': 'Box out!',
+  출발: 'Start',
+  '레이업 지점': 'Layup spot',
+  '헛발!': 'Stumble!',
+  왼발: 'Left foot',
+  오른발: 'Right foot',
+  '슛!': 'Shot!',
+  '자리를 뺏겼어요': 'Lost your spot',
+  '점프를 안 했어요': 'Never jumped',
+  '너무 일찍 떴어요': 'Left too early',
+  '완벽한 박스아웃!': 'Perfect box-out!',
+  '리바운드 확보!': 'Rebound secured!',
+  '너무 빨리 뛰었어요': 'Jumped too early',
+  '준비…': 'Ready…',
+  '출발!': 'Go!',
+  '여유 있는 속공!': 'Easy fast break!',
+  '속공 레이업!': 'Fast-break layup!',
+  '간발의 차!': 'By a hair!',
+  '한참 늦었어요': 'Way behind',
+  따라잡혔어요: 'Got caught',
   '클린 슛!': 'Clean shot!',
   '에어볼…': 'Air ball…',
   '공을 끌었어요': 'Held the ball',
@@ -441,7 +472,6 @@ const text: Record<string, string> = {
   천재형: 'Gifted',
   노력형: 'Steady',
   보통형: 'Balanced',
-  '{ethic} 기질: {desc}': '{ethic} type: {desc}',
   '잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해져요.':
     'Higher potential, but growth slows in an offseason without any drills.',
   '잠재력이 낮은 대신 훈련마다 성장 보너스를 받고, 훈련 성공 시 1 더 올라요.':
@@ -549,8 +579,8 @@ const text: Record<string, string> = {
   '다음 시즌이 기대된다': "Can't wait for next season",
   // ── 상점 ──
   훈련용품: 'Training gear',
-  '무대에 두면 시즌 능력치 +1. 슈팅 슬리브는 선수에게 착용해요. 같은 능력치 버프는 합쳐서 +3까지예요.':
-    'Place it on the stage for a +1 season attribute buff. The shooting sleeve is worn by the player. Buffs to one attribute add up to +3.',
+  '무대에 두면 시즌 능력치 +1. 슈팅 슬리브는 선수에게 착용해요. 같은 능력치 버프는 합쳐서 +5까지예요.':
+    'Place it on the stage for a +1 season attribute buff. The shooting sleeve is worn by the player. Buffs to one attribute add up to +5.',
   '모자 · 하나만 착용': 'Hat · one at a time',
   '훈련용품 · 무대 배치': 'Training gear · on the stage',
   '효과 · 무대에 두고 훈련': 'Effect · trains on the stage',
@@ -836,12 +866,28 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.4.0 ──
+  '무대의 트로피는 상점에서 「트로피 선반」을 사야 보여요. 산 선반 위에 팀 우승·아시안게임 금메달 트로피가 쌓이고, 사기 전 미리보기에서도 내 트로피가 올라간 모습을 볼 수 있어요.':
+    'Trophies on the stage now appear only after buying the Trophy Shelf in the shop. Team titles and Asian Games golds stack on the shelf you own, and the preview shows your trophies on it before you buy.',
+  '해외 스킬 캠프는 이미 99인 능력치를 빼고 올려요. 전부 99면 최고치 안내가 나와요.':
+    'The overseas skill camp skips attributes already at 99. If every attribute is 99, it says so instead.',
+  '은퇴식을 「건너뛰기」로 바로 마지막 장면까지 넘길 수 있어요.':
+    'The retirement ceremony has a "Skip" button that jumps straight to the final scene.',
+  '상점 아이템 효과 상한이 올라갔어요. 같은 능력치 버프는 합쳐서 +5, 성장 보너스는 합쳐서 +2.5까지 쌓여요.':
+    'Shop item caps went up: buffs to one attribute add up to +5 and growth bonuses to +2.5.',
+  '파이널 MVP 축하 카드의 문구와 트로피 배너가 연출이 끝난 뒤 반투명하게 남던 문제를 고쳤어요.':
+    'Fixed the Finals MVP card text and trophy banner staying semi-transparent after the animation ended.',
+  '리바운드 종목에 「박스아웃 리바운드」, 운동능력 종목에 「속공 레이스」 훈련이 추가돼 6종목 12가지가 됐어요. 박스아웃은 버튼을 누르고 버티다 공이 떨어질 때 떼서 점프하고, 속공은 왼발·오른발을 번갈아 눌러 수비보다 먼저 레이업 지점에 닿아요.':
+    'Rebounding gains "Box-out rebound" and athleticism gains "Fast-break race", making 12 drills in 6 categories. Box out by holding the button and releasing to jump as the ball drops; in the race, alternate left and right foot to beat the defender to the layup spot.',
+  '명예의 전당에서 KBL 리그를 고르면 NBA 파이널 MVP 대신 KBL 챔피언결정전 MVP 횟수로 정렬하고, 목록·베스트 5·상세에도 그 횟수가 보여요. 이전에 등록된 기록은 이 값이 없어 그 정렬에서는 뒤로 가요.':
+    'Choosing the KBL league in the Hall of Fame sorts by KBL Finals MVPs instead of NBA Finals MVPs, and the list, Best 5 and details show that count. Earlier entries have no value and sort last there.',
   '훈련에서 미들슛이 빠지고, 3점슛은 성공하면 슈팅이 +2 올라요. 훈련 카드에 성공 시 오르는 폭이 보여요.':
     'Mid-range drill is gone, and passing the three-point drill now gives Shooting +2. Drill cards show how much a pass raises.',
   '명예의 전당을 일간·주간·월간(한국 시간 기준 등록일)으로 볼 수 있어요. 첫 화면에는 오늘 등록된 기록이 보여요.':
     "Browse the Hall of Fame by day, week or month (registration date, Korea Standard Time). The first screen shows today's entries.",
   '메인 화면 이름 옆에 성장 기질(천재형·노력형·보통형) 뱃지가 보여요.':
     'A growth-type badge (gifted, steady, balanced) now appears next to the name on the main screen.',
+  '메인 화면의 성장 기질 뱃지가 나이·신장 줄의 「특성」 칸으로 옮겨졌어요.':
+    'The growth-type badge on the main screen moved into the "Type" plate in the age and height row.',
   '벤치 프레스·스쿼트에서 내 선수 얼굴로 운동해요. 버튼과 스페이스바를 같이 눌러도 게이지가 두 배로 차지 않아요.':
     "Bench press and squat now use your player's face. Pressing the button and the spacebar together no longer fills the bar twice as fast.",
   '훈련이 6종목 11가지 미니게임으로 늘었어요. 오프시즌마다 최대 4개까지 할 수 있고, 코치에게 맡기면 바로 결과가 나와요.':

@@ -34,7 +34,7 @@ type View =
 // 코치에게 맡기기: 성공 수 3~7개 균등 (엔진의 'auto' 와 같은 분포)
 const coachMade = () => 3 + Math.floor(Math.random() * 5)
 
-// 시즌 진행 전 훈련: 6종목 10가지 중 오프시즌마다 최대 DRILL_MAX 개, 종류별로 한 번.
+// 시즌 진행 전 훈련: 6종목 12가지 중 오프시즌마다 최대 DRILL_MAX 개, 종류별로 한 번.
 // 목록(종목 탭 + 카드) → 플레이 → 결과. 모션 줄이기면 시작도 코치에게 맡긴다
 export function TrainingPanel({
   state,

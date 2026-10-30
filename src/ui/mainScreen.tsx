@@ -29,7 +29,8 @@ import { FinalsMvp, type FmvpAward } from './finalsMvp'
 import { PixelPlayer } from './pixelPlayer'
 import { Retirement } from './retirement'
 import { pickPose } from './pose'
-import { Decor, ShopDialog, TrophyShelf } from './shop'
+import { trophyCount } from '../engine/hallEntry'
+import { Decor, ShopDialog } from './shop'
 import { fanReaction } from '../data/sns'
 import { DEFAULT_LOOK, iconURL, type IconName } from './sprite'
 import { TeamLogo } from './teamLogo'
@@ -273,8 +274,11 @@ export function MainScreen({
               </>
             )}
           </div>
-          <Decor items={state.items} layout={state.layout} />
-          <TrophyShelf state={state} />
+          <Decor
+            items={state.items}
+            layout={state.layout}
+            trophies={trophyCount(state)}
+          />
           <div className="ovr-shield">
             <div>
               <small>OVR</small>
@@ -300,18 +304,13 @@ export function MainScreen({
             >
               {p.position}
             </span>
-            <span
-              className="ethic-tag"
-              title={tr(ETHIC_DESC[p.ethic])}
-              aria-label={tr('{ethic} 기질: {desc}', {
-                ethic: tr(ETHIC_LABELS[p.ethic]),
-                desc: tr(ETHIC_DESC[p.ethic]),
-              })}
-            >
-              {tr(ETHIC_LABELS[p.ethic])}
-            </span>
           </div>
           <div className="plates">
+            <Plate
+              label={tr('특성')}
+              v={tr(ETHIC_LABELS[p.ethic])}
+              title={tr(ETHIC_DESC[p.ethic])}
+            />
             <Plate label={tr('나이')} v={`${state.age}`} />
             <Plate label={tr('신장')} v={`${p.height}`} />
             <Plate label={tr('체중')} v={`${p.weight}`} />
@@ -672,10 +671,12 @@ function Plate({
   label,
   v,
   onClick,
+  title,
 }: {
   label: string
   v: string
   onClick?: () => void
+  title?: string
 }) {
   const body = (
     <>
@@ -692,7 +693,9 @@ function Plate({
       {body}
     </button>
   ) : (
-    <span className="plate">{body}</span>
+    <span className="plate" title={title}>
+      {body}
+    </span>
   )
 }
 

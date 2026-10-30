@@ -15,7 +15,9 @@ import {
   LEAGUES,
   PERIODS,
   rowDetail,
+  showTitles,
   SORTS,
+  sortsFor,
 } from './hallApi'
 import { HallItem } from './hallBoard'
 import { HallPlayerDialog } from './hallPlayerDialog'
@@ -68,8 +70,10 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
     league?: HallLeague
     period?: HallPeriod
   }) => {
-    const s = next.sort ?? sort
     const l = next.league ?? league
+    // 리그를 바꿔 지금 정렬 칩이 사라지면(파이널 MVP ↔ KBL 우승) 최고 OVR 로
+    const s0 = next.sort ?? sort
+    const s = sortsFor(l).some(([id]) => id === s0) ? s0 : 'ovr'
     const p = next.period ?? period
     if (s === sort && l === league && p === period) return
     setData(undefined)
@@ -193,7 +197,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
             role="radiogroup"
             aria-labelledby="ranking-sort"
           >
-            {SORTS.map(([id, label, chip]) => (
+            {sortsFor(league).map(([id, label, chip]) => (
               <button
                 key={id}
                 aria-label={tr(label)}
@@ -235,6 +239,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
         <>
           <BestFive
             rows={best}
+            titles={showTitles(league)}
             desc={
               sort === 'fmvp'
                 ? tr(
@@ -264,6 +269,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
                 <HallItem
                   key={r.id}
                   {...r}
+                  titles={showTitles(league)}
                   best={bestIds.has(r.id)}
                   detail={rowDetail(sort, r)}
                   onOpen={() => setSel({ inBest: false, i })}

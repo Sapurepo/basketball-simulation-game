@@ -168,8 +168,8 @@ const docs: Record<string, string> = {
   '능력치 하나 +2 / 성장 +0.5': 'One attribute +2 / growth +0.5',
   '잠재력 +1': 'Potential +1',
   '50% 성장 +2 / 50% 성장 -1': '50% growth +2 / 50% growth -1',
-  '훈련 미니게임은 6종목 10가지 중 오프시즌마다 최대 4개, 10회 중 6회 성공하면 해당 능력치 +1 (3점슛은 +2, 노력형 기질은 여기에 +1). 성공 여부와 무관하게 노력치 +1. 게이지 훈련의 초록 구간 폭은 능력치 20 이면 4%, 50 이면 8%, 99 면 15% 이고 자유투는 1.6배, 3점슛은 0.7배, 패스는 1.6배예요. 반응·타이밍 훈련도 능력치가 높을수록 허용 시간이 길어져요. 코치에게 맡기면 3~7회 성공 중 균등 추첨이라 성공 확률은 40% 입니다.':
-    'Training mini-games: up to 4 per offseason out of 10 drills in 6 categories; 6 of 10 passes gives that attribute +1 (+2 for threes, +1 more for the steady type). Effort +1 regardless. The green zone of gauge drills is 4% of the gauge at attribute 20, 8% at 50 and 15% at 99, times 1.6 for free throws, 0.7 for threes and 1.6 for passing. Reaction and timing drills also allow more time at higher attributes. Leaving it to the coach draws 3~7 passes evenly, a 40% chance to pass.',
+  '훈련 미니게임은 6종목 12가지 중 오프시즌마다 최대 4개, 10회 중 6회 성공하면 해당 능력치 +1 (3점슛은 +2, 노력형 기질은 여기에 +1). 성공 여부와 무관하게 노력치 +1. 게이지 훈련의 초록 구간 폭은 능력치 20 이면 4%, 50 이면 8%, 99 면 15% 이고 자유투는 1.6배, 3점슛은 0.7배, 패스는 1.6배예요. 반응·타이밍 훈련도 능력치가 높을수록 허용 시간이 길어져요. 코치에게 맡기면 3~7회 성공 중 균등 추첨이라 성공 확률은 40% 입니다.':
+    'Training mini-games: up to 4 per offseason out of 12 drills in 6 categories; 6 of 10 passes gives that attribute +1 (+2 for threes, +1 more for the steady type). Effort +1 regardless. The green zone of gauge drills is 4% of the gauge at attribute 20, 8% at 50 and 15% at 99, times 1.6 for free throws, 0.7 for threes and 1.6 for passing. Reaction and timing drills also allow more time at higher attributes. Leaving it to the coach draws 3~7 passes evenly, a 40% chance to pass.',
   '훈련이 커리어에 주는 영향 (자동 플레이어 커리어 1,500개, 매 오프시즌 훈련 4개 기준):':
     'How training affects a career (1,500 automated careers, 4 drills every offseason):',
   '훈련 방식': 'Training',
@@ -207,8 +207,8 @@ const docs: Record<string, string> = {
   '성장 +0.2 · +0.5': 'Growth +0.2 · +0.5',
   '1.3조 원': '₩1.3T',
   '성장 +0.3': 'Growth +0.3',
-  '효과에는 상한이 있어요. 같은 능력치의 버프는 합쳐서 +3 까지, 성장 보너스는 합쳐서 +2.0 까지예요. 벽지·바닥·모자는 하나만 적용하고 적용 중인 것만 효과가 나요. 다른 착용 아이템은 벗어도 보유 중이면 버프가 그대로예요. 등급은 가격으로 정해요: 1천만 원 미만 일반, 1억 미만 레어, 100억 미만 에픽, 그 이상 레전드.':
-    'Effects are capped: buffs to one attribute add up to +3, growth bonuses to +2.0. Wallpaper, floor and hat take one at a time and only the applied one counts. Other wearables keep their buff while owned even when taken off. Tier is by price: under ₩10M common, under ₩100M rare, under ₩10B epic, above that legend.',
+  '효과에는 상한이 있어요. 같은 능력치의 버프는 합쳐서 +5 까지, 성장 보너스는 합쳐서 +2.5 까지예요. 벽지·바닥·모자는 하나만 적용하고 적용 중인 것만 효과가 나요. 다른 착용 아이템은 벗어도 보유 중이면 버프가 그대로예요. 등급은 가격으로 정해요: 1천만 원 미만 일반, 1억 미만 레어, 100억 미만 에픽, 그 이상 레전드.':
+    'Effects are capped: buffs to one attribute add up to +5, growth bonuses to +2.5. Wallpaper, floor and hat take one at a time and only the applied one counts. Other wearables keep their buff while owned even when taken off. Tier is by price: under ₩10M common, under ₩100M rare, under ₩10B epic, above that legend.',
   '실측 (자동 플레이어, 커리어 3,000개, 2026-10-30)':
     'Measured (automated player, 3,000 careers, 2026-10-30)',
   '훈련 미니게임과 상점을 쓰지 않고 41세에 은퇴하는 단순한 플레이어 기준이라, 실제 플레이에서는 더 높게 나올 수 있어요. 훈련을 안 하므로 노력형은 손해를 본 수치예요.':
@@ -270,8 +270,8 @@ const docs: Record<string, string> = {
   '선수마다 성장 기질이 있고, 메인 화면 이름 옆 뱃지로 볼 수 있어요. 천재형은 잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해지고, 노력형은 잠재력이 낮은 대신 훈련할수록 성장 보너스를 받고 훈련 성공 시 능력치가 1 더 올라요. 매 오프시즌 훈련 4개를 채우면 어느 기질이든 손해가 없어요.':
     'Every player has a growth type, shown as a badge next to the name on the main screen. The gifted have higher potential but grow less in an offseason without any drills; the steady have lower potential but gain a growth bonus per drill and +1 more on a passed drill. Doing all 4 drills every offseason means no type loses out.',
   '4. 훈련 미니게임': '4. Training mini-games',
-  '오프시즌마다 6종목 10가지 중 최대 4개를, 종류별로 한 번씩 할 수 있어요. 10회 중 6회 이상 성공하면 해당 능력치가 +1(3점슛은 +2, 노력형은 여기에 +1) 바로 오르고, 성공 여부와 상관없이 노력치가 +1 쌓여요. 「코치에게 맡기기」를 누르면 3~7회 성공 중 무작위로 결과가 바로 나옵니다. 모든 훈련은 키보드로도 할 수 있어요.':
-    'Each offseason you can do up to 4 of the 10 drills in 6 categories, once per drill. Passing 6 of 10 attempts raises that attribute by +1 (+2 for threes, +1 more for the steady type) immediately, and effort rises +1 either way. "Leave it to the coach" draws a result of 3~7 passes instantly. Every drill also works with the keyboard.',
+  '오프시즌마다 6종목 12가지 중 최대 4개를, 종류별로 한 번씩 할 수 있어요. 10회 중 6회 이상 성공하면 해당 능력치가 +1(3점슛은 +2, 노력형은 여기에 +1) 바로 오르고, 성공 여부와 상관없이 노력치가 +1 쌓여요. 「코치에게 맡기기」를 누르면 3~7회 성공 중 무작위로 결과가 바로 나옵니다. 모든 훈련은 키보드로도 할 수 있어요.':
+    'Each offseason you can do up to 4 of the 12 drills in 6 categories, once per drill. Passing 6 of 10 attempts raises that attribute by +1 (+2 for threes, +1 more for the steady type) immediately, and effort rises +1 either way. "Leave it to the coach" draws a result of 3~7 passes instantly. Every drill also works with the keyboard.',
   종목: 'Category',
   훈련: 'Drill',
   능력치: 'Attribute',
@@ -309,8 +309,8 @@ const docs: Record<string, string> = {
     'Furniture: plant, lamp, shelf, hoop, TV, sofa, bed, home gym and more. Each has its own spot and gives growth.',
   '펫: 무대를 돌아다니는 강아지·고양이 10종. 성장 보너스 +0.1 이고 눌러서 쓰다듬을 수 있어요.':
     'Pets: 10 dogs and cats that roam the stage. Growth +0.1 each, and you can tap to pet them.',
-  '아이템을 고르면 사기 전에 무대나 선수에게 미리 입혀 보여 주고, 효과 칸에 구매 전후 값이 나와요. 같은 능력치의 버프는 합쳐서 +3, 성장 보너스는 합쳐서 +2.0 까지만 쌓이니 상한에 걸리면 효과 칸이 +0 으로 보여요. 「배치 편집」에서 가구·탈것을 끌어 옮기고, 뒤집고, 보관할 수 있어요. 보관해도 효과는 그대로예요.':
-    'Selecting an item previews it on the stage or player before buying, and the effect box shows before and after values. Buffs to one attribute cap at +3 and growth at +2.0, so a capped item shows +0. In "Arrange" you can drag furniture and rides, flip them, or store them; stored items keep their effect.',
+  '아이템을 고르면 사기 전에 무대나 선수에게 미리 입혀 보여 주고, 효과 칸에 구매 전후 값이 나와요. 같은 능력치의 버프는 합쳐서 +5, 성장 보너스는 합쳐서 +2.5 까지만 쌓이니 상한에 걸리면 효과 칸이 +0 으로 보여요. 「배치 편집」에서 가구·탈것을 끌어 옮기고, 뒤집고, 보관할 수 있어요. 보관해도 효과는 그대로예요.':
+    'Selecting an item previews it on the stage or player before buying, and the effect box shows before and after values. Buffs to one attribute cap at +5 and growth at +2.5, so a capped item shows +0. In "Arrange" you can drag furniture and rides, flip them, or store them; stored items keep their effect.',
   '6. 진로': '6. Career path',
   '고교 3시즌이 끝나면 대학 진학과 KBL 드래프트 중에서 고릅니다. 오버롤이 높으면 미국 대학(NCAA) 제안도 와요.':
     'After 3 high-school seasons you choose between college and the KBL draft. With a high OVR, US colleges (NCAA) make offers too.',
