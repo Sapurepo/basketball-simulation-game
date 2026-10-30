@@ -18,7 +18,7 @@ function Block({ b }: { b: LegalBlock }) {
         <thead>
           <tr>
             {head.map((h) => (
-              <th key={h}>{h}</th>
+              <th key={h}>{tr(h)}</th>
             ))}
           </tr>
         </thead>
@@ -26,7 +26,7 @@ function Block({ b }: { b: LegalBlock }) {
           {rows.map((r) => (
             <tr key={r[0]}>
               {r.map((c, i) => (
-                <td key={i}>{c}</td>
+                <td key={i}>{tr(c)}</td>
               ))}
             </tr>
           ))}
@@ -36,7 +36,7 @@ function Block({ b }: { b: LegalBlock }) {
   )
 }
 
-// 공지사항·개인정보 처리방침·이용약관·확률표 페이지
+// 공지사항·개인정보 처리방침·이용약관·확률표·게임 가이드 페이지
 export function LegalPage({
   doc,
   onBack,
