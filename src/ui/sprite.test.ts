@@ -33,7 +33,7 @@ describe('픽셀 스프라이트 v2', () => {
     expect(build(spec({ acc: ['glasses'] }), 'idle', 0)).not.toEqual(base)
   })
 
-  test('상점 치장 8종은 모든 포즈에서 결과를 바꾼다', () => {
+  test('상점 치장 13종은 모든 포즈에서 결과를 바꾼다', () => {
     const wear = [
       'cap',
       'shades',
@@ -43,6 +43,11 @@ describe('픽셀 스프라이트 v2', () => {
       'goldShoes',
       'undershirt',
       'tights',
+      'beanie',
+      'visor',
+      'bucketHat',
+      'truckerCap',
+      'fedora',
     ] as const
     for (const pose of DRAWN_POSES) {
       const base = build(spec({ acc: [] }), pose, 0)

@@ -5,59 +5,99 @@ import { BestFive } from './bestFive'
 import {
   BEST_ORDER,
   fetchHall,
+  type HallLeague,
   type HallRow,
   type HallSort,
+  isHallLeague,
+  isHallSort,
+  LEAGUES,
+  rowDetail,
   SORTS,
 } from './hallApi'
 import { HallItem } from './hallBoard'
 import { HallPlayerDialog } from './hallPlayerDialog'
 
-// 주소(/ranking?sort=fmvp)에 정렬을 남겨 새로고침해도 같은 정렬로 연다. #ranking?sort= 는 예전 주소
-const readSort = (): HallSort =>
-  new URLSearchParams(
-    location.search || (location.hash.split('?')[1] ?? ''),
-  ).get('sort') === 'fmvp'
-    ? 'fmvp'
-    : 'ovr'
+// 주소(/ranking?sort=fmvp&league=NBA)에 정렬·리그를 남겨 새로고침해도 같은 화면으로 연다. #ranking?sort= 는 예전 주소
+const readQuery = () =>
+  new URLSearchParams(location.search || (location.hash.split('?')[1] ?? ''))
+const readSort = (): HallSort => {
+  const v = readQuery().get('sort')
+  return isHallSort(v) ? v : 'ovr'
+}
+const readLeague = (): HallLeague => {
+  const v = readQuery().get('league')
+  return isHallLeague(v) ? v : 'all'
+}
 
 type Data = Awaited<ReturnType<typeof fetchHall>>
 
 // 공용 명예의 전당 랭킹: 포지션별 베스트 5와 상위 100명, 선수를 누르면 상세 팝업
 export function RankingScreen({ onBack }: { onBack: () => void }) {
   const [sort, setSort] = useState(readSort)
+  const [league, setLeague] = useState(readLeague)
   const [data, setData] = useState<{ top: Data; best: Data }>()
   const [error, setError] = useState(false)
   // 열린 상세 팝업: 베스트 5 안에서 넘기는지, 몇 번째인지
   const [sel, setSel] = useState<{ inBest: boolean; i: number }>()
   // 새로고침 버튼: 값을 올리면 같은 정렬로 다시 불러온다
   const [tick, setTick] = useState(0)
+  // 마지막으로 불러온 시각. 1분마다 다시 그려 'n분 전 갱신'을 맞춘다
+  const [loadedAt, setLoadedAt] = useState<number>()
+  const [now, setNow] = useState(Date.now)
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(id)
+  }, [])
   // 다시 불러오는 동안은 이전 오류 문구 대신 '불러오는 중…'
   const refresh = () => {
     setData(undefined)
     setError(false)
     setTick((t) => t + 1)
   }
-  // 정렬을 바꾸면 이전 정렬의 목록을 지운다. 남겨 두면 새 정렬 라벨이 붙은 옛 순위를 눌러 팝업이 열린다
-  const pickSort = (id: HallSort) => {
-    if (id === sort) return
+  // 정렬·리그를 바꾸면 이전 목록을 지운다. 남겨 두면 새 정렬 라벨이 붙은 옛 순위를 눌러 팝업이 열린다
+  const pick = (next: { sort?: HallSort; league?: HallLeague }) => {
+    const s = next.sort ?? sort
+    const l = next.league ?? league
+    if (s === sort && l === league) return
     setData(undefined)
     setError(false)
     setSel(undefined)
-    setSort(id)
+    setSort(s)
+    setLeague(l)
   }
 
   useEffect(() => {
-    history.replaceState(null, '', `/ranking?sort=${sort}`)
+    history.replaceState(
+      null,
+      '',
+      `/ranking?sort=${sort}${league === 'all' ? '' : `&league=${league}`}`,
+    )
     let alive = true
-    Promise.all([fetchHall(sort), fetchHall(sort, { best: true })])
-      .then(([top, best]) => alive && (setData({ top, best }), setError(false)))
+    Promise.all([
+      fetchHall(sort, { league }),
+      fetchHall(sort, { best: true, league }),
+    ])
+      .then(
+        ([top, best]) =>
+          alive &&
+          (setData({ top, best }), setError(false), setLoadedAt(Date.now())),
+      )
       .catch(() => alive && setError(true))
     return () => {
       alive = false
     }
-  }, [sort, tick])
+  }, [sort, league, tick])
 
   const sortLabel = tr(SORTS.find(([id]) => id === sort)![1])
+  const scope = league === 'all' ? tr('전체 리그') : league
+  const ago =
+    loadedAt && Math.floor((Math.max(now, loadedAt) - loadedAt) / 60_000)
+  const updated =
+    loadedAt === undefined
+      ? ''
+      : ago
+        ? tr('{n}분 전 갱신', { n: ago })
+        : tr('방금 갱신')
   const best = BEST_ORDER.flat()
     .map((pos) => data?.best.rows.find((r) => r.position === pos))
     .filter((r): r is HallRow => !!r)
@@ -71,37 +111,84 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   return (
     <main className="ranking">
       <header className="ranking-head">
-        <h1>{tr('명예의 전당')}</h1>
-        <div className="row ranking-btns">
+        <button className="ghost ranking-back" onClick={onBack}>
+          ◀ {tr('뒤로')}
+        </button>
+        {/* 불러오는 동안에도 자리를 비워 둔다. 빠지면 제목 줄이 들썩인다 */}
+        <div className="ranking-title">
+          <h1>{tr('명예의 전당')}</h1>
+          <span className="ranking-count">
+            {data?.top.total
+              ? tr('총 {n}명 등록', { n: data.top.total.toLocaleString() })
+              : '\u00a0'}
+          </span>
+        </div>
+      </header>
+
+      {/* 스크롤해도 위에 붙어 있는 보기 설정 */}
+      <div
+        className="ranking-bar"
+        role="group"
+        aria-label={tr('랭킹 보기 설정')}
+      >
+        <div className="ranking-field">
+          <span id="ranking-league">{tr('리그')}</span>
+          <div
+            className="chips"
+            role="radiogroup"
+            aria-labelledby="ranking-league"
+          >
+            {LEAGUES.map(([id, label]) => (
+              <button
+                key={id}
+                role="radio"
+                aria-checked={league === id}
+                className={league === id ? 'chip on' : 'chip'}
+                onClick={() => pick({ league: id })}
+              >
+                {tr(label)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="ranking-field">
+          <span id="ranking-sort">{tr('정렬 기준')}</span>
+          <div
+            className="chips"
+            role="radiogroup"
+            aria-labelledby="ranking-sort"
+          >
+            {SORTS.map(([id, label, chip]) => (
+              <button
+                key={id}
+                aria-label={tr(label)}
+                role="radio"
+                aria-checked={sort === id}
+                className={sort === id ? 'chip on' : 'chip'}
+                onClick={() => pick({ sort: id })}
+              >
+                {tr(chip)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="ranking-meta">
+        <b>
+          {scope} · {sortLabel}
+        </b>
+        <div className="row nowrap">
+          <span>{updated}</span>
           <button
             className="ghost"
             onClick={refresh}
             disabled={!data && !error}
           >
-            {tr('새로고침')}
-          </button>
-          <button className="ghost" onClick={onBack}>
-            {tr('뒤로')}
+            ↻ {tr('새로고침')}
           </button>
         </div>
-        {/* 불러오는 동안에도 줄을 비워 둔다. 줄이 빠지면 헤더 높이가 줄어 아래 목록이 들썩인다 */}
-        <p className="ranking-count">
-          {data?.top.total
-            ? tr('총 {n}명 등록', { n: data.top.total.toLocaleString() })
-            : '\u00a0'}
-        </p>
-        <div className="chips">
-          {SORTS.map(([id, label]) => (
-            <button
-              key={id}
-              className={sort === id ? 'chip on' : 'chip'}
-              onClick={() => pickSort(id)}
-            >
-              {tr(label)}
-            </button>
-          ))}
-        </div>
-      </header>
+      </div>
 
       {error ? (
         <p className="ranking-note">
@@ -113,11 +200,20 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
         <>
           <BestFive
             rows={best}
-            desc={tr(
+            desc={
               sort === 'fmvp'
-                ? '포지션마다 파이널 MVP를 가장 많이 받은 선수로 짠 라인업이에요.'
-                : '포지션마다 최고 OVR이 가장 높은 선수로 짠 라인업이에요.',
-            )}
+                ? tr(
+                    '포지션마다 파이널 MVP를 가장 많이 받은 선수로 짠 라인업이에요.',
+                  )
+                : sort === 'ovr'
+                  ? tr(
+                      '포지션마다 최고 OVR이 가장 높은 선수로 짠 라인업이에요.',
+                    )
+                  : tr(
+                      '포지션마다 {label} 기준으로 가장 앞선 선수로 짠 라인업이에요.',
+                      { label: sortLabel },
+                    )
+            }
             onOpen={(r) => setSel({ inBest: true, i: best.indexOf(r) })}
           />
           <section className="hall-top">
@@ -134,11 +230,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
                   key={r.id}
                   {...r}
                   best={bestIds.has(r.id)}
-                  detail={[
-                    tr('트로피 {n}', { n: r.trophies }),
-                    tr('{n}시즌', { n: r.seasons }),
-                    tr('{year}년 은퇴', { year: r.retiredYear }),
-                  ]}
+                  detail={rowDetail(sort, r)}
                   onOpen={() => setSel({ inBest: false, i })}
                 />
               ))}

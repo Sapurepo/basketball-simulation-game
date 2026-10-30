@@ -537,16 +537,61 @@ export function build(
   // 앞머리 + 헤드밴드
   draw(hair[0], hair[1], hair[2] + U)
   if (acc.has('headband')) rect(8, 4 + U, 19, 4 + U, 'X')
-  // 머리 위 치장: 모자·헤드폰·이어폰
-  if (acc.has('cap')) {
-    // 모자 위로 삐져나온 머리카락은 지운다
+  // 머리 위 치장: 모자·헤드폰·이어폰. 모자 위로 삐져나온 머리카락은 지운다
+  const clearTop = () => {
     for (let yy = -6; yy < 0; yy++)
       for (let x = 5; x <= 22; x++) {
         const Y0 = yy + U + OY
         if (Y0 >= 0 && Y0 < H) g[Y0][x + OX] = null
       }
+  }
+  if (acc.has('cap')) {
+    clearTop()
     draw(['..CCCCCCCC..', '.CCCCCCCCCC.', 'CCCCCGGCCCCC', 'CCCCCGGCCCCC'], 8, U)
     rect(7, 4 + U, 20, 4 + U, 'c')
+  }
+  // 상점 모자 5종은 고정색이라 팔레트 키 대신 색을 바로 쓴다
+  if (acc.has('beanie')) {
+    clearTop()
+    rect(13, -2 + U, 14, -2 + U, '#f2c14e')
+    rect(10, -1 + U, 17, -1 + U, '#23306b')
+    rect(9, U, 18, U, '#23306b')
+    rect(8, 1 + U, 19, 2 + U, '#23306b')
+    for (let x = 9; x <= 18; x += 2) put(x, 1 + U, '#3a4a82')
+    rect(7, 3 + U, 20, 4 + U, '#f07a2b')
+    for (let x = 8; x <= 20; x += 2) put(x, 4 + U, '#c05a12')
+  }
+  if (acc.has('visor')) {
+    rect(8, 2 + U, 19, 3 + U, '#fbf7ee')
+    rect(13, 2 + U, 14, 2 + U, '#f2c14e')
+    rect(6, 4 + U, 21, 4 + U, '#2f7a4a')
+  }
+  if (acc.has('bucketHat')) {
+    clearTop()
+    rect(10, -1 + U, 17, -1 + U, '#d9c49a')
+    rect(9, U, 18, 1 + U, '#d9c49a')
+    rect(9, 2 + U, 18, 2 + U, '#8a5a34')
+    rect(7, 3 + U, 20, 3 + U, '#d9c49a')
+    rect(6, 4 + U, 21, 4 + U, '#bfa878')
+  }
+  if (acc.has('truckerCap')) {
+    clearTop()
+    rect(10, -1 + U, 17, -1 + U, '#fbf7ee')
+    rect(8, U, 19, 3 + U, '#454852')
+    rect(10, U, 17, 3 + U, '#fbf7ee')
+    rect(12, 1 + U, 15, 2 + U, '#d8433a')
+    put(9, 1 + U, '#2a2c33')
+    put(18, 2 + U, '#2a2c33')
+    rect(7, 4 + U, 20, 4 + U, '#23306b')
+  }
+  if (acc.has('fedora')) {
+    clearTop()
+    rect(10, -2 + U, 12, -2 + U, '#2a2c33')
+    rect(15, -2 + U, 17, -2 + U, '#2a2c33')
+    rect(9, -1 + U, 18, 1 + U, '#2a2c33')
+    rect(9, 2 + U, 18, 2 + U, '#9e2a24')
+    rect(6, 3 + U, 21, 3 + U, '#2a2c33')
+    rect(5, 4 + U, 22, 4 + U, '#1e1a1a')
   }
   if (acc.has('headphones')) {
     rect(10, -2 + U, 17, -2 + U, 'Y')

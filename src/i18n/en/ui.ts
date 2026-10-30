@@ -131,7 +131,6 @@ const text: Record<string, string> = {
   체중: 'Weight',
   등번호: 'Number',
   스타일: 'Style',
-  잠재력: 'Potential',
   병역: 'Service',
   '{team} 계약, 연봉 {money}': '{team} contract, {money}/yr',
   '{team} 투웨이 계약, 연봉 {money}': '{team} two-way contract, {money}/yr',
@@ -158,6 +157,7 @@ const text: Record<string, string> = {
   '{w}승 {l}패': '{w}W {l}L',
   '시즌 OVR {ovr}': 'Season OVR {ovr}',
   경기: 'Games',
+  수익: 'Earnings',
   출전시간: 'Minutes',
   득점: 'Points',
   리바운드: 'Rebounds',
@@ -226,10 +226,9 @@ const text: Record<string, string> = {
   포지션: 'Position',
   '플레이 스타일': 'Play style',
   고등학교: 'High school',
-  '다시 뽑기': 'Reroll',
+  '능력치 재분배': 'Redistribute',
   몸무게: 'Weight',
   오버롤: 'Overall',
-  '잠재력 등급': 'Potential grade',
   '남은 포인트': 'Points left',
   '능력치는 {min}~{max} 사이에서 총합 {total} 포인트를 나눠 가져요.':
     'Attributes range from {min} to {max} and share {total} points in total.',
@@ -299,10 +298,108 @@ const text: Record<string, string> = {
   '3순위': 'Pick 3',
   '새로운 인생 시작하기': 'Start a new life',
   // ── 명예의 전당·랭킹 ──
-  '({n}명)': '({n} players)',
   뒤로: 'Back',
   '최고 OVR순': 'By peak OVR',
   '파이널 MVP순': 'By Finals MVPs',
+  '누르고 떼기': 'Hold & release',
+  '타이밍 맞춰 누르기': 'Timed tap',
+  '방향 고르기': 'Pick a side',
+  '원터치 패스': 'One-touch pass',
+  '페이크 + 돌파': 'Fake + drive',
+  '켜진 등 누르기': 'Hit the lit lamp',
+  '버튼 연타': 'Button mash',
+  '스페이스바를 누르고 있어도 돼요': 'You can also hold the space bar',
+  '스페이스바나 화면을 눌러도 돼요': 'Space bar or tapping the stage works too',
+  '키보드 ← → 로도 돼요': 'Keyboard ← → works too',
+  '키보드 ← → 나 동료를 직접 눌러도 돼요':
+    'Keyboard ← → or tap a teammate directly',
+  '키보드 ← → 돌파 · A D 페이크': 'Keyboard ← → drive · A D fake',
+  '등을 직접 누르거나 방향키 ↑ ← → ↓': 'Tap a lamp or use arrow keys ↑ ← → ↓',
+  '스페이스바 연타도 돼요': 'Mashing the space bar works too',
+  '클린 슛!': 'Clean shot!',
+  '에어볼…': 'Air ball…',
+  '공을 끌었어요': 'Held the ball',
+  '너무 빨리 손을 뻗었어요': 'Reached too early',
+  '원터치 패스!': 'One-touch pass!',
+  엇갈렸어요: 'Crossed wires',
+  놓쳤어요: 'Missed it',
+  '공중에서 낚아챘다!': 'Snatched it mid-air!',
+  '리바운드!': 'Rebound!',
+  '시간 초과': 'Time out',
+  '앵클 브레이커!': 'Ankle breaker!',
+  '페이크 성공! 돌파!': 'Fake worked! Drive!',
+  '빈틈 돌파!': 'Through the gap!',
+  '기운 쪽으로 들어갔어요': 'Drove into the lean',
+  '자리 잡은 수비에 막혔어요': 'Blocked by a set defender',
+  뚫렸어요: 'Beaten',
+  '잽에 속았어요': 'Fell for the jab',
+  '반대로 갔어요': 'Went the wrong way',
+  '완벽한 길목 차단!': 'Perfect cut-off!',
+  '길목 차단!': 'Cut off!',
+  '부정 출발!': 'False start!',
+  '다른 등이에요': 'Wrong lamp',
+  '번개 반응!': 'Lightning reaction!',
+  '좋아요!': 'Nice!',
+  '조금 느려요': 'A bit slow',
+  '폭발적인 렙!': 'Explosive rep!',
+  '굿 렙!': 'Good rep!',
+  '겨우 성공!': 'Barely made it!',
+  '못 일어났어요': 'Could not stand up',
+  '보조가 도와줬어요': 'The spotter helped',
+  '자유투 라인': 'Free-throw line',
+  엘보: 'Elbow',
+  '3점 라인': 'Three-point line',
+  약하게: 'Soft',
+  세게: 'Hard',
+  가까이: 'Near',
+  멀리: 'Far',
+  돌파: 'Drive',
+  페이크: 'Fake',
+  '왼쪽 동료': 'Left teammate',
+  '오른쪽 동료': 'Right teammate',
+  '{attr} 능력치가 {n} 올랐어요. 다음 시즌 경기에 바로 반영돼요.':
+    '{attr} went up by {n}. It counts from next season.',
+  '{need}개 이상 성공해야 능력치가 올라요. 감각은 익혔어요.':
+    'You need {need} or more to raise the attribute. Good practice anyway.',
+  '{n}개 중': 'out of {n}',
+  '{s}초 안에 누르기': 'Hit within {s}s',
+  '◀ 목록으로': '◀ Back to list',
+  '개 성공': 'made',
+  '고비!': 'Sticking point!',
+  끝까지: 'To the top',
+  '남은 시간': 'Time left',
+  '다음 · {name} ▶': 'Next · {name} ▶',
+  '바를 내리는 중…': 'Lowering the bar…',
+  '반응 등 {n}': 'Lamp {n}',
+  '반응 시간': 'Reaction time',
+  '속았다!': 'Bit!',
+  '시작 ▶': 'Start ▶',
+  '안 속네': 'Not buying it',
+  '여기!': 'Here!',
+  '완료 {made}/{reps}': 'Done {made}/{reps}',
+  '완료 {n} / {max}': 'Done {n} / {max}',
+  '이번 오프시즌 한도': 'Offseason limit reached',
+  '이번 오프시즌 훈련을 모두 마쳤어요. 시즌을 진행하면 다시 열려요.':
+    'All training for this offseason is done. It reopens when you play the season.',
+  '최고 {s}초': 'Best {s}s',
+  '코치에게 맡기기': 'Let the coach run it',
+  '훈련 종목': 'Training categories',
+  '훈련마다 오프시즌에 한 번, {reps}개 중 {need}개 이상 성공하면 능력치 +1. 이번 오프시즌에는 최대 {max}개까지 할 수 있어요.':
+    'Each drill once per offseason; make {need} of {reps} for +1 to the attribute. Up to {max} drills this offseason.',
+  수익순: 'By earnings',
+  출전시간순: 'By minutes',
+  '통산 득점순': 'By career points',
+  '통산 어시스트순': 'By career assists',
+  '{n}분': '{n} min',
+  '{n}점': '{n} pts',
+  '{n}어시': '{n} ast',
+  '기록 없음': 'No record',
+  '통산 수입': 'Career earnings',
+  '통산 출전': 'Career minutes',
+  '통산 득점': 'Career points',
+  '통산 어시스트': 'Career assists',
+  '포지션마다 {label} 기준으로 가장 앞선 선수로 짠 라인업이에요.':
+    'A lineup of the top player at each position, {label}.',
   '랭킹을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.':
     'Could not load the rankings. Please try again later.',
   '베스트 5': 'Best five',
@@ -326,6 +423,12 @@ const text: Record<string, string> = {
   '포지션별 베스트 5': 'Best five by position',
   '{n}위': '#{n}',
   '비어 있음': 'Vacant',
+  '랭킹 보기 설정': 'Ranking view options',
+  리그: 'League',
+  '정렬 기준': 'Sort by',
+  '전체 리그': 'All leagues',
+  '방금 갱신': 'Updated just now',
+  '{n}분 전 갱신': 'Updated {n} min ago',
   '총 {n}명 등록': '{n} players registered',
   '첫 등록을 기다려요': 'Awaiting first entry',
   'OVR {ovr} · 파이널 MVP {n}': 'OVR {ovr} · Finals MVP {n}',
@@ -371,6 +474,9 @@ const text: Record<string, string> = {
   '종류마다 오프시즌에 한 번, {reps}개 중 6개 이상 성공하면 능력치 +1.':
     'Once per drill each offseason. Make 6 of {reps} for +1 to the attribute.',
   '이번 오프시즌 완료': 'Done this offseason',
+  노력치: 'Effort',
+  '노력치 {n}': 'Effort {n}',
+  '노력치 {n}/{max}': 'Effort {n}/{max}',
   '코치에게 맡기기 · {attr}': 'Let the coach run it · {attr}',
   '{attr} 능력치': '{attr} attribute',
   '훈련 결과': 'Drill results',
@@ -424,6 +530,15 @@ const text: Record<string, string> = {
   '{team} 화이팅!': "Let's go {team}!",
   '다음 시즌이 기대된다': "Can't wait for next season",
   // ── 상점 ──
+  훈련용품: 'Training gear',
+  '무대에 두면 시즌 능력치 +1. 슈팅 슬리브는 선수에게 착용해요. 같은 능력치 버프는 합쳐서 +3까지예요.':
+    'Place it on the stage for a +1 season attribute buff. The shooting sleeve is worn by the player. Buffs to one attribute add up to +3.',
+  '모자 · 하나만 착용': 'Hat · one at a time',
+  '훈련용품 · 무대 배치': 'Training gear · on the stage',
+  '효과 · 무대에 두고 훈련': 'Effect · trains on the stage',
+  '보유 · 미착용': 'Owned · not worn',
+  벗기: 'Take off',
+  착용하기: 'Put on',
   '보유 자금': 'Cash',
   사치품: 'Luxury',
   '보유하면 시즌 능력치 버프. 입히고 벗을 수 있고, 탈것은 무대 앞에 세워져요.':
@@ -522,6 +637,34 @@ const text: Record<string, string> = {
   코리안숏헤어: 'Korean Shorthair',
   페르시안: 'Persian cat',
   스코티시폴드: 'Scottish Fold',
+  저항밴드: 'Resistance band',
+  점프로프: 'Jump rope',
+  '리바운드 패드': 'Rebound pad',
+  '수비 슬라이드 콘': 'Defensive slide cones',
+  '슈팅 슬리브': 'Shooting sleeve',
+  '패스 벽': 'Pass-back net',
+  '니트 비니': 'Knit beanie',
+  헤어밴드: 'Headband',
+  썬바이저: 'Sun visor',
+  '카본 무릎 보호대': 'Carbon knee pads',
+  버킷햇: 'Bucket hat',
+  '전동 킥보드': 'Electric scooter',
+  '트러커 캡': 'Trucker cap',
+  '뿔테 안경': 'Horn-rimmed glasses',
+  '로드 자전거': 'Road bike',
+  페도라: 'Fedora',
+  '크라프트지 벽지': 'Kraft paper wallpaper',
+  '신문지 벽지': 'Newspaper wallpaper',
+  '하늘 도트 벽지': 'Sky dot wallpaper',
+  '타공판 벽지': 'Pegboard wallpaper',
+  '팀 컬러 사선 벽지': 'Team-color stripe wallpaper',
+  '체육관 블록 벽지': 'Gym block wallpaper',
+  '몬스테라 화분': 'Monstera plant',
+  '스탠드 조명': 'Floor lamp',
+  '트로피 선반': 'Trophy shelf',
+  '미니 골대': 'Mini hoop',
+  '벽걸이 TV': 'Wall-mounted TV',
+  '아이스 배스': 'Ice bath',
   // ── 무대 배치 편집 ──
   '벽 · 창문과 커튼은 함께 움직여요':
     'Wall · the window and curtain move together',
@@ -551,6 +694,60 @@ const text: Record<string, string> = {
     'Arranging · drag to move · arrow keys for 1 step',
   '배치 옮기기': 'Move it',
   // 아이템 소개
+  '어디서든 하체 루틴. 점프 첫 동작이 묵직해진다.':
+    'Leg day anywhere. Your first jump gets heavier.',
+  '하루 천 번. 발이 바닥에 닿는 시간이 짧아진다.':
+    'A thousand a day. Your feet spend less time on the floor.',
+  '몸싸움 연습용 패드. 박스아웃 자리를 뺏기지 않는다.':
+    'A contact pad for drills. Nobody takes your box-out spot.',
+  '콘 사이 사이드 스텝. 수비 자세가 낮고 빨라진다.':
+    'Side steps between cones. Your stance gets lower and quicker.',
+  '팔꿈치를 잡아주는 압박 슬리브. 릴리스가 일정해진다.':
+    'A compression sleeve that holds the elbow. Your release stays consistent.',
+  '던지면 돌아오는 리바운더 네트. 혼자서도 패스 천 개.':
+    'A net that throws it back. A thousand passes, all alone.',
+  '새벽 러닝에도 귀가 따뜻하다.': 'Warm ears even on dawn runs.',
+  '땀이 눈에 안 들어가면 공이 떨어질 곳까지 보인다.':
+    'Keep the sweat out of your eyes and you see where the ball will land.',
+  '햇빛을 가리면 야외 코트에서도 림이 또렷하다.':
+    'Block the sun and the rim stays sharp even outdoors.',
+  '바닥에 몸을 던져도 무섭지 않다.':
+    "Diving on the floor doesn't scare you anymore.",
+  '느긋한 챙 아래로 코트가 넓게 보인다.':
+    'Under the easy brim, the court looks wider.',
+  '체육관까지 5분. 남는 시간은 개인 훈련에.':
+    'Five minutes to the gym. The time you save goes to extra reps.',
+  '메시 뒤판으로 열이 빠진다. 발걸음이 가볍다.':
+    'The mesh back lets the heat out. Light on your feet.',
+  '경기 영상을 분석할 땐 안경부터 쓴다.':
+    "Glasses on first when it's time to study film.",
+  '비시즌 유산소는 강변 라이딩으로.':
+    'Off-season cardio is a ride along the river.',
+  '입장할 때 쓰는 신사 모자. 존재감으로 자리를 잡는다.':
+    "A gentleman's hat for the walk-in. Presence alone claims the spot.",
+  '포장지 같은 갈색 종이. 첫 자취방 감성.':
+    'Brown paper like packing wrap. First-apartment vibes.',
+  '스포츠면만 골라 붙였다. 언젠가 내 기사도.':
+    'Only the sports pages. Someday your own headline.',
+  '맑은 하늘에 흰 도트. 기분이 가벼워진다.':
+    'White dots on a clear sky. Your mood lifts.',
+  '공구 대신 농구공을 거는 차고 감성.':
+    'Garage vibes, with basketballs instead of tools.',
+  '주황과 네이비 사선. 매일이 홈 경기 날.':
+    'Orange and navy stripes. Every day is a home game.',
+  '페인트 칠한 블록 벽. 체육관 냄새가 난다.':
+    'A painted block wall. It smells like the gym.',
+  '초록이 있으면 회복이 빠르다는 소문.':
+    'Word is you recover faster with some green around.',
+  '밤에 경기 영상을 볼 때 켜는 노란 불빛.':
+    'The warm light you switch on for late-night film.',
+  '첫 트로피 자리를 미리 비워 둔다.': 'A spot saved for your first trophy.',
+  '벽에 단 작은 림. 자기 전 마지막 슛 100개.':
+    'A little rim on the wall. A hundred last shots before bed.',
+  '75인치 화면으로 상대 팀 경기를 돌려 본다.':
+    "Replay the other team's games on a 75-inch screen.",
+  '경기 다음 날 10분. 다리가 다시 가벼워진다.':
+    'Ten minutes the day after a game. Your legs feel light again.',
   '챙을 꾹 눌러쓰면 수비 집중력이 올라간다.':
     'Pull the brim down tight and your defensive focus sharpens.',
   '노이즈 캔슬링 ON. 코트 위 시야가 넓어진다.':
@@ -620,6 +817,25 @@ const text: Record<string, string> = {
   '2026년 10월 28일': 'October 28, 2026',
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
+  // ── 공지 1.4.0 ──
+  '훈련이 6종목 11가지 미니게임으로 늘었어요. 오프시즌마다 최대 4개까지 할 수 있고, 코치에게 맡기면 바로 결과가 나와요.':
+    'Training now has 11 mini-games across 6 categories. Do up to 4 per offseason, or let the coach run it for an instant result.',
+  '훈련을 하면 노력치가 쌓여요. 노력치가 많은 능력치로 시즌 성장이 더 많이 몰려요.':
+    'Training builds effort points. Season growth leans toward the attributes with more effort.',
+  '잠재력 등급이 화면에서 사라졌어요. 등급은 S부터 D까지 똑같은 확률로 정해지고, 초반 성장 속도로 짐작할 수 있어요.':
+    'Potential grades are no longer shown. Grades S to D are now equally likely, and your early growth hints at it.',
+  '선수마다 숨은 성장 기질이 있어요. 천재형은 훈련을 안 하면 성장이 둔해지고, 노력형은 훈련할수록 더 크게 성장해요.':
+    'Every player has a hidden growth trait. Gifted players slow down without training, while steady players grow more the more they train.',
+  '스피드가 속공과 돌파 득점에, 운동능력이 리바운드·블록·출전시간·부상 확률에 영향을 줘요.':
+    'Speed now affects fast breaks and drives; athleticism affects rebounds, blocks, minutes and injury risk.',
+  '상점에 훈련용품·모자·저가 벽지·가구가 들어와 고교·대학 때도 살 게 있어요. 아이템 효과에는 상한이 있고, 모자는 쓴 것만 효과가 나요.':
+    "The shop adds training gear, hats, budget wallpapers and furniture, so there's something to buy even in high school and college. Item effects are capped, and only the hat you wear counts.",
+  '명예의 전당을 오버롤·파이널 MVP·수입·출전·득점·어시스트로 정렬하고 KBL·NBA로 걸러 볼 수 있어요.':
+    'Sort the Hall of Fame by overall, Finals MVPs, earnings, minutes, points or assists, and filter by KBL or NBA.',
+  '경기 중계가 끝나기 전에 결과가 비치던 문제를 고쳤고, 중계 박스스코어에 출전시간이 보여요.':
+    'Results no longer leak before a broadcast ends, and the live box score shows minutes played.',
+  '선수 생성의 「다시 뽑기」가 「능력치 재분배」로 바뀌었어요.':
+    "'Reroll' on the create screen is now 'Redistribute'.",
   // ── 공지 1.3.0 ──
   '경기 중계가 새로워졌어요. 스코어보드에서 점수·경기 시계·쿼터별 점수를 보며 슛 시도와 결과를 차례로 볼 수 있어요.':
     'Game broadcasts are redesigned. Follow the score, game clock and quarter scores on the scoreboard as each shot is taken and lands.',

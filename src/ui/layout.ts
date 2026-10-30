@@ -4,7 +4,15 @@ import { type ArtName, artSize } from './shopArt'
 
 // 무대 배치: 110×80 논리 격자(바닥선 y=60). 창문은 늘 있고, 커튼은 창문에 붙어 함께 움직인다
 export const WINDOW_POS: [number, number] = [10, 22]
-export const WALL = new Set(['window', 'curtain', 'clock', 'frame'])
+export const WALL = new Set([
+  'window',
+  'curtain',
+  'clock',
+  'frame',
+  'trophyShelf',
+  'miniHoop',
+  'tv',
+])
 
 export type Layout = Record<string, Placement>
 
@@ -14,14 +22,13 @@ export const anchorOf = (id: string) => (id === 'curtain' ? 'window' : id)
 const defaultPos = (id: string): [number, number] =>
   id === 'window' ? WINDOW_POS : (itemById(id)?.pos ?? [0, 0])
 
-// 놓일 수 있는 자리: 창문은 벽 가운데, 시계·액자는 벽, 러그는 바닥 앞쪽,
+// 놓일 수 있는 자리: 창문은 벽 가운데, 시계·액자·선반·골대·TV 는 벽, 러그는 바닥 앞쪽,
 // 가구·탈것은 바닥선에 걸치게. 가로로는 1/3까지 무대 밖으로 나갈 수 있다
 export function clampPos(id: string, x: number, y: number): [number, number] {
   const [w, h] = artSize(id as ArtName)
   const c = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
   if (id === 'window') return [c(x, 6, 110 - w - 6), c(y, 8, 30)]
-  if (id === 'clock' || id === 'frame')
-    return [c(x, 0, 110 - w), c(y, 4, 56 - h)]
+  if (WALL.has(id)) return [c(x, 0, 110 - w), c(y, 4, 56 - h)]
   const x0 = -Math.floor(w / 3)
   const x1 = 110 - Math.ceil((w * 2) / 3)
   if (id === 'rug') return [c(x, x0, x1), c(y, 60, 80 - h)]

@@ -38,6 +38,9 @@ const effectText = (it: Item) =>
         .join(' · ')
     : tr('시즌 성장 +{n}', { n: it.growth ?? 0 })
 
+// 성장 보너스는 0.05 단위가 있어 소수 둘째 자리까지 (찌꺼기는 itemEffects 가 반올림)
+const growthText = (g: number) => `+${Math.round(g * 100) / 100}`
+
 const tierLabel = (t: number) =>
   [tr('일반'), tr('레어'), tr('에픽'), tr('레전드')][t]
 
@@ -195,9 +198,10 @@ export function Decor({
 }
 
 // ── 상점 ──
-const KINDS: Item['kind'][] = ['luxury', 'decor', 'furniture', 'pet']
+const KINDS: Item['kind'][] = ['gear', 'luxury', 'decor', 'furniture', 'pet']
 const kindTab = (k: Item['kind']) =>
   ({
+    gear: tr('훈련용품'),
     luxury: tr('사치품'),
     decor: tr('장식'),
     furniture: tr('가구'),
@@ -205,6 +209,9 @@ const kindTab = (k: Item['kind']) =>
   })[k]
 const kindDesc = (k: Item['kind']) =>
   ({
+    gear: tr(
+      '무대에 두면 시즌 능력치 +1. 슈팅 슬리브는 선수에게 착용해요. 같은 능력치 버프는 합쳐서 +3까지예요.',
+    ),
     luxury: tr(
       '보유하면 시즌 능력치 버프. 입히고 벗을 수 있고, 탈것은 무대 앞에 세워져요.',
     ),
@@ -214,7 +221,9 @@ const kindDesc = (k: Item['kind']) =>
   })[k]
 
 function kindLabel(it: Item) {
-  if (it.buff) return tr('착용 아이템')
+  if (it.slot === 'hat') return tr('모자 · 하나만 착용')
+  if (it.acc) return tr('착용 아이템')
+  if (it.kind === 'gear') return tr('훈련용품 · 무대 배치')
   if (it.kind === 'luxury') return tr('탈것 · 무대 배치')
   if (it.kind === 'pet') return tr('펫 · 무대에서 함께')
   if (it.slot === 'wall') return tr('벽지 · 하나만 적용')
@@ -224,7 +233,8 @@ function kindLabel(it: Item) {
 }
 
 function whereLabel(it: Item) {
-  if (it.buff) return tr('효과 · 선수에게 착용')
+  if (it.acc) return tr('효과 · 선수에게 착용')
+  if (it.kind === 'gear') return tr('효과 · 무대에 두고 훈련')
   if (it.kind === 'pet') return tr('효과 · 무대에서 함께 지내기')
   if (it.slot === 'wall') return tr('효과 · 무대 벽에 적용')
   if (it.slot === 'floor') return tr('효과 · 무대 바닥에 적용')
@@ -233,7 +243,8 @@ function whereLabel(it: Item) {
 
 // 카드에 붙는 보유 상태. 사치품은 벗어 둘 수 있다
 function ownedStatus(it: Item, applied: boolean, worn: boolean) {
-  if (it.buff) return worn ? tr('착용 중') : tr('미착용')
+  if (it.slot === 'hat') return applied ? tr('착용 중') : tr('보유 · 미착용')
+  if (it.acc) return worn ? tr('착용 중') : tr('미착용')
   if (it.kind === 'pet') return tr('함께 지내는 중')
   if (it.slot) return applied ? tr('적용 중') : tr('보유 · 미적용')
   return tr('배치 중')
@@ -457,8 +468,8 @@ export function ShopDialog({
   const ref = useRef<HTMLDialogElement>(null)
   const cash = state.cash ?? 0
   const owned = state.items ?? []
-  const [tab, setTab] = useState<Item['kind']>('luxury')
-  const [sel, setSel] = useState(() => firstPick('luxury', owned, cash))
+  const [tab, setTab] = useState<Item['kind']>('gear')
+  const [sel, setSel] = useState(() => firstPick('gear', owned, cash))
   // 방금 산 아이템: 떨어지는 연출·토스트·차감 금액. n 은 연출을 다시 틀기 위한 키
   const [bought, setBought] = useState<{ id: string; n: number }>()
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -558,41 +569,56 @@ export function ShopDialog({
       setLayout(patchPlace(layout, id, { hidden: false }))
   }
 
-  // 무대 미리보기: 착용 아이템은 선수에게, 벽지·바닥은 무대에, 나머지는 자리에 놓아 본다
-  const wearPreview = !editing && !has && !!it.acc
-  const slotPreview = !editing && !!it.slot && !isApplied(it)
+  // 무대 미리보기: 착용 아이템은 선수에게(모자는 쓰고 있는 모자와 바꿔서), 벽지·바닥은 무대에, 나머지는 자리에 놓아 본다
+  const wearPreview =
+    !editing && !!it.acc && (it.slot === 'hat' ? !isApplied(it) : !has)
+  const slotPreview = !editing && !!it.bg && !isApplied(it)
   const bgOf = (slot: 'wall' | 'floor') =>
     itemById((slotPreview && it.slot === slot ? it.id : state[slot]) ?? '')?.bg
+  const hatAcc = itemById(state.hat ?? '')?.acc
   const stageLook =
-    wearPreview && it.acc ? { ...look, acc: [...look.acc, it.acc] } : look
+    wearPreview && it.acc
+      ? {
+          ...look,
+          acc: [
+            ...look.acc.filter((a) => it.slot !== 'hat' || a !== hatAcc),
+            it.acc,
+          ],
+        }
+      : look
 
-  // 효과: 이 아이템을 뺀 보유 효과에서 이 아이템을 더한 값으로
-  const rest = itemEffects(owned.filter((id) => id !== it.id))
+  // 효과: 이 아이템을 뺀 보유 효과 → 이 아이템을 더해(슬롯이면 적용해) 본 효과. 상한에 걸리면 그만큼만 오른다
+  const others = owned.filter((id) => id !== it.id)
+  const rest = itemEffects({ ...state, items: others })
+  const withIt = itemEffects({
+    ...state,
+    items: [...others, it.id],
+    ...(it.slot && { [it.slot]: it.id }),
+  })
   const effects = it.buff
-    ? Object.entries(it.buff).map(([k, v]) => {
+    ? Object.keys(it.buff).map((key) => {
+        const k = key as AttrKey
         // 능력치는 소수로 쌓이므로 화면(AttrBars)처럼 반올림해 보여 준다
-        const from = Math.min(
-          99,
-          Math.round(
-            state.player.attrs[k as AttrKey] + (rest.attrs[k as AttrKey] ?? 0),
-          ),
-        )
+        const at = (fx: typeof rest) =>
+          Math.min(99, Math.round(state.player.attrs[k] + (fx.attrs[k] ?? 0)))
+        const from = at(rest)
+        const to = at(withIt)
         return {
-          label: tr(ATTR_LABELS[k as AttrKey]),
+          label: tr(ATTR_LABELS[k]),
           from: String(from),
-          to: String(Math.min(99, from + v)),
-          plus: `+${v}`,
+          to: String(to),
+          plus: `+${to - from}`,
         }
       })
     : [
         {
           label: tr('시즌 성장 보너스'),
-          from: `+${rest.growth.toFixed(1)}`,
-          to: `+${(rest.growth + (it.growth ?? 0)).toFixed(1)}`,
-          plus: `+${it.growth ?? 0}`,
+          from: growthText(rest.growth),
+          to: growthText(withIt.growth),
+          plus: growthText(withIt.growth - rest.growth),
         },
       ]
-  const growthAll = itemEffects(owned).growth
+  const growthAll = itemEffects(state).growth
 
   const buy = () => {
     const next = buyItem(state, it.id)
@@ -673,7 +699,7 @@ export function ShopDialog({
                 {tr('수집 {n}', { n: `${owned.length}/${ITEMS.length}` })}
               </span>
               <span className="mint">
-                {tr('성장 {n}', { n: `+${growthAll.toFixed(1)}` })}
+                {tr('성장 {n}', { n: growthText(growthAll) })}
               </span>
             </p>
             <Decor
@@ -785,7 +811,7 @@ export function ShopDialog({
               {has ? (
                 <p className="shop-owned">
                   {tr('보유 중 · {status}', {
-                    status: it.buff
+                    status: it.acc
                       ? isWorn(it)
                         ? tr('착용됨')
                         : tr('미착용')
@@ -812,15 +838,21 @@ export function ShopDialog({
                   className={isWorn(it) ? 'ghost' : 'primary'}
                   onClick={() => onChange(toggleAccessory(state, it.id))}
                 >
-                  {isWorn(it) ? tr('해제') : tr('착용')}
+                  {it.slot === 'hat'
+                    ? isWorn(it)
+                      ? tr('벗기')
+                      : tr('착용하기')
+                    : isWorn(it)
+                      ? tr('해제')
+                      : tr('착용')}
                 </button>
               )}
-              {has && it.slot && !isApplied(it) && (
+              {has && it.bg && !isApplied(it) && (
                 <button className="primary" onClick={() => setSlot(it.id)}>
                   {tr('적용하기')}
                 </button>
               )}
-              {has && isApplied(it) && (
+              {has && it.bg && isApplied(it) && (
                 <button className="ghost" onClick={() => setSlot(undefined)}>
                   {tr('기본으로 되돌리기')}
                 </button>

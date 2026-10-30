@@ -79,18 +79,64 @@
   <body>
     <!-- JS 실행 전에도 검색엔진이 읽는 본문. createRoot 가 마운트하며 지운다 -->
     <div id="root">
-      <main class="landing">
-        <section class="panel">
-          <p class="eyebrow">
-            국내 고교 유망주가 꿈꾸는 NBA 입성, 그리고 파이널 MVP.
-          </p>
-          <h1 class="title">벤치에서<br />파엠까지</h1>
-          <p class="muted">
-            한 시즌의 활약과 선택이 쌓여 커리어가 돼요.<br />KBL 데뷔, 국가대표,
-            NBA 파이널 MVP까지 도전해 보세요.
-          </p>
-        </section>
-      </main>
+      <div class="shell">
+        <div class="screen">
+          <div class="brand">
+            <b>벤치에서 파엠까지</b>
+            <small class="muted">나만의 농구 인생</small>
+            <p class="donate">서버비 후원하기: 토스뱅크 1000-3880-4125</p>
+          </div>
+          <main class="landing">
+            <section class="panel">
+              <p class="eyebrow">
+                국내 고교 유망주가 꿈꾸는 NBA 입성, 그리고 파이널 MVP.
+              </p>
+              <h1 class="title">벤치에서<br />파엠까지</h1>
+              <p class="muted">
+                한 시즌의 활약과 선택이 쌓여 커리어가 돼요.<br />KBL 데뷔,
+                국가대표, NBA 파이널 MVP까지 도전해 보세요.
+              </p>
+            </section>
+            <!-- 아래는 JS 가 채울 자리. 실제 랜딩과 같은 뼈대라 마운트 때 레이아웃이 뛰지 않는다 -->
+            <section class="panel milestone">
+              <div
+                class="scene"
+                style="background: #3a4234"
+                aria-hidden="true"
+              ></div>
+              <div class="milestone-body">
+                <p class="caption">&nbsp;</p>
+                <ol class="milestones">
+                  <li class="now"><button>벤치</button></li>
+                  <li><button>데뷔</button></li>
+                  <li><button>프로 입성</button></li>
+                  <li><button>NBA</button></li>
+                  <li><button>파엠</button></li>
+                </ol>
+              </div>
+            </section>
+            <section class="hall-top hall-board">
+              <div class="hall-top-bar"><h2>명예의 전당</h2></div>
+              <div class="ranking-field">
+                <span>정렬 기준</span>
+                <div class="chips">
+                  <button class="chip on">최고 OVR</button>
+                  <button class="chip">파이널 MVP</button>
+                  <button class="chip">수익</button>
+                  <button class="chip">출전시간</button>
+                  <button class="chip">득점</button>
+                  <button class="chip">어시스트</button>
+                </div>
+              </div>
+              <p class="hall-board-note">불러오는 중…</p>
+              <button class="primary hall-board-more">전체 랭킹 보기</button>
+            </section>
+            <div class="cta">
+              <button class="primary big">새로운 인생 시작하기</button>
+            </div>
+          </main>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

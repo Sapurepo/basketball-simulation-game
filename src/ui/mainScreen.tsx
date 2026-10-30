@@ -1,14 +1,13 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { itemById } from '../data/items'
 import { isUsCollege } from '../data/schools'
-import { formatMoney, isDrill } from '../engine/events'
+import { DRILL_MAX, drillKind, DRILLS, formatMoney } from '../engine/events'
 import { advanceSeason, availableDrills, resolveEvent } from '../engine/game'
 import {
   ATTR_KEYS,
   ATTR_LABELS,
   overall,
   POSITION_LABELS,
-  potentialGrade,
 } from '../engine/player'
 import { clamp } from '../engine/rng'
 import type {
@@ -23,7 +22,7 @@ import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { attrDelta, fmtDelta, statDelta } from './delta'
 import { avg, pct, seasonLabel, serviceLabel, stageLabel } from './format'
 import { type CastPlayer, GameCast } from './gameCast'
-import { DrillGame } from './drillGame'
+import { DrillPlay } from './drillPlay'
 import { FinalsMvp, type FmvpAward } from './finalsMvp'
 import { PixelPlayer } from './pixelPlayer'
 import { Retirement } from './retirement'
@@ -104,12 +103,19 @@ export function MainScreen({
   const sd = (k: 'minutes' | 'pts' | 'reb' | 'ast' | 'stl' | 'blk') =>
     prev && last ? statDelta(prev.stats, last.stats, k) : undefined
   const ev = state.events[0]
+  // 경기가 딸린 이벤트의 중계가 끝났는지: 끝난 시점의 큐 길이를 기억해 다음 이벤트에서는 다시 숨긴다
+  const [castDoneAt, setCastDoneAt] = useState(-1)
+  const castDone = castDoneAt === state.events.length
   const retired = state.stage === 'RETIRED'
   // 이 화면에서 은퇴를 정했으면 은퇴식 팝업을 띄운다 (은퇴한 저장을 불러온 경우는 요약만)
   const [retiredAtLoad] = useState(retired)
 
   const { pose, kit } = pickPose(state)
-  const drillsLeft = availableDrills(state).length
+  // 남은 훈련: 아직 안 한 종류와 이번 오프시즌 남은 횟수 중 작은 쪽
+  const drillsLeft = Math.min(
+    availableDrills(state).length,
+    DRILL_MAX - (state.drillsDone?.length ?? 0),
+  )
   const [training, setTraining] = useState(false)
   const [shop, setShop] = useState(false)
   const [editNum, setEditNum] = useState(false)
@@ -303,7 +309,6 @@ export function MainScreen({
               onClick={() => setEditNum(true)}
             />
             <Plate label={tr('스타일')} v={tr(p.style)} />
-            <Plate label={tr('잠재력')} v={potentialGrade(p.potential)} />
             <Plate label={tr('병역')} v={serviceLabel(state.service)} />
           </div>
           {state.contract && (
@@ -327,6 +332,7 @@ export function MainScreen({
             keys={ATTR_KEYS}
             labels={ATTR_LABELS}
             delta={delta ?? undefined}
+            ev={p.ev}
           />
           <div className="cmds">
             {/* 남은 훈련이 있으면 대각선으로 나눠 오른쪽에 훈련하기 */}
@@ -443,18 +449,28 @@ export function MainScreen({
               season: seasonLabel(state),
             })}
           </p>
-          <h2>{tx(ev.title)}</h2>
-          <p>{tx(ev.body)}</p>
+          {/* 경기가 딸린 이벤트(아시안게임)는 제목·본문이 결과를 말하므로 중계가 끝난 뒤에 보여 준다 */}
           {ev.data?.game ? (
-            <GameCast game={ev.data.game as GameLog} me={castMe} />
+            <GameCast
+              key={state.events.length}
+              game={ev.data.game as GameLog}
+              me={castMe}
+              onDone={() => setCastDoneAt(state.events.length)}
+            />
           ) : null}
-          {isDrill(ev.kind) &&
+          {(!ev.data?.game || castDone) && (
+            <>
+              <h2>{tx(ev.title)}</h2>
+              <p>{tx(ev.body)}</p>
+            </>
+          )}
+          {drillKind(ev.kind) &&
             !matchMedia('(prefers-reduced-motion: reduce)').matches && (
-              <DrillGame
-                kind={ev.kind}
+              <DrillPlay
+                kind={drillKind(ev.kind)!}
+                skill={p.attrs[DRILLS[drillKind(ev.kind)!].attr]}
                 kit={kit}
                 look={p.look}
-                attrs={p.attrs}
                 onDone={(n) => onChange(resolveEvent(state, `made:${n}`))}
               />
             )}

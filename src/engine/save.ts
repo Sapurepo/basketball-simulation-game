@@ -1,5 +1,5 @@
 import { START_CASH } from './game'
-import { hallFmvp, hallTrophies } from './hallEntry'
+import { hallFmvp, hallTrophies, toHallPayload } from './hallEntry'
 import { idealWeight } from './player'
 import type {
   Accessory,
@@ -78,12 +78,18 @@ export function parseSave(raw: string): GameState {
   s.player.attrs.speed ??= s.player.attrs.athleticism
   s.player.weight ??= idealWeight(s.player.height)
   s.cash ??= START_CASH
+  // 성장 기질·노력치 이전 저장 파일: 보통 기질, 노력치 0
+  s.player.ethic ??= 'normal'
+  s.player.ev ??= {}
   s.items ??= []
   // 공용 명예의 전당 이전 저장 파일
   s.careerId ??= crypto.randomUUID()
   // 펫 세분화 이전의 '강아지'는 포메라니안으로
   s.items = s.items.map((id) => (id === 'dog' ? 'pomeranian' : id))
   if (s.player.look) s.player.look = migrateLook(s.player.look, s.player.name)
+  // 모자 슬롯 이전 저장 파일: 쓰고 있던 스냅백을 모자 슬롯에 넣는다
+  if (!s.hat && s.player.look?.acc.includes('cap') && s.items.includes('cap'))
+    s.hat = 'cap'
   // 결과가 문자열이던 저장 파일 호환
   for (const h of s.history) {
     const r = h.result as unknown
@@ -122,6 +128,11 @@ export interface HallEntry {
   // NBA 파이널 MVP 횟수. 이전 기록에는 없다
   fmvp?: number
   year: number
+  // 통산 수입(만원)·출전시간·득점·어시스트. 이전 기록에는 없다
+  earnings?: number
+  minutes?: number
+  pts?: number
+  ast?: number
 }
 
 export function loadHall(): HallEntry[] {
@@ -140,6 +151,7 @@ export function recordHall(s: GameState): HallEntry[] {
   const hall = loadHall()
   if (s.stage !== 'RETIRED' || hall.some((e) => e.id && e.id === s.careerId))
     return hall
+  const payload = toHallPayload(s)
   const entry: HallEntry = {
     id: s.careerId,
     name: s.player.name,
@@ -150,6 +162,10 @@ export function recordHall(s: GameState): HallEntry[] {
     trophies: hallTrophies(s),
     fmvp: hallFmvp(s),
     year: s.year,
+    earnings: payload.earnings,
+    minutes: payload.minutes,
+    pts: payload.pts,
+    ast: payload.ast,
   }
   const next = [...hall, entry].sort(
     (a, b) => b.peakOvr - a.peakOvr || b.trophies - a.trophies,

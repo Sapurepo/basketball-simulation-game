@@ -45,6 +45,8 @@ function detect(): Lang {
 }
 
 let lang: Lang = detect()
+// setLang 마다 증가. 같은 언어라도 카탈로그가 도착하면 화면이 다시 그려지도록 구독 스냅샷에 쓴다
+let rev = 0
 const subs = new Set<() => void>()
 
 export const getLang = () => lang
@@ -56,6 +58,7 @@ export function setLang(l: Lang) {
       () => {},
     )
   lang = l
+  rev++
   try {
     localStorage.setItem(KEY, l)
   } catch {
@@ -73,14 +76,16 @@ function applyToDocument() {
   )
 }
 
-export const useLang = () =>
+export function useLang() {
   useSyncExternalStore(
     (cb) => {
       subs.add(cb)
       return () => subs.delete(cb)
     },
-    () => lang,
+    () => rev,
   )
+  return lang
+}
 
 // 변수 치환. 한 번만 바꾸고(넣은 값 안의 {…} 는 다시 보지 않는다) TextObj 값은 render 로 그린다
 const fill = (
@@ -124,5 +129,8 @@ function lookup(k: string): string {
 
 // 모듈 끝에서 호출: tr 이 쓰는 fill·lookup 이 모두 초기화된 뒤여야 한다
 applyToDocument()
-// 처음 언어의 카탈로그. main 이 기다린 뒤 그린다 (못 받으면 한국어 원문으로)
-export const langReady = loadLang(lang).then(applyToDocument, () => {})
+// 처음 언어의 카탈로그. 받으면 구독자(화면)에 알려 다시 그린다 (그동안·못 받으면 한국어 원문)
+export const langReady = loadLang(lang).then(
+  () => setLang(lang),
+  () => {},
+)

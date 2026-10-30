@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { generateCast } from './commentary'
-import { buildOffseason, isDrill } from './events'
+import { buildOffseason, drillKind, isDrill } from './events'
 import { buffed, itemById, itemEffects } from '../data/items'
 import {
   advanceSeason,
@@ -13,16 +13,22 @@ import {
   toggleAccessory,
 } from './game'
 import {
+  addEv,
   createPlayer,
+  ethicBonus,
+  EV_MAX,
+  EV_TOTAL,
   grow,
   overall,
+  potentialGrade,
   START_TOTAL,
   WEIGHT_RANGE,
   weightSpeedMod,
 } from './player'
 import { Rng } from './rng'
+import { injuryScale, minutesOvr, playerBox } from './sim'
 import { compactSave, migrateLook, parseSave } from './save'
-import type { GameState, Look, Player } from './types'
+import type { GameState, Look, Player, StatLine } from './types'
 import { botChoice, playCareer } from './testBot'
 import { ko } from '../i18n'
 
@@ -299,13 +305,25 @@ test('이전 외형(팔레트 인덱스)은 v2 외형으로 바뀐다', () => {
 describe('훈련 미니게임', () => {
   const base = () => {
     const rng = new Rng(11)
-    return newGame(11, createPlayer(rng, 'a', 'PG', '플레이메이커'), 'yongsan')
+    const p = {
+      ...createPlayer(rng, 'a', 'PG', '플레이메이커'),
+      ethic: 'normal' as const,
+    }
+    return newGame(11, p, 'yongsan')
   }
 
   test.each([
-    ['shootout', 'shooting'],
-    ['passDrill', 'playmaking'],
-    ['dribbleDrill', 'finishing'],
+    ['ft', 'shooting'],
+    ['mid', 'shooting'],
+    ['three', 'shooting'],
+    ['pass', 'playmaking'],
+    ['team', 'playmaking'],
+    ['reb', 'rebounding'],
+    ['drib', 'finishing'],
+    ['foot', 'defense'],
+    ['react', 'speed'],
+    ['bench', 'athleticism'],
+    ['squat', 'athleticism'],
   ] as const)('%s 는 시즌마다 한 번, %s 를 최대 +1 올린다', (kind, attr) => {
     const s = base()
     const before = s.player.attrs[attr]
@@ -337,6 +355,23 @@ describe('훈련 미니게임', () => {
 
   test('은퇴하면 훈련이 없다', () => {
     expect(availableDrills({ ...base(), stage: 'RETIRED' })).toEqual([])
+  })
+
+  test('오프시즌마다 11종 중 최대 4개까지만, 시즌을 진행하면 다시 4개', () => {
+    let s = base()
+    expect(availableDrills(s)).toHaveLength(11)
+    for (const k of ['ft', 'team', 'react', 'squat'] as const)
+      s = playDrill(s, k, 'made:9')
+    expect(availableDrills(s)).toEqual([])
+    expect(playDrill(s, 'pass', 'made:9')).toBe(s)
+    expect(availableDrills(advanceSeason(s))).toHaveLength(11)
+  })
+
+  test('이전 저장의 훈련 id 는 지금 종류로 읽는다', () => {
+    expect(drillKind('shootout')).toBe('mid')
+    expect(drillKind('passDrill')).toBe('pass')
+    expect(drillKind('dribbleDrill')).toBe('drib')
+    expect(drillKind('nope')).toBeUndefined()
   })
 
   test('오프시즌에 훈련 이벤트가 더는 생기지 않는다', () => {
@@ -400,15 +435,37 @@ describe('상점과 자금', () => {
     const off = toggleAccessory(s, 'cap')
     expect(off.player.look?.acc).not.toContain('cap')
     expect(off.items).toEqual(['cap'])
-    expect(itemEffects(off.items).attrs.defense).toBe(1)
+    // 모자는 벗으면 버프도 빠진다 (다른 치장은 보유 기준)
+    expect(off.hat).toBeUndefined()
+    expect(itemEffects(off).attrs.defense).toBeUndefined()
+    expect(itemEffects(s).attrs.defense).toBe(1)
     expect(toggleAccessory(off, 'cap').player.look?.acc).toContain('cap')
     // 보유하지 않았거나 치장이 아닌 아이템은 그대로
     expect(toggleAccessory(base(), 'cap')).toEqual(base())
     expect(toggleAccessory(s, 'car')).toBe(s)
   })
 
+  test('모자는 하나만 쓴다: 새 모자를 사거나 쓰면 이전 모자는 벗겨지고, 저장 파일의 스냅백은 모자 슬롯으로', () => {
+    const rich = { ...base(), cash: price('cap') + price('beanie') }
+    const s = buyItem(buyItem(rich, 'cap'), 'beanie')
+    expect(s.hat).toBe('beanie')
+    expect(s.player.look?.acc).toContain('beanie')
+    expect(s.player.look?.acc).not.toContain('cap')
+    const back = toggleAccessory(s, 'cap')
+    expect(back.hat).toBe('cap')
+    expect(back.player.look?.acc).toContain('cap')
+    expect(back.player.look?.acc).not.toContain('beanie')
+    expect(itemEffects(back).attrs).toEqual({ defense: 1 })
+    // 모자 슬롯이 없던 저장 파일: 쓰고 있던 스냅백이 슬롯에 들어간다
+    const raw = JSON.parse(JSON.stringify(buyItem(rich, 'cap')))
+    delete raw.hat
+    expect(parseSave(JSON.stringify(raw)).hat).toBe('cap')
+  })
+
   test('아이템 효과는 합산되고 99 를 넘지 않는다', () => {
-    const fx = itemEffects(['chain', 'headphones', 'pomeranian', 'nope'])
+    const fx = itemEffects({
+      items: ['chain', 'headphones', 'pomeranian', 'nope'],
+    })
     expect(fx.attrs).toEqual({
       finishing: 2,
       rebounding: 1,
@@ -778,4 +835,139 @@ test('OVR 95 이상은 양의 성장이 줄고, 노쇠는 줄지 않는다', () 
   // 40세 노쇠(보너스 0 → g < 0)는 체감 없음: 운동능력·스피드 추가 −1 포함 같은 폭
   expect(gain(97, 40, 0)).toBeLessThan(0)
   expect(gain(97, 40, 0)).toBeCloseTo(gain(90, 40, 0), 5)
+})
+
+describe('잠재력 균등·성장 기질·노력치', () => {
+  const players = Array.from({ length: 5000 }, (_, i) =>
+    createPlayer(new Rng(i + 1), 'x', 'SF', 'n/a'),
+  )
+
+  test('잠재력 등급은 5개가 각 20% 근처다 (기질 ±5 로 조금 흔들린다)', () => {
+    const n = players.length
+    for (const g of ['S', 'A', 'B', 'C', 'D']) {
+      const share =
+        players.filter((p) => potentialGrade(p.potential) === g).length / n
+      expect(share).toBeGreaterThan(0.14)
+      expect(share).toBeLessThan(0.26)
+    }
+    expect(players.every((p) => p.potential >= 60 && p.potential <= 97)).toBe(
+      true,
+    )
+  })
+
+  test('성장 기질은 천재 25% · 노력 25% · 보통 50%', () => {
+    const n = players.length
+    const share = (e: Player['ethic']) =>
+      players.filter((p) => p.ethic === e).length / n
+    expect(share('gifted')).toBeCloseTo(0.25, 1)
+    expect(share('steady')).toBeCloseTo(0.25, 1)
+    expect(share('normal')).toBeCloseTo(0.5, 1)
+  })
+
+  test('기질 보너스: 천재형은 훈련 0개면 −1, 노력형은 훈련마다 +0.3', () => {
+    expect(ethicBonus('gifted', 0)).toBe(-1)
+    expect(ethicBonus('gifted', 2)).toBe(0)
+    expect(ethicBonus('steady', 0)).toBe(0)
+    expect(ethicBonus('steady', 4)).toBeCloseTo(1.2)
+    expect(ethicBonus('normal', 4)).toBe(0)
+  })
+
+  test('노력형은 훈련 성공 시 +2, 노력치는 성공 여부와 무관하게 +1', () => {
+    const rng = new Rng(11)
+    const p = {
+      ...createPlayer(rng, 'a', 'PG', '플레이메이커'),
+      ethic: 'steady' as const,
+    }
+    const s = newGame(11, p, 'yongsan')
+    const before = s.player.attrs.shooting
+    const ok = playDrill(s, 'ft', 'made:9')
+    expect(ok.player.attrs.shooting).toBe(Math.min(99, before + 2))
+    expect(ok.player.ev.shooting).toBe(1)
+    const miss = playDrill(s, 'ft', 'made:3')
+    expect(miss.player.attrs.shooting).toBe(before)
+    expect(miss.player.ev.shooting).toBe(1)
+  })
+
+  test('노력치 상한: 능력치별 20, 합계 60', () => {
+    const p = createPlayer(new Rng(1), 'x', 'SF', 'n/a')
+    for (let i = 0; i < 25; i++) addEv(p, 'shooting')
+    expect(p.ev.shooting).toBe(EV_MAX)
+    for (let i = 0; i < 25; i++) addEv(p, 'defense')
+    for (let i = 0; i < 25; i++) addEv(p, 'speed')
+    expect(p.ev.speed).toBe(EV_TOTAL - 2 * EV_MAX)
+    expect(addEv(p, 'playmaking')).toBe(false)
+  })
+
+  test('노력치는 성장 총량은 그대로 두고 분배만 그 능력치로 기울인다', () => {
+    const mk = (): Player => ({
+      ...createPlayer(new Rng(7), 'x', 'SF', 'n/a'),
+      potential: 90,
+      growthType: 'normal',
+    })
+    const plain = mk()
+    const trained = { ...mk(), ev: { shooting: EV_MAX } }
+    grow(new Rng(1), plain, 20, 0.7, undefined, 0)
+    grow(new Rng(1), trained, 20, 0.7, undefined, 0)
+    expect(overall(trained)).toBe(overall(plain))
+    expect(trained.attrs.shooting).toBeGreaterThan(plain.attrs.shooting)
+    expect(trained.attrs.defense).toBeLessThan(plain.attrs.defense)
+  })
+
+  test('이전 저장 파일: 기질 보통, 노력치 0', () => {
+    const s = newGame(1, createPlayer(new Rng(1), 'x', 'SF', 'n/a'), 'yongsan')
+    const raw = JSON.parse(JSON.stringify(s))
+    delete raw.player.ethic
+    delete raw.player.ev
+    const loaded = parseSave(JSON.stringify(raw))
+    expect(loaded.player.ethic).toBe('normal')
+    expect(loaded.player.ev).toEqual({})
+  })
+})
+
+describe('스피드·운동능력의 경기 반영', () => {
+  // 능력치 하나만 다른 두 선수를 같은 시드로 많이 돌려 평균을 비교한다
+  const mk = (over: Partial<Player['attrs']>): Player => {
+    const p = createPlayer(new Rng(2), 'x', 'SF', 'n/a')
+    for (const k of Object.keys(p.attrs) as (keyof Player['attrs'])[])
+      p.attrs[k] = 60
+    Object.assign(p.attrs, over)
+    return p
+  }
+  const avg = (p: Player, pick: (b: StatLine) => number) => {
+    let sum = 0
+    for (let i = 1; i <= 400; i++) sum += pick(playerBox(new Rng(i), p, 60, 32))
+    return sum / 400
+  }
+
+  test('스피드가 높으면 야투 시도·2점 성공률·자유투 시도가 늘고 리바운드는 그대로다', () => {
+    const slow = mk({ speed: 30 })
+    const fast = mk({ speed: 90 })
+    expect(avg(fast, (b) => b.fga)).toBeGreaterThan(avg(slow, (b) => b.fga))
+    expect(avg(fast, (b) => (b.fgm - b.tpm) / (b.fga - b.tpa))).toBeGreaterThan(
+      avg(slow, (b) => (b.fgm - b.tpm) / (b.fga - b.tpa)),
+    )
+    expect(avg(fast, (b) => b.fta)).toBeGreaterThan(avg(slow, (b) => b.fta))
+    // 리바운드는 스피드와 무관 (난수 소비 순서가 달라 완전히 같진 않다)
+    expect(avg(fast, (b) => b.reb)).toBeCloseTo(
+      avg(slow, (b) => b.reb),
+      0,
+    )
+  })
+
+  test('운동능력이 높으면 리바운드·블록이 늘고 출전시간이 길고 덜 다친다', () => {
+    const stiff = mk({ athleticism: 30 })
+    const bouncy = mk({ athleticism: 90 })
+    expect(avg(bouncy, (b) => b.reb)).toBeGreaterThan(avg(stiff, (b) => b.reb))
+    expect(avg(bouncy, (b) => b.blk)).toBeGreaterThan(avg(stiff, (b) => b.blk))
+    // 출전시간용 OVR 은 운동능력이 OVR 보다 높은 만큼의 15% 를 얹는다
+    expect(minutesOvr(bouncy)).toBeCloseTo(
+      overall(bouncy) + (90 - overall(bouncy)) * 0.15,
+    )
+    expect(minutesOvr(bouncy) - minutesOvr(stiff)).toBeGreaterThan(
+      overall(bouncy) - overall(stiff),
+    )
+    expect(injuryScale(bouncy)).toBeCloseTo(0.8)
+    expect(injuryScale(stiff)).toBeCloseTo(1.1)
+    expect(injuryScale(mk({ athleticism: 50 }))).toBe(1)
+  })
 })

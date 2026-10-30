@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { Cast, GameLog, Look, Play } from '../engine/types'
 import { ko, tr, tx } from '../i18n'
 import { PixelPlayer } from './pixelPlayer'
@@ -15,9 +15,29 @@ export interface CastPlayer {
 }
 
 // 경기 중계: 상단 고정 스코어보드 + 슛 시도 → 결과 두 박자 중계 + 라이브 박스스코어
-export function GameCast({ game, me }: { game: GameLog; me: CastPlayer }) {
-  if (!game.cast) return <LegacyCast game={game} />
-  return <LiveCast game={game} cast={game.cast} me={me} />
+// onDone: 중계가 끝나면(건너뛰기 포함) 한 번 알린다. 결과를 담은 문구를 그 뒤에 보여 주는 용도
+export function GameCast({
+  game,
+  me,
+  onDone,
+}: {
+  game: GameLog
+  me: CastPlayer
+  onDone?: () => void
+}) {
+  if (!game.cast) return <LegacyCast game={game} onDone={onDone} />
+  return <LiveCast game={game} cast={game.cast} me={me} onDone={onDone} />
+}
+
+// 끝난 순간 한 번만. 콜백이 바뀌어도 다시 부르지 않게 ref 로 든다
+function useDone(done: boolean, onDone?: () => void) {
+  const ref = useRef(onDone)
+  useLayoutEffect(() => {
+    ref.current = onDone
+  })
+  useEffect(() => {
+    if (done) ref.current?.()
+  }, [done])
 }
 
 // 한 줄의 재생 길이(ms, 1x)
@@ -27,7 +47,16 @@ const MULTS = [1, 2, 4]
 const SHOTS = new Set(['made2', 'miss2', 'made3', 'miss3', 'ft'])
 const MINE = new Set([...SHOTS, 'reb', 'ast', 'stl', 'blk'])
 const SEP = new Set(['start', 'qend', 'end'])
-const STAT_KEYS = ['PTS', 'REB', 'AST', 'STL', 'BLK', 'FG', '3P'] as const
+const STAT_KEYS = [
+  'MIN',
+  'PTS',
+  'REB',
+  'AST',
+  'STL',
+  'BLK',
+  'FG',
+  '3P',
+] as const
 
 interface Line {
   p: Play
@@ -74,10 +103,12 @@ function LiveCast({
   game,
   cast,
   me,
+  onDone,
 }: {
   game: GameLog
   cast: Cast
   me: CastPlayer
+  onDone?: () => void
 }) {
   const [lines] = useState(() => schedule(cast.plays))
   const end = lines[lines.length - 1].E + 100
@@ -86,6 +117,7 @@ function LiveCast({
   const [playing, setPlaying] = useState(() => !reducedMotion())
   const [mult, setMult] = useState(1)
   const done = rt >= end
+  useDone(done, onDone)
 
   useEffect(() => {
     if (!playing || done) return
@@ -164,7 +196,16 @@ function LiveCast({
     if (p.kind === 'stl') box.STL++
     if (p.kind === 'blk') box.BLK++
   })
+  // 출전시간은 장면에 없어 경기 시각에 비례해 쌓고, 끝나면 기록의 값과 정확히 맞춘다.
+  // 시계가 흐르는 동안(출전 중)은 초 단위로 세어 실시간 느낌을 주고, 멈추면 분으로 돌아간다
+  const playedSec = game.box.minutes * 60 * Math.min(1, T / total)
+  const onCourt = playing && !done && !frozenQ && T > 0
   const stats: Record<(typeof STAT_KEYS)[number], string> = {
+    MIN: done
+      ? String(game.box.minutes)
+      : onCourt
+        ? mmss(playedSec)
+        : String(Math.round(playedSec / 60)),
     PTS: String(box.PTS),
     REB: String(box.REB),
     AST: String(box.AST),
@@ -372,7 +413,15 @@ function LiveCast({
           {STAT_KEYS.map((k) => (
             <span
               key={`${k}-${stats[k]}`}
-              className={/^0(\/0)?$/.test(stats[k]) ? undefined : 'flash'}
+              className={
+                k === 'MIN'
+                  ? onCourt
+                    ? 'live'
+                    : undefined
+                  : /^0(\/0)?$/.test(stats[k])
+                    ? undefined
+                    : 'flash'
+              }
             >
               <b>{stats[k]}</b>
               <small>{k}</small>
@@ -469,11 +518,12 @@ function LineRow({
 }
 
 // 이전 저장의 텍스트 중계: 한 줄씩 재생, 건너뛰기 가능
-function LegacyCast({ game }: { game: GameLog }) {
+function LegacyCast({ game, onDone }: { game: GameLog; onDone?: () => void }) {
   const pbp = game.pbp ?? []
   const [shown, setShown] = useState(1)
   const listRef = useRef<HTMLOListElement>(null)
   const done = shown >= pbp.length
+  useDone(done, onDone)
 
   useEffect(() => {
     if (done) return

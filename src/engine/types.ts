@@ -13,6 +13,8 @@ export type Attributes = Record<AttrKey, number>
 export type Stage =
   'HS' | 'COLLEGE' | 'KBL' | 'NBA' | 'MILITARY' | 'FREE' | 'RETIRED'
 export type GrowthType = 'early' | 'normal' | 'late'
+// 성장 기질: 천재형(훈련 없으면 성장 둔화) · 노력형(훈련마다 성장 보너스, 훈련 성공 +2) · 보통
+export type Ethic = 'gifted' | 'steady' | 'normal'
 
 // 외형(픽셀 캐릭터 v2). 이전 저장 파일의 팔레트 인덱스 외형은 save.ts 에서 변환한다.
 export type HairStyle =
@@ -41,6 +43,11 @@ export type Accessory =
   | 'earbuds'
   | 'goldShoes'
   | 'undershirt'
+  | 'beanie'
+  | 'visor'
+  | 'bucketHat'
+  | 'truckerCap'
+  | 'fedora'
   | 'tights'
 export interface Look {
   // 피부 팔레트 인덱스 0~5
@@ -64,8 +71,11 @@ export interface Player {
   look?: Look
   attrs: Attributes
   potential: number
+  // 노력치: 훈련 1회마다 해당 능력치 +1 (능력치별 EV_MAX, 합계 EV_TOTAL). 성장 분배를 그쪽으로 기울인다
+  ev: Partial<Attributes>
   // 숨은 특성: UI 에 직접 노출하지 않는다.
   growthType: GrowthType
+  ethic: Ethic
   injuryProne: boolean
   clutch: boolean
 }
@@ -215,7 +225,19 @@ export interface Service {
   }
 }
 
-export type DrillKind = 'shootout' | 'passDrill' | 'dribbleDrill'
+// 훈련 11종 (6종목). 이전 저장의 shootout·passDrill·dribbleDrill 은 events.ts drillKind 가 mid·pass·drib 으로 읽는다
+export type DrillKind =
+  | 'ft'
+  | 'mid'
+  | 'three'
+  | 'pass'
+  | 'team'
+  | 'reb'
+  | 'drib'
+  | 'foot'
+  | 'react'
+  | 'bench'
+  | 'squat'
 
 export interface Honor {
   year: number
@@ -253,9 +275,10 @@ export interface GameState {
   // 보유 자금(만원)과 상점에서 산 아이템 id. 이전 저장 파일에는 없다
   cash?: number
   items?: string[]
-  // 무대에 적용한 벽지·바닥타일 아이템 id
+  // 무대에 적용한 벽지·바닥타일 아이템 id, 쓰고 있는 모자 아이템 id (슬롯 아이템은 적용 중일 때만 효과)
   wall?: string
   floor?: string
+  hat?: string
   // 무대 배치 편집 결과 (아이템 id → 옮긴 자리·반전·보관). 없는 항목은 기본 자리
   layout?: Record<string, Placement>
   // 공용 명예의 전당 등록용 커리어 고유 id와 등록 여부

@@ -10,7 +10,6 @@ import {
   heightRange,
   overall,
   POSITION_LABELS,
-  potentialGrade,
   START_TOTAL,
   STYLES,
   WEIGHT_RANGE,
@@ -215,7 +214,7 @@ export function CreateScreen({
           <div className="row between">
             <h2>{player.name}</h2>
             <button className="ghost" onClick={() => setSeed(randomSeed())}>
-              {tr('다시 뽑기')}
+              {tr('능력치 재분배')}
             </button>
           </div>
           <label className="field">
@@ -249,8 +248,6 @@ export function CreateScreen({
           <div className="kv">
             <span>{tr('오버롤')}</span>
             <b>{overall(player)}</b>
-            <span>{tr('잠재력 등급')}</span>
-            <b>{potentialGrade(player.potential)}</b>
             <span>{tr('남은 포인트')}</span>
             <b>{left}</b>
           </div>

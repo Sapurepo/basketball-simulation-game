@@ -331,6 +331,311 @@ const ART = {
     c.line(18, 10, 31, 15, 'K').line(18, 11, 30, 15, 'K')
     return c.rows(WHEEL, 0, 11).rows(WHEEL, 27, 11)
   },
+  // ── 훈련용품 ──
+  band: () =>
+    fromRows([
+      '..VVVVVVVVVV..',
+      '.VV........VV.',
+      'VV..OOOOOO..VV',
+      'V..OO....OO..V',
+      'VV..OOOOOO..VV',
+      '.VV........VV.',
+      '..VVVVVVVVVV..',
+    ]),
+  rope: () =>
+    fromRows([
+      '...LLLLLLLLLL...',
+      '..L..........L..',
+      '.L............L.',
+      'L..............L',
+      'L..............L',
+      'RR............RR',
+      'RR............RR',
+      'RR............RR',
+      'rr............rr',
+    ]),
+  reboundPad: () =>
+    fromRows([
+      '.LLLLLLLLLL.',
+      'LLLLLLLLLLLL',
+      'LWWWWWWWWWWL',
+      'LLLLLLLLLLLL',
+      'LLLLOOOOLLLL',
+      'LLLOOoOOOLLL',
+      'LLLOoooOOLLL',
+      'LLLOOoOOOLLL',
+      'LLLLOOOOLLLL',
+      'LLLLLLLLLLLL',
+      'LLLLLLLLLLLL',
+      'LWWWWWWWWWWL',
+      'LLLLLLLLLLLL',
+      'llllllllllll',
+      '.l........l.',
+    ]),
+  cones: () =>
+    fromRows([
+      '...O.......O.......O...',
+      '..OOO.....OOO.....OOO..',
+      '..WWW.....WWW.....WWW..',
+      '.OOOOO...OOOOO...OOOOO.',
+      '.OOOOO...OOOOO...OOOOO.',
+      'OOOOOOO.OOOOOOO.OOOOOOO',
+      'ooooooo.ooooooo.ooooooo',
+    ]),
+  sleeve: () =>
+    fromRows([
+      'MMMMMMM',
+      'WWWWWWW',
+      'MMMMMMM',
+      'MMMMMMm',
+      'MMMMMMm',
+      '.MMMMMm',
+      '.MMMMMm',
+      '.MMMMMm',
+      '.MMMMMm',
+      '..MMMMm',
+      '..MMMMm',
+      '..OOOOO',
+      '..MMMMm',
+      '..MMMMm',
+    ]),
+  passWall: () => {
+    const c = canvas(18, 18)
+    c.rect(0, 0, 17, 13, 'O')
+    for (let y = 1; y <= 12; y++)
+      for (let x = 1; x <= 16; x++)
+        c.put(x, y, x % 3 === 0 || y % 3 === 0 ? 'W' : 'K')
+    c.line(2, 14, 0, 17, 'g').line(15, 14, 17, 17, 'g')
+    return c
+  },
+  // ── 사치품 추가 ──
+  headband: () =>
+    fromRows([
+      '...WWWWWWWWWW...',
+      '.WWRRRRRRRRRRWW.',
+      'WW............WW',
+      'WW............WW',
+      '.WWRRRRRRRRRRWW.',
+      '...WWWWWWWWWW...',
+    ]),
+  kneePads: () =>
+    fromRows([
+      '.MMMMM...MMMMM.',
+      'MMMMMMM.MMMMMMM',
+      'MmmmmmM.MmmmmmM',
+      'MMMMMMM.MMMMMMM',
+      'MMsssMM.MMsssMM',
+      'MsMMMsM.MsMMMsM',
+      'MMsssMM.MMsssMM',
+      'MMMMMMM.MMMMMMM',
+      'MmmmmmM.MmmmmmM',
+      '.MMMMM...MMMMM.',
+    ]),
+  glasses: () =>
+    fromRows([
+      'bbbbbbb....bbbbbbb',
+      'bTTTTTbbbbbbTTTTTb',
+      'bTWTTTb....bTWTTTb',
+      'bTTTTTb....bTTTTTb',
+      '.bbbbb......bbbbb.',
+    ]),
+  scooter: () => {
+    const c = canvas(24, 18)
+    c.rect(0, 0, 2, 0, 'M').rect(3, 0, 6, 0, 'K')
+    for (let y = 1; y <= 12; y++) {
+      const x = 3 + Math.round((y * 4) / 12)
+      c.put(x, y, 'G').put(x + 1, y, 'G')
+    }
+    c.rect(6, 12, 22, 13, 'O')
+      .rect(7, 14, 21, 14, 'o')
+      .rect(21, 10, 22, 11, 'K')
+    const wheel = ['.KK.', 'KssK', 'KssK', '.KK.']
+    c.rows(wheel, 5, 14).rows(wheel, 19, 14)
+    return c
+  },
+  roadBike: () => {
+    const c = canvas(34, 20)
+    const ring = (cx: number, cy: number) => {
+      for (let k = 0; k < 72; k++) {
+        const t = (k / 72) * Math.PI * 2
+        c.put(
+          Math.round(cx + Math.cos(t) * 6),
+          Math.round(cy + Math.sin(t) * 6),
+          'K',
+        )
+      }
+      c.put(cx, cy, 's')
+    }
+    ring(7, 13)
+    ring(26, 13)
+    c.line(7, 13, 13, 6, 'R')
+      .line(13, 6, 23, 6, 'R')
+      .line(13, 6, 16, 13, 'R')
+      .line(7, 13, 16, 13, 'R')
+      .line(16, 13, 23, 6, 'R')
+      .line(23, 6, 26, 13, 'R')
+      .line(23, 6, 24, 2, 'G')
+      .rect(24, 2, 28, 2, 'K')
+      .rect(28, 3, 28, 4, 'K')
+      .line(13, 6, 12, 3, 'G')
+      .rect(10, 2, 14, 2, 'K')
+    return c
+  },
+  // ── 모자 (카드용 · 선수 스프라이트는 sprite.ts) ──
+  beanie: () =>
+    fromRows([
+      '......YY......',
+      '....NNNNNN....',
+      '..NNNNNNNNNN..',
+      '.NNlNlNlNlNNN.',
+      '.NNNNNNNNNNNN.',
+      'NNlNlNlNlNlNNN',
+      'OOOOOOOOOOOOOO',
+      'oOoOoOoOoOoOoO',
+      'OOOOOOOOOOOOOO',
+    ]),
+  visor: () =>
+    fromRows([
+      '..WWWWWWWWWWWW..',
+      '..WWWWWYYWWWWW..',
+      '..wwwwwwwwwwww..',
+      'VVVVVVVVVVVVVVVV',
+      '.vvvvvvvvvvvvvv.',
+    ]),
+  bucketHat: () =>
+    fromRows([
+      '.....dddddddd.....',
+      '....dddddddddd....',
+      '...dddddddddddd...',
+      '...dddddddddddd...',
+      '...BBBBBBBBBBBB...',
+      '..dddddddddddddd..',
+      '.dddddddddddddddd.',
+      'dddddddddddddddddd',
+      '.bbbbbbbbbbbbbbbb.',
+    ]),
+  truckerCap: () =>
+    fromRows([
+      '.....WWWWWW.....',
+      '...MMWWWWWWMM...',
+      '..MmMWWWWWWMmM..',
+      '.MMMWWRRRRWWMMM.',
+      '.MmMWWRWWRWWMmM.',
+      '.MMMWWRRRRWWMMM.',
+      '.MmMWWWWWWWWMmM.',
+      '.NNNNNNNNNNNNNN.',
+      'NNNNNNNNNNNNNNNN',
+      '.nnnnnnnnnnnnnn.',
+    ]),
+  fedora: () =>
+    fromRows([
+      '......MMMM.MMMM.......',
+      '.....MMMMMMMMMMMM.....',
+      '.....MMMMMMMMMMMM.....',
+      '....MMMMMMMMMMMMMM....',
+      '....MMMMMMMMMMMMMM....',
+      '....rrrrrrrrrrrrrr....',
+      '...MMMMMMMMMMMMMMMM...',
+      'MMMMMMMMMMMMMMMMMMMMMM',
+      '.mmmmmmmmmmmmmmmmmmmm.',
+    ]),
+  // ── 가구 추가 ──
+  plant: () =>
+    fromRows([
+      '.....VV.......',
+      '....VVVV..VV..',
+      '.VV.VvVV.VVVV.',
+      'VVVV.VvV.VvVV.',
+      'VvVVV.v.VVvV..',
+      '.VVvVV.v.VV...',
+      '..VVVVvVVV.VV.',
+      '.....VvVV.VVVV',
+      '..VVV.vV.VVvV.',
+      '.VVvVVvVVVV...',
+      '..VVVVvVV.....',
+      '......v.......',
+      '...OOOOOOOO...',
+      '...oooooooo...',
+      '....OOOOOO....',
+      '....OOOOOO....',
+      '....OOOOOO....',
+      '.....oooo.....',
+    ]),
+  lamp: () => {
+    const c = canvas(12, 30)
+    c.rows([
+      '...YYYYYY...',
+      '..YhhhhhhY..',
+      '..YhhhhhhY..',
+      '.YhhhhhhhhY.',
+      '.YhhhhhhhhY.',
+      'YYYYYYYYYYYY',
+    ])
+    c.rect(5, 6, 6, 26, 'G').rect(3, 27, 8, 27, 'g').rect(2, 28, 9, 29, 'g')
+    return c
+  },
+  trophyShelf: () =>
+    fromRows([
+      '..YYYYY.......OOO.......Y...Y..',
+      '..YhhhY......OOoOO......YY.YY..',
+      '...YYY.......OoooO.......YYY...',
+      '....Y........OOoOO.......YhY...',
+      '...YYY........OOO.......YYYYY..',
+      '..yyyyy......bbbbb......yyyyy..',
+      'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
+      'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      '..bb.......................bb..',
+      '...b.......................b...',
+    ]),
+  miniHoop: () =>
+    fromRows([
+      'WWWWWWWWWWWWWWWWWWWW',
+      'WwwwwwwwwwwwwwwwwwwW',
+      'WwWWWWWWWWWWWWWWWWwW',
+      'WwWWWWWRRRRRRWWWWWwW',
+      'WwWWWWWRWWWWRWWWWWwW',
+      'WwWWWWWRRRRRRWWWWWwW',
+      'WwwwwwwwwwwwwwwwwwwW',
+      'WWWWWWWWWWWWWWWWWWWW',
+      '........GGGG........',
+      '....OOOOOOOOOOOO....',
+      '....oWWWWWWWWWWo....',
+      '.....W.W.W.W.W.W....',
+      '.....WWWWWWWWWWW....',
+      '......W.W.W.W.W.....',
+      '......WWWWWWWWW.....',
+      '.......W.W.W.W......',
+    ]),
+  tv: () => {
+    const c = canvas(26, 17)
+    c.rect(0, 0, 25, 15, 'K')
+      .rect(1, 1, 24, 14, 'n')
+      .rect(2, 7, 23, 13, 'd')
+      .rect(2, 7, 23, 7, 'W')
+      .rect(12, 7, 13, 13, 'W')
+      .rect(3, 9, 4, 11, 'O')
+      .rect(21, 9, 22, 11, 'O')
+      .put(9, 4, 'Y')
+      .put(10, 3, 'h')
+      .rect(16, 3, 22, 4, 'C')
+      .rect(10, 16, 15, 16, 'g')
+    return c
+  },
+  iceBath: () => {
+    const c = canvas(26, 14)
+    c.rect(1, 2, 24, 2, 'w').rect(0, 3, 25, 10, 's').rect(1, 11, 24, 11, 'G')
+    c.clear(0, 10).clear(25, 10)
+    c.rect(2, 3, 23, 4, 'T').rect(2, 3, 23, 3, 't').rect(4, 6, 21, 6, 'G')
+    for (const [x, y] of [
+      [4, 1],
+      [9, 0],
+      [15, 1],
+      [20, 0],
+    ])
+      c.rect(x, y, x + 2, y + 2, 'W').put(x, y, 'T')
+    c.rect(3, 12, 4, 13, 'g').rect(21, 12, 22, 13, 'g')
+    return c
+  },
   window: () => {
     const c = canvas(26, 20)
     c.rect(1, 0, 24, 18, 'B')

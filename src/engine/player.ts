@@ -1,5 +1,12 @@
 import { clamp, type Rng } from './rng'
-import type { AttrKey, Attributes, GrowthType, Player, Position } from './types'
+import type {
+  AttrKey,
+  Attributes,
+  Ethic,
+  GrowthType,
+  Player,
+  Position,
+} from './types'
 
 export const ATTR_KEYS: AttrKey[] = [
   'shooting',
@@ -166,6 +173,12 @@ export function createPlayer(
   attrs[main] += START_TOTAL - ATTR_KEYS.reduce((s, k) => s + attrs[k], 0)
   const [hMin, hMax] = HEIGHT[position]
   const height = rng.int(hMin, hMax)
+  const ethic = rng.pick<Ethic>(['gifted', 'steady', 'normal', 'normal'])
+  const potential = clamp(
+    rollPotential(rng) + (ETHIC_POTENTIAL[ethic] ?? 0),
+    POTENTIAL_MIN,
+    POTENTIAL_MAX,
+  )
   return {
     name,
     position,
@@ -173,17 +186,52 @@ export function createPlayer(
     height,
     weight: idealWeight(height) + rng.int(-5, 8),
     attrs,
-    potential: rollPotential(rng),
+    potential,
+    ev: {},
     growthType: rng.pick<GrowthType>(['early', 'normal', 'normal', 'late']),
+    ethic,
     injuryProne: rng.chance(0.2),
     clutch: rng.chance(0.25),
   }
 }
 
-// 정규분포만으로는 S(92+)가 약 2.7%. 2.8% 확률로 S 구간을 한 번 더 뽑아 약 5.4%로 맞춘다
+export const POTENTIAL_MIN = 60
+export const POTENTIAL_MAX = 97
+// 등급 구간 (D·C·B·A·S). 등급을 균등(각 20%)하게 뽑고 구간 안에서 균등
+const GRADE_BANDS: [number, number][] = [
+  [60, 69],
+  [70, 77],
+  [78, 84],
+  [85, 91],
+  [92, 97],
+]
 function rollPotential(rng: Rng) {
-  const p = Math.round(clamp(rng.normal(78, 7), 60, 97))
-  return p < 92 && rng.chance(0.028) ? rng.int(92, 95) : p
+  const [lo, hi] = rng.pick(GRADE_BANDS)
+  return rng.int(lo, hi)
+}
+// 천재형은 잠재력 +5, 노력형은 −5 (뽑은 뒤 60~97 로 자른다)
+const ETHIC_POTENTIAL: Partial<Record<Ethic, number>> = {
+  gifted: 5,
+  steady: -5,
+}
+
+// 노력치 상한: 능력치별 EV_MAX, 합계 EV_TOTAL. 훈련 1회 = +1
+export const EV_MAX = 20
+export const EV_TOTAL = 60
+export const evTotal = (ev: Partial<Attributes>) =>
+  Object.values(ev).reduce((a, b) => a + (b ?? 0), 0)
+export function addEv(p: Player, k: AttrKey): boolean {
+  const cur = p.ev[k] ?? 0
+  if (cur >= EV_MAX || evTotal(p.ev) >= EV_TOTAL) return false
+  p.ev[k] = cur + 1
+  return true
+}
+
+// 성장 기질이 그 오프시즌 훈련 수에 따라 주는 성장 보너스
+export function ethicBonus(ethic: Ethic, drills: number): number {
+  if (ethic === 'gifted') return drills === 0 ? -1 : 0
+  if (ethic === 'steady') return 0.3 * drills
+  return 0
 }
 
 // 전성기 종료 나이. 그 뒤 37세까지는 완만히, 38세(DECLINE_AGE)부터 급격히 노쇠한다.
@@ -230,9 +278,12 @@ export function grow(
   // s_i = b_i / Σ w_j·b_j (b = w + 0.1 + 집중 보너스) → 오버롤 변화량이 정확히 g 가 된다.
   // 0.1 은 주력 능력치 하나만 99 로 치솟지 않도록 성장을 고르게 퍼뜨린다.
   // 이미 99 인 능력치는 분배에서 빼서 성장이 증발하지 않게 한다 (가중치가 몰린 포지션이 손해 보던 문제)
+  // 노력치는 0.02/점: EV_MAX(20) 면 +0.4 로 집중 훈련의 두 배만큼 그 능력치로 성장이 몰린다
   const w = WEIGHTS[p.position]
   const b = (k: AttrKey) =>
-    g > 0 && p.attrs[k] >= 99 ? 0 : w[k] + 0.1 + (k === focus ? 0.2 : 0)
+    g > 0 && p.attrs[k] >= 99
+      ? 0
+      : w[k] + 0.1 + (k === focus ? 0.2 : 0) + 0.02 * (p.ev[k] ?? 0)
   const denom = ATTR_KEYS.reduce((s, k) => s + w[k] * b(k), 0) || 1
   for (const k of ATTR_KEYS) {
     let d = (g * b(k)) / denom

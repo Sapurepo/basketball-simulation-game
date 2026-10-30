@@ -1,5 +1,62 @@
 // 엔진 문장: 수상·결과·경기 라벨·이벤트·중계. 키는 한국어 원문(템플릿)
 const text: Record<string, string> = {
+  드리블: 'Dribbling',
+  '자유투 훈련': 'Free-throw drill',
+  '미들슛 훈련': 'Mid-range drill',
+  '3점슛 훈련': 'Three-point drill',
+  '일반 패스': 'Basic pass',
+  '팀 패스 게임': 'Team pass game',
+  '리바운드 점프': 'Rebound jump',
+  '드리블로 선수 제치기': 'Beat the defender',
+  '수비 풋워크': 'Defensive footwork',
+  '반응속도 게임': 'Reaction game',
+  '벤치 프레스': 'Bench press',
+  스쿼트: 'Squat',
+  '성공 구간이 가장 넓은 루틴 슛': 'Routine shot with the widest sweet spot',
+  '엘보에서 던지는 점퍼': 'Jumper from the elbow',
+  '구간은 가장 좁고 게이지는 빨라요': 'Narrowest zone and the fastest gauge',
+  '동료까지의 거리만큼 힘 조절': 'Match the power to the distance',
+  '3자 패스: 받자마자 부르는 동료에게 원터치로':
+    'Three-man passing: one-touch to whoever calls for it',
+  '림에 맞고 튀는 공을 가장 높은 곳에서 잡기':
+    'Grab the ball off the rim at its peak',
+  '페이크로 수비를 속이고 반대쪽으로 돌파':
+    'Fake the defender out, then drive the other way',
+  '잽에 속지 말고 돌파하는 쪽으로 따라가기':
+    'Ignore the jab and slide with the real drive',
+  '선수 주변 4개 등 중 켜진 등을 바로 누르기':
+    'Hit whichever of the 4 lamps lights up',
+  '버튼을 연타해 바를 끝까지 밀어 올리기':
+    'Mash the button to press the bar all the way up',
+  '버튼을 연타해 깊은 자세에서 일어나기':
+    'Mash the button to stand up from the bottom',
+  '게이지가 초록 구간에 있을 때 떼면 골인. 같은 리듬으로 반복해요.':
+    'Release while the gauge is in the green to score. Keep the same rhythm.',
+  '자유투보다 구간이 좁아요. 게이지가 초록 구간에 있을 때 떼요.':
+    'Narrower than a free throw. Release while the gauge is in the green.',
+  '먼 거리라 구간이 좁고 게이지가 빨리 차요. 한 박자 빨리 떼는 감각이 필요해요.':
+    'From deep, the zone is narrow and the gauge fills fast. Release a beat early.',
+  '게이지가 곧 공이 날아갈 거리예요. 바닥의 초록 칸, 동료가 받을 수 있는 거리에서 떼요.':
+    'The gauge is the distance the ball travels. Release inside the green patch on the floor where your teammate can catch it.',
+  '동료가 보낸 공이 점선 칸에 들어오는 순간, 손을 든 동료 쪽을 눌러 받자마자 바로 뿌려요. 너무 일찍 누르면 놓치고, 늦으면 공을 끌어요.':
+    'The moment the pass enters the dotted box, tap the teammate with their hand up to redirect it. Too early drops it; too late holds the ball.',
+  '림에 맞고 떨어지는 공이 점선 칸을 지날 때 손이 닿도록 미리 점프해요. 공마다 튀는 높이가 달라요.':
+    'Jump early so your hands reach the ball as it passes the dotted box. Every bounce is a different height.',
+  '페이크로 수비를 한쪽으로 끌어낸 뒤 반대쪽으로 치고 나가요. 수비가 자리를 잡고 있을 때 그냥 돌파하면 막혀요. 수비가 스스로 기울 때도 기회예요. 페이크를 반복하면 읽혀요.':
+    'Pull the defender one way with a fake, then drive the other. Driving into a set defender gets you blocked. When they lean on their own, go. Repeated fakes get read.',
+  '공격수가 진짜로 치고 나가는 쪽으로 같이 미끄러져요. 살짝 움찔하는 잽 스텝에 반응하면 속은 거예요.':
+    'Slide with the side the attacker really drives to. React to the little jab step and you have been faked.',
+  '선수를 둘러싼 4개의 등 중 하나가 파랗게 켜지면 그 등을 바로 눌러요. 다른 등을 누르거나 켜지기 전에 누르면 실패예요.':
+    'When one of the 4 lamps around the player turns blue, hit it right away. Wrong lamp or jumping early fails.',
+  '바가 가슴까지 내려오면 버튼을 빠르게 연타해 밀어 올려요. 손을 멈추면 바가 다시 내려와요. 중간 고비에서 더 무거워지고 횟수가 쌓일수록 지쳐요.':
+    'When the bar reaches your chest, mash the button to press it up. Stop and it sinks back. The sticking point is heavier and fatigue builds every rep.',
+  '바를 메고 깊게 앉은 자세에서 버튼을 빠르게 연타해 일어나요. 손을 멈추면 다시 주저앉아요. 무릎이 펴지기 직전 고비가 가장 무거워요.':
+    'From the bottom of the squat, mash the button to stand up. Stop and you sink back. The sticking point just before lockout is the heaviest.',
+  '누르고 있다가 떼서 슛': 'Hold, then release to shoot',
+  '누르고 있다가 떼서 패스': 'Hold, then release to pass',
+  '점프!': 'Jump!',
+  '연타! 밀어 올리기': 'Mash! Press it up',
+  '연타! 일어나기': 'Mash! Stand up',
   // ── 라운드·공통 ──
   '16강': 'Round of 16',
   '8강': 'Quarterfinals',
@@ -247,15 +304,6 @@ const text: Record<string, string> = {
   '다음 시즌 집중적으로 키울 능력을 고르세요.':
     'Pick the skill to focus on next season.',
   '균형 훈련': 'Balanced training',
-  '슈팅 훈련': 'Shooting drill',
-  '패스 훈련': 'Passing drill',
-  '드리블 훈련': 'Dribbling drill',
-  '게이지를 정확히 채워 골대에 {reps}번 슛을 던지세요.':
-    'Fill the gauge just right and take {reps} shots.',
-  '동료까지의 거리에 맞춰 게이지를 채워 {reps}번 패스하세요.':
-    'Match the gauge to the distance and make {reps} passes.',
-  '수비가 기우는 반대쪽으로 {reps}번 돌파하세요.':
-    'Drive away from the defender’s lean {reps} times.',
   '{reps}개 중 {made}개 성공': '{made} of {reps} made',
   '{attr} +1': '{attr} +1',
   '{attr} +2': '{attr} +2',

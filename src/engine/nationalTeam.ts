@@ -2,7 +2,7 @@ import { LEAGUES } from '../data/leagues'
 import { generateCast } from './commentary'
 import { overall } from './player'
 import type { Rng } from './rng'
-import { addLine, emptyLine, minutesFor, playGame } from './sim'
+import { addLine, emptyLine, minutesFor, minutesOvr, playGame } from './sim'
 import type { GameLog, GameState, StatLine } from './types'
 
 // 국가대표 전력은 게임 밸런스용 가상 수치
@@ -48,8 +48,7 @@ export function playAsianGames(
 ): AsianGamesResult {
   const cfg = LEAGUES.NATIONAL
   const gameMin = cfg.quarterMinutes * 4
-  const ovr = overall(s.player)
-  const mpg = minutesFor(ovr, cfg.level, gameMin)
+  const mpg = minutesFor(minutesOvr(s.player), cfg.level, gameMin)
   const korea = KOREA_RATING + rng.normal(0, 2)
   const stats = emptyLine()
   const strong = rng.shuffle([...STRONG])

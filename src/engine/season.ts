@@ -23,7 +23,9 @@ import {
   addLine,
   emptyLine,
   gameScore,
+  injuryScale,
   minutesFor,
+  minutesOvr,
   perGame,
   playGame,
 } from './sim'
@@ -85,10 +87,12 @@ class SeasonCtx {
     this.league = league
     this.team = team
     this.gameMin = LEAGUES[league].quarterMinutes * 4
-    const ovr = overall(s.player)
-    this.mpg = minutesFor(ovr, team.rating, this.gameMin) * mpgScale
-    // 시즌 중 부상: 결장 경기 비율
-    const injured = rng.chance(s.player.injuryProne ? 0.25 : 0.1)
+    this.mpg =
+      minutesFor(minutesOvr(s.player), team.rating, this.gameMin) * mpgScale
+    // 시즌 중 부상: 결장 경기 비율. 운동능력이 높을수록 덜 다친다
+    const injured = rng.chance(
+      (s.player.injuryProne ? 0.25 : 0.1) * injuryScale(s.player),
+    )
     this.missChance = injured ? rng.range(0.1, 0.4) : 0
     if (injured) this.awards.push('__injured')
     const regular =
