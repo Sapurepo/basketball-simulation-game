@@ -6,6 +6,8 @@ import { advanceSeason, availableDrills, resolveEvent } from '../engine/game'
 import {
   ATTR_KEYS,
   ATTR_LABELS,
+  ETHIC_DESC,
+  ETHIC_LABELS,
   overall,
   POSITION_LABELS,
 } from '../engine/player'
@@ -297,6 +299,16 @@ export function MainScreen({
               title={POSITION_LABELS[p.position]}
             >
               {p.position}
+            </span>
+            <span
+              className="ethic-tag"
+              title={tr(ETHIC_DESC[p.ethic])}
+              aria-label={tr('{ethic} 기질: {desc}', {
+                ethic: tr(ETHIC_LABELS[p.ethic]),
+                desc: tr(ETHIC_DESC[p.ethic]),
+              })}
+            >
+              {tr(ETHIC_LABELS[p.ethic])}
             </span>
           </div>
           <div className="plates">

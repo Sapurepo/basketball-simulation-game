@@ -4,6 +4,7 @@ import {
   DRILL_KINDS,
   DRILL_MAX,
   DRILL_NEED,
+  drillGain,
   DRILL_REPS,
   type DrillCat,
   DRILLS,
@@ -33,7 +34,7 @@ type View =
 // 코치에게 맡기기: 성공 수 3~7개 균등 (엔진의 'auto' 와 같은 분포)
 const coachMade = () => 3 + Math.floor(Math.random() * 5)
 
-// 시즌 진행 전 훈련: 6종목 11가지 중 오프시즌마다 최대 DRILL_MAX 개, 종류별로 한 번.
+// 시즌 진행 전 훈련: 6종목 10가지 중 오프시즌마다 최대 DRILL_MAX 개, 종류별로 한 번.
 // 목록(종목 탭 + 카드) → 플레이 → 결과. 모션 줄이기면 시작도 코치에게 맡긴다
 export function TrainingPanel({
   state,
@@ -151,7 +152,7 @@ export function TrainingPanel({
           </div>
           <p className="muted">
             {tr(
-              '훈련마다 오프시즌에 한 번, {reps}개 중 {need}개 이상 성공하면 능력치 +1. 이번 오프시즌에는 최대 {max}개까지 할 수 있어요.',
+              '훈련마다 오프시즌에 한 번, {reps}개 중 {need}개 이상 성공하면 능력치가 올라요. 이번 오프시즌에는 최대 {max}개까지 할 수 있어요.',
               { reps: DRILL_REPS, need: DRILL_NEED, max: DRILL_MAX },
             )}
           </p>
@@ -168,6 +169,9 @@ export function TrainingPanel({
                     <span className="tr-chips">
                       <span className="tr-chip ink">
                         {tr(CTL_LABEL[d.ctl])}
+                      </span>
+                      <span className="tr-chip ink">
+                        {tr('성공 시 +{n}', { n: drillGain(state.player, k) })}
                       </span>
                       <span className="tr-chip">
                         {tr(ATTR_LABELS[d.attr])}{' '}

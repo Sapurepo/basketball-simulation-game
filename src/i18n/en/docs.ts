@@ -168,8 +168,8 @@ const docs: Record<string, string> = {
   '능력치 하나 +2 / 성장 +0.5': 'One attribute +2 / growth +0.5',
   '잠재력 +1': 'Potential +1',
   '50% 성장 +2 / 50% 성장 -1': '50% growth +2 / 50% growth -1',
-  '훈련 미니게임은 6종목 11가지 중 오프시즌마다 최대 4개, 10회 중 6회 성공하면 해당 능력치 +1 (노력형 기질은 +2). 성공 여부와 무관하게 노력치 +1. 게이지 훈련의 초록 구간 폭은 능력치 20 이면 4%, 50 이면 8%, 99 면 15% 이고 자유투는 1.6배, 3점슛은 0.7배, 패스는 1.6배예요. 반응·타이밍 훈련도 능력치가 높을수록 허용 시간이 길어져요. 코치에게 맡기면 3~7회 성공 중 균등 추첨이라 성공 확률은 40% 입니다.':
-    'Training mini-games: up to 4 per offseason out of 11 drills in 6 categories; 6 of 10 passes gives that attribute +1 (+2 for the steady type). Effort +1 regardless. The green zone of gauge drills is 4% of the gauge at attribute 20, 8% at 50 and 15% at 99, times 1.6 for free throws, 0.7 for threes and 1.6 for passing. Reaction and timing drills also allow more time at higher attributes. Leaving it to the coach draws 3~7 passes evenly, a 40% chance to pass.',
+  '훈련 미니게임은 6종목 10가지 중 오프시즌마다 최대 4개, 10회 중 6회 성공하면 해당 능력치 +1 (3점슛은 +2, 노력형 기질은 여기에 +1). 성공 여부와 무관하게 노력치 +1. 게이지 훈련의 초록 구간 폭은 능력치 20 이면 4%, 50 이면 8%, 99 면 15% 이고 자유투는 1.6배, 3점슛은 0.7배, 패스는 1.6배예요. 반응·타이밍 훈련도 능력치가 높을수록 허용 시간이 길어져요. 코치에게 맡기면 3~7회 성공 중 균등 추첨이라 성공 확률은 40% 입니다.':
+    'Training mini-games: up to 4 per offseason out of 10 drills in 6 categories; 6 of 10 passes gives that attribute +1 (+2 for threes, +1 more for the steady type). Effort +1 regardless. The green zone of gauge drills is 4% of the gauge at attribute 20, 8% at 50 and 15% at 99, times 1.6 for free throws, 0.7 for threes and 1.6 for passing. Reaction and timing drills also allow more time at higher attributes. Leaving it to the coach draws 3~7 passes evenly, a 40% chance to pass.',
   '훈련이 커리어에 주는 영향 (자동 플레이어 커리어 1,500개, 매 오프시즌 훈련 4개 기준):':
     'How training affects a career (1,500 automated careers, 4 drills every offseason):',
   '훈련 방식': 'Training',
@@ -267,16 +267,16 @@ const docs: Record<string, string> = {
     'Bonuses: random events, shop items, growth type, and penalties like injury or active-duty service are added.',
   '능력치 분배는 포지션 가중치를 따르되, 집중 능력치(+0.2)와 노력치(훈련 1회마다 +1, 능력치별 20까지)가 많은 쪽으로 더 몰려요. 노력치는 성장 총량을 바꾸지 않고 방향만 바꿉니다.':
     'The split follows position weights, leaning toward the focus attribute (+0.2) and attributes with more effort (+1 per drill, up to 20 each). Effort changes only the direction of growth, not the total.',
-  '선수마다 보이지 않는 성장 기질이 있어요. 천재형은 잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해지고, 노력형은 잠재력이 낮은 대신 훈련할수록 성장 보너스를 받고 훈련 성공 시 능력치가 +2 올라요. 매 오프시즌 훈련 4개를 채우면 어느 기질이든 손해가 없어요.':
-    'Every player has a hidden growth type. The gifted have higher potential but grow less in an offseason without any drills; the steady have lower potential but gain a growth bonus per drill and +2 on a passed drill. Doing all 4 drills every offseason means no type loses out.',
+  '선수마다 성장 기질이 있고, 메인 화면 이름 옆 뱃지로 볼 수 있어요. 천재형은 잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해지고, 노력형은 잠재력이 낮은 대신 훈련할수록 성장 보너스를 받고 훈련 성공 시 능력치가 1 더 올라요. 매 오프시즌 훈련 4개를 채우면 어느 기질이든 손해가 없어요.':
+    'Every player has a growth type, shown as a badge next to the name on the main screen. The gifted have higher potential but grow less in an offseason without any drills; the steady have lower potential but gain a growth bonus per drill and +1 more on a passed drill. Doing all 4 drills every offseason means no type loses out.',
   '4. 훈련 미니게임': '4. Training mini-games',
-  '오프시즌마다 6종목 11가지 중 최대 4개를, 종류별로 한 번씩 할 수 있어요. 10회 중 6회 이상 성공하면 해당 능력치가 +1(노력형은 +2) 바로 오르고, 성공 여부와 상관없이 노력치가 +1 쌓여요. 「코치에게 맡기기」를 누르면 3~7회 성공 중 무작위로 결과가 바로 나옵니다. 모든 훈련은 키보드로도 할 수 있어요.':
-    'Each offseason you can do up to 4 of the 11 drills in 6 categories, once per drill. Passing 6 of 10 attempts raises that attribute by +1 (+2 for the steady type) immediately, and effort rises +1 either way. "Leave it to the coach" draws a result of 3~7 passes instantly. Every drill also works with the keyboard.',
+  '오프시즌마다 6종목 10가지 중 최대 4개를, 종류별로 한 번씩 할 수 있어요. 10회 중 6회 이상 성공하면 해당 능력치가 +1(3점슛은 +2, 노력형은 여기에 +1) 바로 오르고, 성공 여부와 상관없이 노력치가 +1 쌓여요. 「코치에게 맡기기」를 누르면 3~7회 성공 중 무작위로 결과가 바로 나옵니다. 모든 훈련은 키보드로도 할 수 있어요.':
+    'Each offseason you can do up to 4 of the 10 drills in 6 categories, once per drill. Passing 6 of 10 attempts raises that attribute by +1 (+2 for threes, +1 more for the steady type) immediately, and effort rises +1 either way. "Leave it to the coach" draws a result of 3~7 passes instantly. Every drill also works with the keyboard.',
   종목: 'Category',
   훈련: 'Drill',
   능력치: 'Attribute',
   조작: 'Controls',
-  '자유투 · 미들슛 · 3점슛': 'Free throw · Mid-range · Three',
+  '자유투 · 3점슛': 'Free throw · Three',
   '누르고 있다가 게이지가 초록 구간일 때 놓기':
     'Hold, then release while the gauge is in the green zone',
   '누르고 있다가 동료 거리에 맞는 초록 구간에서 놓기':
@@ -327,8 +327,8 @@ const docs: Record<string, string> = {
   '은퇴: 36세부터 매년 은퇴를 고민하고 45세에는 은퇴해요. 은퇴하면 은퇴식과 커리어 요약이 열려요.':
     'Retirement: from 36 you consider retiring every year, and at 45 you retire. Retiring opens a ceremony and a career summary.',
   '7. 명예의 전당': '7. Hall of Fame',
-  '은퇴하면 커리어를 공용 명예의 전당에 등록할 수 있어요. 이름과 기록이 모든 플레이어에게 공개되고 한 커리어는 한 번만 올라가요. 등록된 기록은 첫 화면과 「랭킹」에서 오버롤·파이널 MVP·수입·출전시간·득점·어시스트로 정렬하고 KBL·NBA 로 걸러 볼 수 있어요. 선수를 누르면 상세 기록이 보이고 ←/→ 키로 넘길 수 있어요. 내 브라우저에서 은퇴한 선수는 「내 기록」 탭에 따로 남아요.':
-    'After retiring you can register the career in the shared Hall of Fame. Name and stats are public to every player, and each career can be registered once. On the first screen and in "Rankings" you can sort by OVR, Finals MVPs, earnings, minutes, points and assists and filter by KBL or NBA. Tap a player for details and use ←/→ to browse. Players retired in this browser also stay in the "My records" tab.',
+  '은퇴하면 커리어를 공용 명예의 전당에 등록할 수 있어요. 이름과 기록이 모든 플레이어에게 공개되고 한 커리어는 한 번만 올라가요. 등록된 기록은 첫 화면과 「랭킹」에서 오버롤·파이널 MVP·수입·출전시간·득점·어시스트로 정렬하고 KBL·NBA 와 등록 기간(일간·주간·월간)으로 걸러 볼 수 있어요. 기간은 한국 시간(KST) 기준으로 오늘·이번 주(월요일부터)·이번 달에 등록된 기록이고, 첫 화면에는 오늘 등록된 기록이 보여요. 선수를 누르면 상세 기록이 보이고 ←/→ 키로 넘길 수 있어요. 내 브라우저에서 은퇴한 선수는 「내 기록」 탭에 따로 남아요.':
+    'After retiring you can register the career in the shared Hall of Fame. Name and stats are public to every player, and each career can be registered once. On the first screen and in "Rankings" you can sort by OVR, Finals MVPs, earnings, minutes, points and assists and filter by KBL or NBA and by registration period (daily, weekly, monthly). Periods follow Korea Standard Time (KST): today, this week from Monday, and this month. The first screen shows the entries registered today. Tap a player for details and use ←/→ to browse. Players retired in this browser also stay in the "My records" tab.',
   '8. 그 밖에': '8. Other',
   '언어: 푸터에서 한국어·영어·일본어를 바꿀 수 있어요.':
     'Language: switch between Korean, English and Japanese in the footer.',

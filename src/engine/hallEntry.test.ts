@@ -1,11 +1,13 @@
 import { expect, test } from 'vitest'
 import {
   OUTDATED_CLIENT,
+  periodStart,
   toHallPayload,
   USD_TO_MANWON,
   validateHall,
 } from './hallEntry'
 import { playCareer } from './testBot'
+import type { Accessory } from './types'
 
 const career = () => ({
   ...playCareer(7),
@@ -52,4 +54,54 @@ test('통산 기록은 정규시즌 합, 수입은 달러를 만원으로 환산
   expect(p.kbl || p.nba).toBe(
     s.history.some((h) => h.stage === 'KBL' || h.stage === 'NBA'),
   )
+})
+
+test('착용 가능한 액세서리를 전부 단 외형도 통과한다 (1.4.0 모자 포함)', () => {
+  // 봇 커리어는 외형이 없어 실제 신고된 페이로드의 외형을 쓴다. visor 때문에 '외형 오류'가 났었다
+  const acc: Accessory[] = [
+    'bandaid',
+    'wrist',
+    'headband',
+    'knee',
+    'glasses',
+    'earbuds',
+    'undershirt',
+    'tights',
+    'goldShoes',
+    'chain',
+    'sleeve',
+    'headphones',
+    'visor',
+    'shades',
+    'cap',
+    'beanie',
+    'bucketHat',
+    'truckerCap',
+    'fedora',
+  ]
+  const look = {
+    skin: 2,
+    hair: '#2A2324',
+    hairStyle: 'buzz' as const,
+    face: 'fierce' as const,
+    acc,
+    num: 69,
+  }
+  const p = { ...toHallPayload(career()), look }
+  expect(validateHall(p)).toEqual(p)
+  expect(validateHall({ ...p, look: { ...look, acc: ['crown'] } })).toBe(
+    '외형 오류',
+  )
+})
+
+test('기간 시작은 KST 기준 자정·월요일·1일', () => {
+  // 2026-10-30(금) 10:00 KST = 01:00 UTC
+  const now = Date.UTC(2026, 9, 30, 1)
+  const kst = (d: number) => Date.UTC(2026, 9, d) - 9 * 3_600_000
+  expect(periodStart('all', now)).toBe(0)
+  expect(periodStart('day', now)).toBe(kst(30))
+  expect(periodStart('week', now)).toBe(kst(26))
+  expect(periodStart('month', now)).toBe(kst(1))
+  // KST 로는 31일 00:30 이지만 UTC 로는 아직 30일: KST 날짜를 따른다
+  expect(periodStart('day', Date.UTC(2026, 9, 30, 15, 30))).toBe(kst(31))
 })

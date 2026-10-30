@@ -1,9 +1,16 @@
-import { HALL_TOP, validateHall } from '../../src/engine/hallEntry'
+import {
+  HALL_PERIODS,
+  HALL_TOP,
+  type HallPeriod,
+  periodStart,
+  validateHall,
+} from '../../src/engine/hallEntry'
 
 // 공용 명예의 전당 API (Cloudflare Pages Function, D1 바인딩 DB)
 // GET  /api/hall?sort=ovr|fmvp|earnings|minutes|pts|ast&size=N → { rows(순위 포함), total }, 상위 100명까지
 // GET  /api/hall?sort=…&best=1 → 포지션별 1위 (베스트 5), rank 는 전체 순위
 //      &league=KBL|NBA 는 그 리그를 한 시즌이라도 뛴 선수만 (total 도 그 기준)
+//      &period=day|week|month 는 KST 기준 오늘·이번 주·이번 달에 등록된 기록만 (순위·total 도 그 안에서)
 // POST /api/hall { entry, token }       → Turnstile 확인 후 등록
 
 // ponytail: 쓰는 메서드만 최소 타입으로 둔다. 더 쓰면 @cloudflare/workers-types 도입
@@ -43,6 +50,8 @@ const LEAGUES = ['', 'KBL', 'NBA'] as const
 type League = (typeof LEAGUES)[number]
 const isLeague = (v: string): v is League =>
   (LEAGUES as readonly string[]).includes(v)
+const isPeriod = (v: string): v is HallPeriod =>
+  (HALL_PERIODS as string[]).includes(v)
 
 const json = (body: unknown, status = 200, cacheControl?: string) =>
   new Response(JSON.stringify(body), {
@@ -61,11 +70,12 @@ const cacheKey = (
   request: Request,
   sort: Sort,
   league: League,
+  period: HallPeriod,
   best: boolean,
 ) =>
   new Request(
     new URL(
-      `/api/hall?sort=${sort}&league=${league}${best ? '&best=1' : ''}`,
+      `/api/hall?sort=${sort}&league=${league}&period=${period}${best ? '&best=1' : ''}`,
       request.url,
     ),
   )
@@ -80,6 +90,8 @@ export async function onRequestGet(ctx: Ctx) {
     : 'ovr'
   const leagueParam = url.searchParams.get('league') ?? ''
   const league: League = isLeague(leagueParam) ? leagueParam : ''
+  const periodParam = url.searchParams.get('period') ?? ''
+  const period: HallPeriod = isPeriod(periodParam) ? periodParam : 'all'
   const size = Math.max(
     1,
     Math.min(
@@ -88,11 +100,11 @@ export async function onRequestGet(ctx: Ctx) {
     ),
   )
   const best = !!url.searchParams.get('best')
-  const key = cacheKey(request, sort, league, best)
+  const key = cacheKey(request, sort, league, period, best)
   const hit = await edge().match(key)
   const body: HallBody = hit
     ? await hit.json()
-    : await queryHall(env, sort, league, best)
+    : await queryHall(env, sort, league, period, best)
   if (!hit)
     ctx.waitUntil(
       edge().put(key, json(body, 200, `public, s-maxage=${CACHE_TTL}`)),
@@ -104,11 +116,19 @@ async function queryHall(
   env: Env,
   sort: Sort,
   league: League,
+  period: HallPeriod,
   best: boolean,
 ): Promise<HallBody> {
   const cols = `id, name, position, look, peak_ovr AS peakOvr, fmvp, trophies, seasons,
     retired_year AS retiredYear, earnings, minutes, pts, ast`
-  const where = league ? `WHERE ${league === 'NBA' ? 'nba' : 'kbl'} = 1` : ''
+  // 기간 시작은 서버가 계산한 숫자라 그대로 넣는다 (캐시 1분이라 자정 경계는 최대 1분 늦다)
+  const conds = [
+    ...(league ? [`${league === 'NBA' ? 'nba' : 'kbl'} = 1`] : []),
+    ...(period === 'all'
+      ? []
+      : [`created_at >= ${periodStart(period, Date.now())}`]),
+  ]
+  const where = conds.length ? `WHERE ${conds.join(' AND ')}` : ''
   // 베스트 5: 전체 순위를 매긴 뒤 포지션마다 가장 앞선 한 명
   const sql = best
     ? `SELECT ${cols}, rank FROM (
@@ -215,8 +235,10 @@ export async function onRequestPost({ request, env }: Ctx) {
     await Promise.all(
       SORTS.flatMap((sort) =>
         LEAGUES.flatMap((league) =>
-          [false, true].map((best) =>
-            edge().delete(cacheKey(request, sort, league, best)),
+          HALL_PERIODS.flatMap((period) =>
+            [false, true].map((best) =>
+              edge().delete(cacheKey(request, sort, league, period, best)),
+            ),
           ),
         ),
       ),

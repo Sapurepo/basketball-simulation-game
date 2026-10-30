@@ -384,8 +384,9 @@ const text: Record<string, string> = {
   '최고 {s}초': 'Best {s}s',
   '코치에게 맡기기': 'Let the coach run it',
   '훈련 종목': 'Training categories',
-  '훈련마다 오프시즌에 한 번, {reps}개 중 {need}개 이상 성공하면 능력치 +1. 이번 오프시즌에는 최대 {max}개까지 할 수 있어요.':
-    'Each drill once per offseason; make {need} of {reps} for +1 to the attribute. Up to {max} drills this offseason.',
+  '훈련마다 오프시즌에 한 번, {reps}개 중 {need}개 이상 성공하면 능력치가 올라요. 이번 오프시즌에는 최대 {max}개까지 할 수 있어요.':
+    'Once per drill each offseason. Make {need} of {reps} to raise the attribute. Up to {max} drills this offseason.',
+  '성공 시 +{n}': 'Pass: +{n}',
   수익순: 'By earnings',
   출전시간순: 'By minutes',
   '통산 득점순': 'By career points',
@@ -429,6 +430,23 @@ const text: Record<string, string> = {
   '전체 리그': 'All leagues',
   '방금 갱신': 'Updated just now',
   '{n}분 전 갱신': 'Updated {n} min ago',
+  기간: 'Period',
+  일간: 'Daily',
+  주간: 'Weekly',
+  월간: 'Monthly',
+  오늘: 'Today',
+  '오늘 {n}명 등록': '{n} registered today',
+  '오늘 등록된 선수가 아직 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.':
+    'No one registered today yet. Retire and be the first on the list.',
+  천재형: 'Gifted',
+  노력형: 'Steady',
+  보통형: 'Balanced',
+  '{ethic} 기질: {desc}': '{ethic} type: {desc}',
+  '잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해져요.':
+    'Higher potential, but growth slows in an offseason without any drills.',
+  '잠재력이 낮은 대신 훈련마다 성장 보너스를 받고, 훈련 성공 시 1 더 올라요.':
+    'Lower potential, but a growth bonus per drill and +1 more on a passed drill.',
+  '성장 보너스도 불이익도 없어요.': 'No growth bonus or penalty.',
   '총 {n}명 등록': '{n} players registered',
   '첫 등록을 기다려요': 'Awaiting first entry',
   'OVR {ovr} · 파이널 MVP {n}': 'OVR {ovr} · Finals MVP {n}',
@@ -818,6 +836,14 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.4.0 ──
+  '훈련에서 미들슛이 빠지고, 3점슛은 성공하면 슈팅이 +2 올라요. 훈련 카드에 성공 시 오르는 폭이 보여요.':
+    'Mid-range drill is gone, and passing the three-point drill now gives Shooting +2. Drill cards show how much a pass raises.',
+  '명예의 전당을 일간·주간·월간(한국 시간 기준 등록일)으로 볼 수 있어요. 첫 화면에는 오늘 등록된 기록이 보여요.':
+    "Browse the Hall of Fame by day, week or month (registration date, Korea Standard Time). The first screen shows today's entries.",
+  '메인 화면 이름 옆에 성장 기질(천재형·노력형·보통형) 뱃지가 보여요.':
+    'A growth-type badge (gifted, steady, balanced) now appears next to the name on the main screen.',
+  '벤치 프레스·스쿼트에서 내 선수 얼굴로 운동해요. 버튼과 스페이스바를 같이 눌러도 게이지가 두 배로 차지 않아요.':
+    "Bench press and squat now use your player's face. Pressing the button and the spacebar together no longer fills the bar twice as fast.",
   '훈련이 6종목 11가지 미니게임으로 늘었어요. 오프시즌마다 최대 4개까지 할 수 있고, 코치에게 맡기면 바로 결과가 나와요.':
     'Training now has 11 mini-games across 6 categories. Do up to 4 per offseason, or let the coach run it for an instant result.',
   '훈련을 하면 노력치가 쌓여요. 노력치가 많은 능력치로 시즌 성장이 더 많이 몰려요.':

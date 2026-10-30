@@ -25,6 +25,7 @@ import type {
   EventOption,
   GameEvent,
   GameState,
+  Player,
   Stage,
 } from './types'
 
@@ -551,8 +552,8 @@ function freeChoice(s: GameState): GameEvent {
   }
 }
 
-// 훈련 미니게임: 오프시즌마다 11종 중 최대 DRILL_MAX 개, 종류별로 한 번.
-// UI 가 게임을 돌리고 DRILL_REPS 회 중 성공 수를 넘긴다. DRILL_NEED 개 이상이면 능력치 +1
+// 훈련 미니게임: 오프시즌마다 10종 중 최대 DRILL_MAX 개, 종류별로 한 번.
+// UI 가 게임을 돌리고 DRILL_REPS 회 중 성공 수를 넘긴다. DRILL_NEED 개 이상이면 능력치 +gain(기본 1)
 export const DRILL_REPS = 10
 export const DRILL_NEED = 6
 export const DRILL_MAX = 4
@@ -569,7 +570,6 @@ export const DRILL_CATS: [DrillCat, string][] = [
 ]
 export const DRILL_KINDS: DrillKind[] = [
   'ft',
-  'mid',
   'three',
   'pass',
   'team',
@@ -589,6 +589,8 @@ export interface Drill {
   desc: string
   body: string
   btn?: string
+  // 성공 시 오르는 폭. 없으면 1. 어려운 훈련(3점슛)은 더 준다
+  gain?: number
 }
 export const DRILLS: Record<DrillKind, Drill> = {
   ft: {
@@ -600,23 +602,15 @@ export const DRILLS: Record<DrillKind, Drill> = {
     body: '게이지가 초록 구간에 있을 때 떼면 골인. 같은 리듬으로 반복해요.',
     btn: '누르고 있다가 떼서 슛',
   },
-  mid: {
-    cat: 'shoot',
-    title: '미들슛 훈련',
-    attr: 'shooting',
-    ctl: 'hold',
-    desc: '엘보에서 던지는 점퍼',
-    body: '자유투보다 구간이 좁아요. 게이지가 초록 구간에 있을 때 떼요.',
-    btn: '누르고 있다가 떼서 슛',
-  },
   three: {
     cat: 'shoot',
     title: '3점슛 훈련',
     attr: 'shooting',
     ctl: 'hold',
-    desc: '구간은 가장 좁고 게이지는 빨라요',
+    desc: '구간은 가장 좁고 게이지는 빨라요. 성공하면 두 배로 올라요',
     body: '먼 거리라 구간이 좁고 게이지가 빨리 차요. 한 박자 빨리 떼는 감각이 필요해요.',
     btn: '누르고 있다가 떼서 슛',
+    gain: 2,
   },
   pass: {
     cat: 'pass',
@@ -689,7 +683,7 @@ export const DRILLS: Record<DrillKind, Drill> = {
 }
 // 이전 저장(훈련 3종 시절)의 id 와 큐에 남은 훈련 이벤트를 지금 종류로 읽는다
 const LEGACY_DRILLS: Record<string, DrillKind> = {
-  shootout: 'mid',
+  shootout: 'ft',
   passDrill: 'pass',
   dribbleDrill: 'drib',
 }
@@ -697,20 +691,24 @@ export const drillKind = (kind: string): DrillKind | undefined =>
   kind in DRILLS ? (kind as DrillKind) : LEGACY_DRILLS[kind]
 export const isDrill = (kind: string) => !!drillKind(kind)
 
-// 훈련 결과 안내: 성공했는데 못 오른 건 최고치(99)라서다
+// 훈련 결과 안내: raised 는 실제 오른 폭. 성공했는데 0 이면 최고치(99)라서다
 export const drillOutcome = (
   attr: AttrKey,
   success: boolean,
-  raised: boolean,
+  raised: number,
 ): Text =>
   raised
-    ? { k: '{attr} +1', v: { attr: T(ATTR_LABELS[attr]) } }
+    ? { k: '{attr} +{n}', v: { attr: T(ATTR_LABELS[attr]), n: raised } }
     : success
       ? { k: '{attr} 이미 최고치예요', v: { attr: T(ATTR_LABELS[attr]) } }
       : '아쉽지만 감각은 익혔습니다.'
 
-// 'made:N' 또는 'auto'(코치에게 맡김: 3~7개). DRILL_NEED 개 이상이면 해당 능력치 +1 (99 상한).
-// raised 는 실제로 올랐는지 — 99 에 막히면 성공해도 false
+// 성공 시 오르는 폭: 훈련별 기본(1, 3점슛 2) + 노력형 1
+export const drillGain = (p: Player, kind: DrillKind) =>
+  (DRILLS[kind].gain ?? 1) + (p.ethic === 'steady' ? 1 : 0)
+
+// 'made:N' 또는 'auto'(코치에게 맡김: 3~7개). DRILL_NEED 개 이상이면 해당 능력치 +drillGain (99 상한).
+// raised 는 실제로 오른 폭 — 99 에 막히면 성공해도 0
 export function applyDrill(
   rng: Rng,
   s: GameState,
@@ -721,11 +719,11 @@ export function applyDrill(
   const made =
     optionId === 'auto' ? rng.int(3, 7) : Number(optionId.split(':')[1])
   const before = s.player.attrs[attr]
-  // 노력형은 성공 시 +2. 노력치는 성공 여부와 무관하게 +1
-  const gain = s.player.ethic === 'steady' ? 2 : 1
-  if (made >= DRILL_NEED) s.player.attrs[attr] = Math.min(99, before + gain)
+  // 노력치는 성공 여부와 무관하게 +1
+  if (made >= DRILL_NEED)
+    s.player.attrs[attr] = Math.min(99, before + drillGain(s.player, kind))
   addEv(s.player, attr)
-  return { made, raised: s.player.attrs[attr] > before }
+  return { made, raised: s.player.attrs[attr] - before }
 }
 
 function trainingEvent(): GameEvent {

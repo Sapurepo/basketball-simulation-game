@@ -974,6 +974,19 @@ input[type='range'] {
     inset 0 -3px 0 0 rgb(0 0 0 / 0.3);
 }
 
+.ethic-tag {
+  margin: 3px;
+  padding: 2px 8px;
+  background: var(--panel-sunk);
+  color: var(--ink);
+  font: 14px var(--font-pixel);
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink);
+}
+
 .plates {
   display: flex;
   flex-wrap: wrap;
@@ -2214,10 +2227,9 @@ tr.me td {
 /* 플레이: 머리글(진행 수) + 무대 */
 .tr-head {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: flex-end;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
 }
 
 .tr-result h3 {
@@ -2233,6 +2245,7 @@ tr.me td {
 }
 
 .tr-rep {
+  flex: none;
   font: 13px var(--font-pixel);
   color: var(--muted);
 }
@@ -2641,9 +2654,9 @@ tr.me td {
 
 .tr-lifter.squat {
   left: 180px;
-  top: 77px;
+  top: 59px;
   width: 108px;
-  height: 168px;
+  height: 186px;
   transform-origin: 50% 100%;
 }
 

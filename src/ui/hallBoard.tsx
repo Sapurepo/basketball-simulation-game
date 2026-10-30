@@ -97,7 +97,7 @@ export function HallItem({
 
 const PREVIEW = 5
 
-// 랜딩의 명예의 전당: 전체 상위 5명 미리보기와 이 브라우저의 기록
+// 랜딩의 명예의 전당: 오늘(KST) 등록된 상위 5명 미리보기와 이 브라우저의 기록
 export function HallBoard({
   mine,
   onOpenRanking,
@@ -114,7 +114,7 @@ export function HallBoard({
 
   useEffect(() => {
     let alive = true
-    fetchHall(sort, { size: PREVIEW })
+    fetchHall(sort, { size: PREVIEW, period: 'day' })
       .then((d) => alive && (setAll(d), setError(false)))
       .catch(() => alive && setError(true))
     return () => {
@@ -167,14 +167,14 @@ export function HallBoard({
           <h2>{tr('명예의 전당')}</h2>
           {tab === 'all' && !!all?.total && (
             <span className="ranking-count">
-              {tr('총 {n}명 등록', { n: all.total.toLocaleString() })}
+              {tr('오늘 {n}명 등록', { n: all.total.toLocaleString() })}
             </span>
           )}
         </div>
         <div className="tabs" role="tablist">
           {(
             [
-              ['all', '전체'],
+              ['all', '오늘'],
               ['mine', '내 기록'],
             ] as const
           ).map(([id, label]) => (
@@ -235,7 +235,7 @@ export function HallBoard({
         ) : (
           <p className="hall-board-note">
             {tr(
-              '아직 등록된 선수가 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.',
+              '오늘 등록된 선수가 아직 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.',
             )}
           </p>
         )

@@ -28,7 +28,6 @@ import {
   type DrawnPose,
   iconURL,
   ROSTER,
-  SKINS,
   spriteURL,
   W,
 } from './sprite'
@@ -147,11 +146,9 @@ export function DrillPlay({
           : kind
   const side = kind === 'react'
   const lift: LiftKit = {
-    skin: SKINS[look?.skin ?? 1],
-    hair: look?.hair ?? '#2a2324',
+    ...(look ?? DEFAULT_LOOK),
     jersey: kit.jersey,
     trim: '#f7f3ea',
-    band: look?.acc.includes('headband'),
   }
   const [lo, hi] = st.zone
   const me = (scale: number, extra?: CSSProperties, key = 'p') => (
@@ -206,11 +203,11 @@ export function DrillPlay({
   return (
     <div className="drill">
       <div className="tr-head">
+        <p className="muted tr-body">{tr(d.body)}</p>
         <span className="tr-rep">
           {cur} / {DRILL_REPS}
         </span>
       </div>
-      <p className="muted tr-body">{tr(d.body)}</p>
 
       <div ref={fitRef} className="tr-fit">
         <div ref={zoomRef} className="tr-zoom">
