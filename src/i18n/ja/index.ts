@@ -1,4 +1,5 @@
 import type { Catalog } from '../index'
+import docs from './docs'
 import engine from './engine'
 import names from './names'
 import ui from './ui'
@@ -18,5 +19,5 @@ const patterns: [RegExp, string][] = [
   [/^(.+) 탈락$/, '{1}敗退'],
 ]
 
-const ja: Catalog = { text: { ...ui, ...engine, ...names }, patterns }
+const ja: Catalog = { text: { ...ui, ...docs, ...engine, ...names }, patterns }
 export default ja

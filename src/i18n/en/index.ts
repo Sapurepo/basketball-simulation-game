@@ -1,4 +1,5 @@
 import type { Catalog } from '../index'
+import docs from './docs'
 import engine from './engine'
 import names from './names'
 import ui from './ui'
@@ -19,5 +20,5 @@ const patterns: [RegExp, string][] = [
   [/^(.+) 탈락$/, 'Out in the {1}'],
 ]
 
-const en: Catalog = { text: { ...ui, ...engine, ...names }, patterns }
+const en: Catalog = { text: { ...ui, ...docs, ...engine, ...names }, patterns }
 export default en
