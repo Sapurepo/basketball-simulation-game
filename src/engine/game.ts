@@ -71,7 +71,7 @@ export function advanceSeason(state: GameState): GameState {
   if (state.stage === 'RETIRED' || state.events.length) return state
   return step(state, (rng, s) => {
     // 치장 아이템 버프는 시즌 동안만 능력치에 얹고 성장 계산 전에 되돌린다
-    const fx = itemEffects(s.items)
+    const fx = itemEffects(s)
     const base = s.player.attrs
     s.player.attrs = buffed(base, fx.attrs)
     const rec = simulateSeason(rng, s)
@@ -136,19 +136,38 @@ export function buyItem(state: GameState, id: string): GameState {
   const s = structuredClone(state)
   s.cash = cash - item.price
   s.items = [...(s.items ?? []), id]
+  // 모자는 하나만 쓰므로 쓰고 있던 모자를 벗긴다
+  if (item.slot === 'hat') takeOffHat(s)
   if (item.slot) s[item.slot] = id
   if (item.acc && s.player.look && !s.player.look.acc.includes(item.acc))
     s.player.look.acc = [...s.player.look.acc, item.acc]
   return s
 }
 
-// 치장 착용·해제: 외형(look.acc)에서만 넣고 뺀다. 버프는 보유 기준이라 그대로
+function takeOffHat(s: GameState) {
+  const old = itemById(s.hat ?? '')?.acc
+  if (old && s.player.look)
+    s.player.look.acc = s.player.look.acc.filter((a) => a !== old)
+  s.hat = undefined
+}
+
+// 치장 착용·해제: 외형(look.acc)에서 넣고 뺀다. 버프는 보유 기준이라 그대로지만,
+// 모자는 슬롯이라 쓰고 있는 것(hat)만 버프가 붙고 하나만 쓴다
 export function toggleAccessory(state: GameState, id: string): GameState {
-  const acc = itemById(id)?.acc
+  const item = itemById(id)
+  const acc = item?.acc
   const look = state.player.look
   if (!acc || !look || !state.items?.includes(id)) return state
   const s = structuredClone(state)
   const worn = look.acc.includes(acc)
+  if (item.slot === 'hat') {
+    takeOffHat(s)
+    if (!worn) {
+      s.hat = id
+      s.player.look!.acc = [...s.player.look!.acc, acc]
+    }
+    return s
+  }
   s.player.look!.acc = worn
     ? look.acc.filter((a) => a !== acc)
     : [...look.acc, acc]

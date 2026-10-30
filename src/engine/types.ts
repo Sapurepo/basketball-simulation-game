@@ -43,6 +43,11 @@ export type Accessory =
   | 'earbuds'
   | 'goldShoes'
   | 'undershirt'
+  | 'beanie'
+  | 'visor'
+  | 'bucketHat'
+  | 'truckerCap'
+  | 'fedora'
   | 'tights'
 export interface Look {
   // 피부 팔레트 인덱스 0~5
@@ -270,9 +275,10 @@ export interface GameState {
   // 보유 자금(만원)과 상점에서 산 아이템 id. 이전 저장 파일에는 없다
   cash?: number
   items?: string[]
-  // 무대에 적용한 벽지·바닥타일 아이템 id
+  // 무대에 적용한 벽지·바닥타일 아이템 id, 쓰고 있는 모자 아이템 id (슬롯 아이템은 적용 중일 때만 효과)
   wall?: string
   floor?: string
+  hat?: string
   // 무대 배치 편집 결과 (아이템 id → 옮긴 자리·반전·보관). 없는 항목은 기본 자리
   layout?: Record<string, Placement>
   // 공용 명예의 전당 등록용 커리어 고유 id와 등록 여부

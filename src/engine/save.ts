@@ -87,6 +87,9 @@ export function parseSave(raw: string): GameState {
   // 펫 세분화 이전의 '강아지'는 포메라니안으로
   s.items = s.items.map((id) => (id === 'dog' ? 'pomeranian' : id))
   if (s.player.look) s.player.look = migrateLook(s.player.look, s.player.name)
+  // 모자 슬롯 이전 저장 파일: 쓰고 있던 스냅백을 모자 슬롯에 넣는다
+  if (!s.hat && s.player.look?.acc.includes('cap') && s.items.includes('cap'))
+    s.hat = 'cap'
   // 결과가 문자열이던 저장 파일 호환
   for (const h of s.history) {
     const r = h.result as unknown

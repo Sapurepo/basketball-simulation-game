@@ -434,15 +434,37 @@ describe('상점과 자금', () => {
     const off = toggleAccessory(s, 'cap')
     expect(off.player.look?.acc).not.toContain('cap')
     expect(off.items).toEqual(['cap'])
-    expect(itemEffects(off.items).attrs.defense).toBe(1)
+    // 모자는 벗으면 버프도 빠진다 (다른 치장은 보유 기준)
+    expect(off.hat).toBeUndefined()
+    expect(itemEffects(off).attrs.defense).toBeUndefined()
+    expect(itemEffects(s).attrs.defense).toBe(1)
     expect(toggleAccessory(off, 'cap').player.look?.acc).toContain('cap')
     // 보유하지 않았거나 치장이 아닌 아이템은 그대로
     expect(toggleAccessory(base(), 'cap')).toEqual(base())
     expect(toggleAccessory(s, 'car')).toBe(s)
   })
 
+  test('모자는 하나만 쓴다: 새 모자를 사거나 쓰면 이전 모자는 벗겨지고, 저장 파일의 스냅백은 모자 슬롯으로', () => {
+    const rich = { ...base(), cash: price('cap') + price('beanie') }
+    const s = buyItem(buyItem(rich, 'cap'), 'beanie')
+    expect(s.hat).toBe('beanie')
+    expect(s.player.look?.acc).toContain('beanie')
+    expect(s.player.look?.acc).not.toContain('cap')
+    const back = toggleAccessory(s, 'cap')
+    expect(back.hat).toBe('cap')
+    expect(back.player.look?.acc).toContain('cap')
+    expect(back.player.look?.acc).not.toContain('beanie')
+    expect(itemEffects(back).attrs).toEqual({ defense: 1 })
+    // 모자 슬롯이 없던 저장 파일: 쓰고 있던 스냅백이 슬롯에 들어간다
+    const raw = JSON.parse(JSON.stringify(buyItem(rich, 'cap')))
+    delete raw.hat
+    expect(parseSave(JSON.stringify(raw)).hat).toBe('cap')
+  })
+
   test('아이템 효과는 합산되고 99 를 넘지 않는다', () => {
-    const fx = itemEffects(['chain', 'headphones', 'pomeranian', 'nope'])
+    const fx = itemEffects({
+      items: ['chain', 'headphones', 'pomeranian', 'nope'],
+    })
     expect(fx.attrs).toEqual({
       finishing: 2,
       rebounding: 1,
