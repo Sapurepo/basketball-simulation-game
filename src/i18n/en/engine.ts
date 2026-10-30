@@ -2,7 +2,6 @@
 const text: Record<string, string> = {
   드리블: 'Dribbling',
   '자유투 훈련': 'Free-throw drill',
-  '미들슛 훈련': 'Mid-range drill',
   '3점슛 훈련': 'Three-point drill',
   '일반 패스': 'Basic pass',
   '팀 패스 게임': 'Team pass game',
@@ -13,8 +12,8 @@ const text: Record<string, string> = {
   '벤치 프레스': 'Bench press',
   스쿼트: 'Squat',
   '성공 구간이 가장 넓은 루틴 슛': 'Routine shot with the widest sweet spot',
-  '엘보에서 던지는 점퍼': 'Jumper from the elbow',
-  '구간은 가장 좁고 게이지는 빨라요': 'Narrowest zone and the fastest gauge',
+  '구간은 가장 좁고 게이지는 빨라요. 성공하면 두 배로 올라요':
+    'Narrowest zone and the fastest gauge. Passing it gives double',
   '동료까지의 거리만큼 힘 조절': 'Match the power to the distance',
   '3자 패스: 받자마자 부르는 동료에게 원터치로':
     'Three-man passing: one-touch to whoever calls for it',
@@ -32,8 +31,6 @@ const text: Record<string, string> = {
     'Mash the button to stand up from the bottom',
   '게이지가 초록 구간에 있을 때 떼면 골인. 같은 리듬으로 반복해요.':
     'Release while the gauge is in the green to score. Keep the same rhythm.',
-  '자유투보다 구간이 좁아요. 게이지가 초록 구간에 있을 때 떼요.':
-    'Narrower than a free throw. Release while the gauge is in the green.',
   '먼 거리라 구간이 좁고 게이지가 빨리 차요. 한 박자 빨리 떼는 감각이 필요해요.':
     'From deep, the zone is narrow and the gauge fills fast. Release a beat early.',
   '게이지가 곧 공이 날아갈 거리예요. 바닥의 초록 칸, 동료가 받을 수 있는 거리에서 떼요.':
@@ -305,7 +302,7 @@ const text: Record<string, string> = {
     'Pick the skill to focus on next season.',
   '균형 훈련': 'Balanced training',
   '{reps}개 중 {made}개 성공': '{made} of {reps} made',
-  '{attr} +1': '{attr} +1',
+  '{attr} +{n}': '{attr} +{n}',
   '{attr} +2': '{attr} +2',
   '{attr} 이미 최고치예요': '{attr} is already maxed',
   '아쉽지만 감각은 익혔습니다.': 'Not this time, but you got the feel for it.',

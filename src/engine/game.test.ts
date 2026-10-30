@@ -314,7 +314,6 @@ describe('훈련 미니게임', () => {
 
   test.each([
     ['ft', 'shooting'],
-    ['mid', 'shooting'],
     ['three', 'shooting'],
     ['pass', 'playmaking'],
     ['team', 'playmaking'],
@@ -324,22 +323,26 @@ describe('훈련 미니게임', () => {
     ['react', 'speed'],
     ['bench', 'athleticism'],
     ['squat', 'athleticism'],
-  ] as const)('%s 는 시즌마다 한 번, %s 를 최대 +1 올린다', (kind, attr) => {
-    const s = base()
-    const before = s.player.attrs[attr]
-    expect(availableDrills(s)).toContain(kind)
-    const done = playDrill(s, kind, 'made:9')
-    expect(done.player.attrs[attr]).toBe(Math.min(99, before + 1))
-    expect(playDrill(s, kind, 'made:6').player.attrs[attr]).toBe(
-      Math.min(99, before + 1),
-    )
-    expect(playDrill(s, kind, 'made:5').player.attrs[attr]).toBe(before)
-    expect(() => playDrill(s, kind, 'auto')).not.toThrow()
-    // 같은 오프시즌에는 다시 못 하고, 시즌을 진행하면 다시 열린다
-    expect(availableDrills(done)).not.toContain(kind)
-    expect(playDrill(done, kind, 'made:9')).toBe(done)
-    expect(availableDrills(advanceSeason(done))).toContain(kind)
-  })
+  ] as const)(
+    '%s 는 시즌마다 한 번, %s 를 올린다 (3점슛만 +2)',
+    (kind, attr) => {
+      const s = base()
+      const before = s.player.attrs[attr]
+      const gain = kind === 'three' ? 2 : 1
+      expect(availableDrills(s)).toContain(kind)
+      const done = playDrill(s, kind, 'made:9')
+      expect(done.player.attrs[attr]).toBe(Math.min(99, before + gain))
+      expect(playDrill(s, kind, 'made:6').player.attrs[attr]).toBe(
+        Math.min(99, before + gain),
+      )
+      expect(playDrill(s, kind, 'made:5').player.attrs[attr]).toBe(before)
+      expect(() => playDrill(s, kind, 'auto')).not.toThrow()
+      // 같은 오프시즌에는 다시 못 하고, 시즌을 진행하면 다시 열린다
+      expect(availableDrills(done)).not.toContain(kind)
+      expect(playDrill(done, kind, 'made:9')).toBe(done)
+      expect(availableDrills(advanceSeason(done))).toContain(kind)
+    },
+  )
 
   test('최고치(99)면 성공해도 오르지 않고, 안내도 실패가 아닌 최고치로 나온다', () => {
     const s = base()
@@ -357,18 +360,18 @@ describe('훈련 미니게임', () => {
     expect(availableDrills({ ...base(), stage: 'RETIRED' })).toEqual([])
   })
 
-  test('오프시즌마다 11종 중 최대 4개까지만, 시즌을 진행하면 다시 4개', () => {
+  test('오프시즌마다 10종 중 최대 4개까지만, 시즌을 진행하면 다시 4개', () => {
     let s = base()
-    expect(availableDrills(s)).toHaveLength(11)
+    expect(availableDrills(s)).toHaveLength(10)
     for (const k of ['ft', 'team', 'react', 'squat'] as const)
       s = playDrill(s, k, 'made:9')
     expect(availableDrills(s)).toEqual([])
     expect(playDrill(s, 'pass', 'made:9')).toBe(s)
-    expect(availableDrills(advanceSeason(s))).toHaveLength(11)
+    expect(availableDrills(advanceSeason(s))).toHaveLength(10)
   })
 
   test('이전 저장의 훈련 id 는 지금 종류로 읽는다', () => {
-    expect(drillKind('shootout')).toBe('mid')
+    expect(drillKind('shootout')).toBe('ft')
     expect(drillKind('passDrill')).toBe('pass')
     expect(drillKind('dribbleDrill')).toBe('drib')
     expect(drillKind('nope')).toBeUndefined()
@@ -872,7 +875,7 @@ describe('잠재력 균등·성장 기질·노력치', () => {
     expect(ethicBonus('normal', 4)).toBe(0)
   })
 
-  test('노력형은 훈련 성공 시 +2, 노력치는 성공 여부와 무관하게 +1', () => {
+  test('노력형은 훈련 성공 시 1 더(자유투 +2, 3점슛 +3), 노력치는 성공 여부와 무관하게 +1', () => {
     const rng = new Rng(11)
     const p = {
       ...createPlayer(rng, 'a', 'PG', '플레이메이커'),
@@ -886,6 +889,9 @@ describe('잠재력 균등·성장 기질·노력치', () => {
     const miss = playDrill(s, 'ft', 'made:3')
     expect(miss.player.attrs.shooting).toBe(before)
     expect(miss.player.ev.shooting).toBe(1)
+    expect(playDrill(s, 'three', 'made:9').player.attrs.shooting).toBe(
+      Math.min(99, before + 3),
+    )
   })
 
   test('노력치 상한: 능력치별 20, 합계 60', () => {

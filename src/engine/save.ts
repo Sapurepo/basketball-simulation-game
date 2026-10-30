@@ -1,3 +1,4 @@
+import { DRILLS } from './events'
 import { START_CASH } from './game'
 import { hallFmvp, hallTrophies, toHallPayload } from './hallEntry'
 import { idealWeight } from './player'
@@ -81,6 +82,8 @@ export function parseSave(raw: string): GameState {
   // 성장 기질·노력치 이전 저장 파일: 보통 기질, 노력치 0
   s.player.ethic ??= 'normal'
   s.player.ev ??= {}
+  // 미들슛 훈련이 빠지기 전 저장 파일: 완료 목록에서 지운다
+  s.drillsDone = s.drillsDone?.filter((k) => k in DRILLS)
   s.items ??= []
   // 공용 명예의 전당 이전 저장 파일
   s.careerId ??= crypto.randomUUID()

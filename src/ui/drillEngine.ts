@@ -1,4 +1,4 @@
-// 훈련 미니게임 11종의 진행·판정·연출. 화면(drillPlay.tsx)과 분리해 타이머·Web Animations 를 여기서 든다.
+// 훈련 미니게임 10종의 진행·판정·연출. 화면(drillPlay.tsx)과 분리해 타이머·Web Animations 를 여기서 든다.
 // 드문 상태(포즈·판정 문구·회차 결과)는 st 로 React 에 넘기고, 매 프레임 바뀌는 값(게이지·공 위치)은 ref 요소에 직접 그린다.
 import { DRILL_REPS, type DrillCtl, DRILLS } from '../engine/events'
 import type { DrillKind } from '../engine/types'
@@ -51,7 +51,6 @@ export const CTL_LABEL: Record<DrillCtl, string> = {
 
 export const SHOOT_K: Partial<Record<DrillKind, number>> = {
   ft: 0,
-  mid: 1,
   three: 2,
 }
 // 슛 자리 x(선수 왼쪽 위), 패스 거리 → x, 동료 자리, 받는 칸, 반응 등 자리
@@ -317,7 +316,6 @@ export class DrillEngine {
     const i = this.st.res.length
     switch (this.kind) {
       case 'ft':
-      case 'mid':
       case 'three':
         return this.rShoot(SHOOT_K[this.kind]!)
       case 'pass':
