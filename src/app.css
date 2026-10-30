@@ -974,19 +974,6 @@ input[type='range'] {
     inset 0 -3px 0 0 rgb(0 0 0 / 0.3);
 }
 
-.ethic-tag {
-  margin: 3px;
-  padding: 2px 8px;
-  background: var(--panel-sunk);
-  color: var(--ink);
-  font: 14px var(--font-pixel);
-  box-shadow:
-    0 -3px 0 0 var(--ink),
-    0 3px 0 0 var(--ink),
-    -3px 0 0 0 var(--ink),
-    3px 0 0 0 var(--ink);
-}
-
 .plates {
   display: flex;
   flex-wrap: wrap;
