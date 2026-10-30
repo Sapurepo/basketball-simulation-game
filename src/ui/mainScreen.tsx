@@ -1,7 +1,7 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { itemById } from '../data/items'
 import { isUsCollege } from '../data/schools'
-import { formatMoney, isDrill } from '../engine/events'
+import { DRILL_MAX, drillKind, DRILLS, formatMoney } from '../engine/events'
 import { advanceSeason, availableDrills, resolveEvent } from '../engine/game'
 import {
   ATTR_KEYS,
@@ -23,7 +23,7 @@ import { BestTeams, SeasonTable, TrophyCase } from './careerTables'
 import { attrDelta, fmtDelta, statDelta } from './delta'
 import { avg, pct, seasonLabel, serviceLabel, stageLabel } from './format'
 import { type CastPlayer, GameCast } from './gameCast'
-import { DrillGame } from './drillGame'
+import { DrillPlay } from './drillPlay'
 import { FinalsMvp, type FmvpAward } from './finalsMvp'
 import { PixelPlayer } from './pixelPlayer'
 import { Retirement } from './retirement'
@@ -112,7 +112,11 @@ export function MainScreen({
   const [retiredAtLoad] = useState(retired)
 
   const { pose, kit } = pickPose(state)
-  const drillsLeft = availableDrills(state).length
+  // 남은 훈련: 아직 안 한 종류와 이번 오프시즌 남은 횟수 중 작은 쪽
+  const drillsLeft = Math.min(
+    availableDrills(state).length,
+    DRILL_MAX - (state.drillsDone?.length ?? 0),
+  )
   const [training, setTraining] = useState(false)
   const [shop, setShop] = useState(false)
   const [editNum, setEditNum] = useState(false)
@@ -461,13 +465,13 @@ export function MainScreen({
               <p>{tx(ev.body)}</p>
             </>
           )}
-          {isDrill(ev.kind) &&
+          {drillKind(ev.kind) &&
             !matchMedia('(prefers-reduced-motion: reduce)').matches && (
-              <DrillGame
-                kind={ev.kind}
+              <DrillPlay
+                kind={drillKind(ev.kind)!}
+                skill={p.attrs[DRILLS[drillKind(ev.kind)!].attr]}
                 kit={kit}
                 look={p.look}
-                attrs={p.attrs}
                 onDone={(n) => onChange(resolveEvent(state, `made:${n}`))}
               />
             )}

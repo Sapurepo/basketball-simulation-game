@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { generateCast } from './commentary'
-import { buildOffseason, isDrill } from './events'
+import { buildOffseason, drillKind, isDrill } from './events'
 import { buffed, itemById, itemEffects } from '../data/items'
 import {
   advanceSeason,
@@ -303,9 +303,17 @@ describe('훈련 미니게임', () => {
   }
 
   test.each([
-    ['shootout', 'shooting'],
-    ['passDrill', 'playmaking'],
-    ['dribbleDrill', 'finishing'],
+    ['ft', 'shooting'],
+    ['mid', 'shooting'],
+    ['three', 'shooting'],
+    ['pass', 'playmaking'],
+    ['team', 'playmaking'],
+    ['reb', 'rebounding'],
+    ['drib', 'finishing'],
+    ['foot', 'defense'],
+    ['react', 'speed'],
+    ['bench', 'athleticism'],
+    ['squat', 'athleticism'],
   ] as const)('%s 는 시즌마다 한 번, %s 를 최대 +1 올린다', (kind, attr) => {
     const s = base()
     const before = s.player.attrs[attr]
@@ -337,6 +345,23 @@ describe('훈련 미니게임', () => {
 
   test('은퇴하면 훈련이 없다', () => {
     expect(availableDrills({ ...base(), stage: 'RETIRED' })).toEqual([])
+  })
+
+  test('오프시즌마다 11종 중 최대 4개까지만, 시즌을 진행하면 다시 4개', () => {
+    let s = base()
+    expect(availableDrills(s)).toHaveLength(11)
+    for (const k of ['ft', 'team', 'react', 'squat'] as const)
+      s = playDrill(s, k, 'made:9')
+    expect(availableDrills(s)).toEqual([])
+    expect(playDrill(s, 'pass', 'made:9')).toBe(s)
+    expect(availableDrills(advanceSeason(s))).toHaveLength(11)
+  })
+
+  test('이전 저장의 훈련 id 는 지금 종류로 읽는다', () => {
+    expect(drillKind('shootout')).toBe('mid')
+    expect(drillKind('passDrill')).toBe('pass')
+    expect(drillKind('dribbleDrill')).toBe('drib')
+    expect(drillKind('nope')).toBeUndefined()
   })
 
   test('오프시즌에 훈련 이벤트가 더는 생기지 않는다', () => {

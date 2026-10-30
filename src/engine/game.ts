@@ -1,6 +1,12 @@
 import { buffed, itemById, itemEffects } from '../data/items'
 import { HIGH_SCHOOLS } from '../data/schools'
-import { applyDrill, applyEvent, buildOffseason, DRILL_KINDS } from './events'
+import {
+  applyDrill,
+  applyEvent,
+  buildOffseason,
+  DRILL_KINDS,
+  DRILL_MAX,
+} from './events'
 import { USD_TO_MANWON } from './hallEntry'
 import { grow, overall } from './player'
 import { Rng } from './rng'
@@ -111,10 +117,11 @@ export function resolveEvent(state: GameState, optionId: string): GameState {
   })
 }
 
-// 이번 오프시즌에 아직 하지 않은 훈련 (은퇴하면 없음)
+// 이번 오프시즌에 아직 할 수 있는 훈련: 은퇴했거나 DRILL_MAX 개를 마쳤으면 없음
 export function availableDrills(s: GameState): DrillKind[] {
-  if (s.stage === 'RETIRED') return []
-  return DRILL_KINDS.filter((k) => !s.drillsDone?.includes(k))
+  const done = s.drillsDone ?? []
+  if (s.stage === 'RETIRED' || done.length >= DRILL_MAX) return []
+  return DRILL_KINDS.filter((k) => !done.includes(k))
 }
 
 // 상점 구입: 자금이 모자라거나 이미 가진 아이템이면 그대로 돌려준다. 치장은 외형에 바로 입힌다

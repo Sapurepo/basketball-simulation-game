@@ -557,14 +557,6 @@ footer .link {
   --hi: #fff3c4;
 }
 
-.train-result {
-  justify-self: start;
-  padding: 6px 12px;
-  background: var(--ink);
-  color: var(--gold);
-  font: 13px var(--font-pixel);
-}
-
 /* 이벤트·포커스 선택지 */
 .options {
   display: grid;
@@ -901,7 +893,7 @@ input[type='range'] {
     12% 14%,
     12% 6%,
     25% 6%
-  );
+  ); /* @kind other */
   position: absolute;
   right: 12px;
   top: 10px;
@@ -2069,7 +2061,7 @@ tr.me td {
   }
 }
 
-/* ── 훈련 미니게임 (슈팅·패스·드리블) ───────── */
+/* ── 훈련 미니게임 (6종목 11가지) ───────── */
 
 .drill {
   display: grid;
@@ -2077,210 +2069,636 @@ tr.me td {
   margin-top: 6px;
 }
 
-/* 장면 + 오른쪽 세로 게이지 */
-.drill-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 26px;
-  gap: 14px;
+.tr-progress {
+  font: 12px var(--font-pixel);
+  color: var(--gold-ink);
+  white-space: nowrap;
 }
 
-/* 장면: 벽 + 나무 바닥, 잉크 프레임 */
-.court {
-  position: relative;
-  height: 260px;
+/* 목록: 종목 탭 + 카드 */
+.tr-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 3px 3px 10px;
+  padding: 4px;
+  background: var(--ink);
+}
+
+.tr-tabs button {
+  flex: 1 1 72px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px 4px 7px;
+  border: 0;
+  background: #2f322b;
+  color: var(--panel-hi);
+  font: 13px var(--font-pixel);
+  cursor: pointer;
+}
+
+.tr-tabs button:hover {
+  background: var(--ink-hover);
+}
+
+.tr-tabs button small {
+  font-size: 10px;
+  color: var(--muted-on-dark);
+}
+
+.tr-tabs button[aria-selected='true'] {
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow:
+    inset 0 2px 0 0 var(--gold-hi),
+    inset 0 -3px 0 0 var(--gold-lo);
+}
+
+.tr-tabs button[aria-selected='true'] small {
+  color: var(--muted);
+}
+
+.tr-cards {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tr-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
   margin: 3px;
+  padding: 12px 14px 14px;
+  background: var(--panel);
+  box-shadow:
+    0 -3px 0 0 var(--ink),
+    0 3px 0 0 var(--ink),
+    -3px 0 0 0 var(--ink),
+    3px 0 0 0 var(--ink),
+    inset 0 -4px 0 0 var(--line);
+}
+
+.tr-card.off {
+  background: var(--panel-sunk);
+}
+
+.tr-card-info {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tr-card-info > b {
+  font: 16px var(--font-pixel);
+}
+
+.tr-card-info > span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.tr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tr-chip {
+  padding: 2px 6px;
+  background: var(--panel-sunk);
+  color: var(--ink);
+  font: 10px var(--font-pixel);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.tr-chip.ink {
+  background: var(--ink);
+  color: var(--panel-hi);
+  box-shadow: none;
+}
+
+.tr-card-actions {
+  display: grid;
+  gap: 6px;
+  justify-items: stretch;
+}
+
+.tr-card-actions .ghost {
+  font-size: 11px;
+}
+
+.tr-done {
+  padding: 4px 8px;
+  background: var(--win);
+  color: var(--panel-hi);
+  font: 12px var(--font-pixel);
+  white-space: nowrap;
+}
+
+.tr-done.off {
+  background: var(--muted);
+}
+
+/* 플레이: 머리글 + 무대 */
+.tr-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.tr-head h3,
+.tr-result h3 {
+  margin: 0;
+  font: 22px/1.2 var(--font-pixel);
+}
+
+.tr-eyebrow {
+  margin: 0 0 4px;
+  font: 11px var(--font-pixel);
+  letter-spacing: 1px;
+  color: var(--accent-lo);
+}
+
+.tr-rep {
+  font: 13px var(--font-pixel);
+  color: var(--muted);
+}
+
+.tr-body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.tr-fit {
+  width: 100%;
+  overflow: hidden;
+}
+
+.tr-zoom {
+  width: 486px;
+  margin: 0 auto;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
+/* 무대 480×270: 측면 코트(바닥선 160) · 정면 코트(바닥선 92) · 반응 암실 · 웨이트장 */
+.tr-stage {
+  position: relative;
+  width: 480px;
+  height: 270px;
   overflow: hidden;
   background:
-    linear-gradient(var(--bg-wall) 0 62%, transparent 62%),
+    linear-gradient(
+      var(--bg-wall) 0 160px,
+      var(--ink) 160px 163px,
+      transparent 163px
+    ),
     repeating-linear-gradient(90deg, #d49a5e 0 28px, #c98b52 28px 56px);
   box-shadow:
     0 -3px 0 0 var(--ink),
     0 3px 0 0 var(--ink),
     -3px 0 0 0 var(--ink),
     3px 0 0 0 var(--ink);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.court .ball {
+.tr-stage.team,
+.tr-stage.front {
+  background:
+    linear-gradient(
+      var(--bg-wall) 0 92px,
+      var(--ink) 92px 95px,
+      transparent 95px
+    ),
+    repeating-linear-gradient(90deg, #d49a5e 0 28px, #c98b52 28px 56px);
+}
+
+.tr-stage.react {
+  background:
+    linear-gradient(#2a2c33 0 186px, var(--ink) 186px 189px, transparent 189px),
+    repeating-linear-gradient(90deg, #d49a5e 0 28px, #c98b52 28px 56px);
+}
+
+.tr-stage.lift {
+  background: linear-gradient(
+    #d9d3c4 0 176px,
+    var(--ink) 176px 179px,
+    var(--ink-hover) 179px
+  );
+}
+
+.tr-stage > * {
   position: absolute;
-  left: 50%;
-  bottom: 70px;
+}
+
+/* 선수: s2 = 60×108, s3 = 90×162 (스프라이트 30×54 의 2·3배). 발끝 기준으로 움직인다 */
+.tr-fig {
   z-index: 2;
-  width: 33px;
-  height: 33px;
-  margin-left: -16px;
+  transform-origin: 50% 100%;
 }
 
-.call {
-  position: absolute;
-  left: 50%;
-  top: 46%;
+.tr-fig.s3 {
+  z-index: 4;
+}
+
+.tr-fig .px {
+  display: block;
+}
+
+[id] .tr-fig[aria-hidden='true'],
+.tr-fig[aria-hidden='true'] {
   z-index: 3;
-  padding: 4px 10px;
-  translate: -50% 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tr-mate {
+  cursor: pointer;
+}
+
+.tr-key {
+  left: 306px;
+  right: 0;
+  top: 163px;
+  bottom: 0;
+  background: rgb(240 122 43 / 0.3);
+}
+
+.tr-hoop {
+  left: 372px;
+  top: 46px;
+  z-index: 1;
+  width: 102px;
+  height: 192px;
+}
+
+.tr-spot {
+  top: 190px;
+  bottom: 0;
+  width: 3px;
+  background: var(--panel-hi);
+}
+
+.tr-spot-label {
+  bottom: 8px;
+  transform: translateX(-50%);
+  padding: 2px 6px;
   background: var(--ink);
-  color: var(--panel);
-  font: 16px var(--font-pixel);
+  color: var(--panel-hi);
+  font: 10px var(--font-pixel);
   white-space: nowrap;
 }
 
-.call.good {
-  background: var(--win);
+.tr-floor-zone {
+  top: 228px;
+  height: 14px;
+  background: rgb(29 138 87 / 0.4);
+  box-shadow: inset 0 0 0 2px var(--win);
 }
 
-/* 패스·드리블은 선수가 장면 가운데에 있어 판정 문구를 위로 올린다 */
-.court.pass .call,
-.court.dribble .call {
-  top: 12px;
+.tr-lane {
+  left: 0;
+  right: 0;
+  top: 95px;
+  bottom: 0;
+  background: rgb(240 122 43 / 0.28);
+  clip-path: polygon(36% 0, 64% 0, 78% 100%, 22% 100%);
 }
 
-/* 슈팅: 골대는 위(앞), 공이 포물선을 그리며 날아간다 */
-.court.shoot .hoop {
-  position: absolute;
-  left: 50%;
-  top: 18px;
+.tr-catch {
+  left: 222px;
+  top: 150px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  box-sizing: border-box;
+  border: 2px dashed var(--ink);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.tr-reb-box {
+  left: 327px;
+  top: 101px;
   z-index: 1;
-  width: 66px;
-  height: 66px;
-  margin-left: -33px;
+  width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  border: 2px dashed var(--ink);
+  opacity: 0.45;
 }
 
-.court.shoot .ball.fly-good {
-  animation: fly-good 850ms ease-in-out forwards;
-}
-
-.court.shoot .ball.fly-short {
-  animation: fly-short 850ms ease-in-out forwards;
-}
-
-.court.shoot .ball.fly-long,
-.court.shoot .ball.fly-late {
-  animation: fly-long 850ms ease-in-out forwards;
-}
-
-@keyframes fly-good {
-  50% {
-    translate: 0 -150px;
-    scale: 0.7;
-  }
-  75% {
-    translate: 0 -118px;
-    scale: 0.62;
-  }
-  100% {
-    translate: 0 -96px;
-    scale: 0.6;
-    opacity: 0;
-  }
-}
-
-@keyframes fly-short {
-  55% {
-    translate: 0 -95px;
-    scale: 0.76;
-  }
-  100% {
-    translate: 0 -40px;
-    scale: 0.8;
-    opacity: 0;
-  }
-}
-
-@keyframes fly-long {
-  45% {
-    translate: 0 -178px;
-    scale: 0.64;
-  }
-  70% {
-    translate: 6px -168px;
-    scale: 0.62;
-  }
-  100% {
-    translate: 40px -60px;
-    scale: 0.7;
-    opacity: 0;
-  }
-}
-
-/* 패스: 동료는 --d 만큼 멀리(위) 선다. 공은 게이지 값(--to)만큼 날아간다 */
-.court.pass {
-  --track: 170px;
-  height: 300px;
-}
-
-.court.pass .mate {
+/* 말풍선: 동료의 "여기!", 드리블의 "속았다!/안 속네" */
+.tr-bubble {
   position: absolute;
-  left: 50%;
-  bottom: calc(20px + var(--d) * var(--track));
-  translate: -50% 0;
-}
-
-.court.pass .ball {
-  bottom: 56px;
-  transition-property: translate;
-  transition-duration: 600ms;
-  transition-timing-function: ease-out;
-}
-
-.court.pass .ball.flying {
-  translate: 0 calc(var(--to) * var(--track) * -1);
-}
-
-/* 드리블: 수비가 기울면(lean) 반대쪽으로 돌파(go) */
-.court.dribble .defender,
-.court.dribble .dribbler {
-  position: absolute;
-  left: 50%;
-  translate: -50% 0;
-}
-
-.court.dribble .defender {
-  top: 20px;
-  transition-property: translate;
-  transition-duration: 120ms;
-  transition-timing-function: ease-out;
-}
-
-.court.dribble .defender.lean-left {
-  translate: calc(-50% - 34px) 0;
-}
-
-.court.dribble .defender.lean-right {
-  translate: calc(-50% + 34px) 0;
-}
-
-.court.dribble .dribbler {
-  bottom: 12px;
-  z-index: 1;
-  transition-property: translate;
-  transition-duration: 300ms;
-  transition-timing-function: ease-out;
-}
-
-.court.dribble .dribbler.go-left {
-  translate: calc(-50% - 110px) -70px;
-}
-
-.court.dribble .dribbler.go-right {
-  translate: calc(-50% + 110px) -70px;
-}
-
-.dribble-keys {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.drill-hint {
-  text-align: center;
+  left: 30px;
+  top: -30px;
+  z-index: 4;
+  padding: 4px 8px 3px;
   font: 13px var(--font-pixel);
+  white-space: nowrap;
+  animation: tr-pop 0.2s steps(3) both;
 }
 
-/* 세로 게이지 */
-.gauge {
+.tr-bubble.gold {
+  background: var(--gold);
+  color: var(--ink);
+  box-shadow: 0 0 0 3px var(--ink);
+}
+
+.tr-bubble.ink {
+  background: var(--ink);
+  color: var(--panel-hi);
+  box-shadow: 0 0 0 2px var(--panel-hi);
+}
+
+.tr-dmsg {
+  left: 240px;
+  top: 26px;
+  z-index: 5;
+  font-size: 12px;
+}
+
+/* 반응속도: 기록판 · 최고 · 4방향 등 */
+.tr-rt {
+  left: 12px;
+  top: 12px;
+  display: grid;
+  gap: 3px;
+  padding: 6px 10px 7px;
+  background: var(--ink-deep);
+  color: var(--panel-hi);
+  font: 10px var(--font-pixel);
+  box-shadow: 0 0 0 3px var(--ink-hover);
+}
+
+.tr-rt span:first-child {
+  color: var(--muted-on-dark);
+}
+
+.tr-rt b {
+  font: 24px/1 var(--font-pixel);
+  color: var(--gold);
+}
+
+.tr-best {
+  right: 12px;
+  top: 12px;
+  padding: 3px 8px;
+  background: var(--ink-deep);
+  color: var(--gold);
+  font: 11px var(--font-pixel);
+  box-shadow: 0 0 0 3px var(--ink-hover);
+}
+
+.tr-lamp {
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  background: var(--ink-hover);
+  color: var(--muted-on-dark);
+  font: 18px var(--font-pixel);
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow:
+    inset 0 0 0 3px var(--ink-deep),
+    inset 10px 10px 0 0 #4a4d45,
+    0 0 0 3px #2f322b;
+}
+
+.tr-lamp.l1 {
+  background: var(--rare);
+  color: var(--ink);
+  box-shadow:
+    inset 0 0 0 3px var(--ink-deep),
+    inset 10px 10px 0 0 #8fd0f5,
+    0 0 0 3px #8fd0f5;
+}
+
+.tr-lamp.l2 {
+  background: var(--win);
+  color: var(--panel-hi);
+  box-shadow:
+    inset 0 0 0 3px var(--ink-deep),
+    inset 10px 10px 0 0 #9ed8a8,
+    0 0 0 3px #9ed8a8;
+}
+
+.tr-lamp.l3 {
+  background: var(--loss);
+  color: var(--panel-hi);
+  box-shadow:
+    inset 0 0 0 3px var(--ink-deep),
+    inset 10px 10px 0 0 #ff8a7a,
+    0 0 0 3px #ff8a7a;
+}
+
+/* 웨이트: 렙 카운터 · 남은 시간 · 세로 바 게이지 · 리프터 */
+.tr-rack {
+  left: 0;
+  right: 0;
+  top: 179px;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 78px,
+    #2f322b 78px 80px
+  );
+}
+
+.tr-counter {
+  left: 24px;
+  top: 22px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 52px;
+  padding: 8px 12px;
+  background: var(--ink);
+  color: var(--muted-on-dark);
+  font: 10px var(--font-pixel);
+  letter-spacing: 1px;
+  box-shadow: 0 0 0 3px var(--ink-deep);
+}
+
+.tr-counter b {
+  font: 30px/1 var(--font-pixel);
+  color: var(--gold);
+}
+
+.tr-time {
+  left: 24px;
+  top: 104px;
+  width: 76px;
+  display: grid;
+  gap: 5px;
+  font: 10px var(--font-pixel);
+  color: var(--muted);
+}
+
+.tr-time > div {
   position: relative;
-  margin: 3px;
-  background: var(--panel-sunk);
+  height: 8px;
   overflow: hidden;
+  background: #2f322b;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.tr-time > div > div {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  background: var(--gold);
+}
+
+.tr-top-label {
+  left: 393px;
+  top: 16px;
+  transform: translateX(-50%);
+  font: 10px var(--font-pixel);
+  white-space: nowrap;
+}
+
+.tr-bar {
+  left: 380px;
+  top: 40px;
+  width: 26px;
+  height: 180px;
+  background: #2f322b;
+  box-shadow: 0 0 0 3px var(--ink);
+}
+
+.tr-bar > * {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+.tr-bar-stick {
+  top: 72px;
+  height: 45px;
+  background: rgb(204 48 73 / 0.4);
+}
+
+.tr-bar-fill {
+  bottom: 0;
+  height: 0;
+  background: var(--accent);
+  box-shadow: inset 0 3px 0 0 var(--accent-hi);
+}
+
+.tr-bar-cap {
+  left: -7px;
+  right: -7px;
+  top: -2px;
+  height: 4px;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.tr-stick {
+  left: 414px;
+  top: 84px;
+  padding: 3px 6px;
+  background: var(--loss);
+  color: var(--panel-hi);
+  font: 11px var(--font-pixel);
+  white-space: nowrap;
+  animation: tr-pop2 0.2s steps(3) both;
+}
+
+.tr-lifter {
+  z-index: 2;
+}
+
+.tr-lifter.bench {
+  left: 156px;
+  top: 119px;
+  width: 168px;
+  height: 126px;
+}
+
+.tr-lifter.squat {
+  left: 180px;
+  top: 77px;
+  width: 108px;
+  height: 168px;
+  transform-origin: 50% 100%;
+}
+
+.tr-ball {
+  left: 0;
+  top: 0;
+  z-index: 12;
+  width: 22px;
+  height: 22px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 판정 문구: 위 가운데, 반응속도는 오른쪽 아래 */
+.tr-call {
+  left: 50%;
+  top: 16px;
+  z-index: 20;
+  margin: 0;
+  padding: 6px 12px 5px;
+  background: var(--ink);
+  color: var(--panel-hi);
+  font: 16px var(--font-pixel);
+  white-space: nowrap;
+  box-shadow: 0 0 0 3px var(--panel-hi);
+  animation: tr-pop 0.28s steps(4) both;
+}
+
+.tr-call.good {
+  background: var(--win);
+  box-shadow: 0 0 0 3px var(--ink);
+}
+
+.tr-call.side {
+  left: 404px;
+  top: 214px;
+}
+
+/* 가로 게이지: 슈팅은 무대 폭, 패스는 바닥 x(60~460) 에 맞춰 안쪽으로 */
+.tr-gauge-wrap {
+  display: grid;
+  gap: 4px;
+  margin: 14px 0 0;
+}
+
+.tr-gauge-wrap.pass {
+  margin: 14px 20px 0 60px;
+}
+
+.tr-gauge-labels {
+  display: flex;
+  justify-content: space-between;
+  font: 11px var(--font-pixel);
+  color: var(--muted);
+}
+
+.tr-gauge {
+  position: relative;
+  height: 20px;
+  margin: 3px;
+  overflow: hidden;
+  background: var(--panel-sunk);
   box-shadow:
     0 -3px 0 0 var(--ink),
     0 3px 0 0 var(--ink),
@@ -2288,34 +2706,56 @@ tr.me td {
     3px 0 0 0 var(--ink);
 }
 
-.gauge-zone {
+.tr-gauge-fill {
   position: absolute;
-  inset-inline: 0;
-  z-index: 1;
-  background: rgb(29 138 87 / 0.35);
-  border-block: 2px solid var(--win);
-}
-
-.gauge-fill {
-  position: absolute;
-  inset: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
   background: var(--accent);
-  transform: scaleY(0);
-  transform-origin: bottom;
+  box-shadow:
+    inset 0 3px 0 0 var(--accent-hi),
+    inset 0 -3px 0 0 var(--accent-lo),
+    3px 0 0 0 var(--ink);
 }
 
-/* 길게 누르는 버튼: 터치에서 스크롤·확대·말풍선이 끼어들지 않게 */
-.drill .primary {
-  touch-action: manipulation;
+.tr-gauge-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgb(29 138 87 / 0.3);
+  box-shadow:
+    inset 3px 0 0 0 var(--win),
+    inset -3px 0 0 0 var(--win);
+}
+
+/* 조작 버튼: 길게 누르기·연타에서 스크롤·확대·말풍선이 끼어들지 않게 */
+.tr-btn {
+  touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
 
+.tr-keys {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.drill-hint {
+  margin: 0;
+  text-align: center;
+  font: 12px var(--font-pixel);
+}
+
+/* 회차 결과 점: 성공·실패·지금 회차·남은 회차 */
 .shots {
   list-style: none;
-  margin: 0;
+  margin: 14px 0 2px;
   padding: 0;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
 }
@@ -2323,7 +2763,8 @@ tr.me td {
 .shots li {
   width: 14px;
   height: 14px;
-  background: var(--panel-hi);
+  margin: 2px;
+  background: var(--panel);
   box-shadow:
     0 -2px 0 0 var(--ink),
     0 2px 0 0 var(--ink),
@@ -2337,6 +2778,169 @@ tr.me td {
 
 .shots .out {
   background: var(--loss);
+}
+
+.shots .cur {
+  background: var(--gold);
+}
+
+/* 결과 화면 */
+.tr-result {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 6px 0 2px;
+  text-align: center;
+  animation: tr-in 0.3s steps(3) both;
+}
+
+.tr-result .tr-eyebrow {
+  margin: 0;
+}
+
+.tr-score {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 200px;
+  margin: 3px 30px 3px 3px;
+  padding: 16px 28px 14px;
+  background: var(--ink);
+  color: var(--panel-hi);
+  font: 13px var(--font-pixel);
+}
+
+.tr-score > span:first-child {
+  font:
+    12px system-ui,
+    sans-serif;
+  color: var(--muted-on-dark);
+}
+
+.tr-score b {
+  font: 56px/1 var(--font-pixel);
+  color: var(--gold);
+}
+
+.tr-stamp {
+  position: absolute;
+  right: -30px;
+  top: -14px;
+  padding: 6px 12px 5px;
+  background: var(--gold);
+  color: var(--ink);
+  font: 15px var(--font-pixel);
+  box-shadow:
+    0 0 0 3px var(--ink),
+    inset 0 3px 0 0 var(--gold-hi),
+    inset 0 -4px 0 0 var(--gold-lo);
+  animation: tr-stamp 0.36s steps(5) 0.3s both;
+}
+
+.tr-result .shots {
+  margin: 0;
+}
+
+.tr-attr {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  background: var(--panel-sunk);
+  box-shadow: inset 0 0 0 2px var(--ink);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tr-attr b {
+  font: 24px/1 var(--font-pixel);
+  color: var(--ink);
+}
+
+.tr-attr b.up {
+  font-size: 28px;
+  color: var(--accent-lo);
+  animation: tr-pop2 0.4s steps(4) 0.6s both;
+}
+
+.tr-msg {
+  margin: 0;
+  max-width: 380px;
+  font-size: 13px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.tr-result-btns {
+  justify-content: center;
+}
+
+@keyframes tr-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes tr-pop2 {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tr-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tr-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-10deg) scale(1.9);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(2deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tr-bubble,
+  .tr-stick,
+  .tr-call,
+  .tr-result,
+  .tr-stamp,
+  .tr-attr b.up {
+    animation: none;
+  }
 }
 
 /* ── 로딩 오버레이 · 하이라이트 모달 ───────── */
@@ -3615,25 +4219,25 @@ tr.me td {
    통째로 줄인다. 글자는 아래에서 --z 로 나눠 줄인 뒤에도 읽을 크기를 지킨다 */
 @container (max-width: 539px) {
   .best-five-row {
-    --z: 0.8;
+    --z: 0.8; /* @kind other */
   }
 }
 
 @container (max-width: 431px) {
   .best-five-row {
-    --z: 0.64;
+    --z: 0.64; /* @kind other */
   }
 }
 
 @container (max-width: 345px) {
   .best-five-row {
-    --z: 0.52;
+    --z: 0.52; /* @kind other */
   }
 }
 
 @container (max-width: 280px) {
   .best-five-row {
-    --z: 0.44;
+    --z: 0.44; /* @kind other */
   }
 }
 

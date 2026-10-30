@@ -551,34 +551,151 @@ function freeChoice(s: GameState): GameEvent {
   }
 }
 
-// 훈련 미니게임: 오프시즌마다 종류별로 한 번. UI 가 게임을 돌리고 DRILL_REPS 회 중 성공 수를 넘긴다
+// 훈련 미니게임: 오프시즌마다 11종 중 최대 DRILL_MAX 개, 종류별로 한 번.
+// UI 가 게임을 돌리고 DRILL_REPS 회 중 성공 수를 넘긴다. DRILL_NEED 개 이상이면 능력치 +1
 export const DRILL_REPS = 10
-export const DRILL_KINDS: DrillKind[] = [
-  'shootout',
-  'passDrill',
-  'dribbleDrill',
+export const DRILL_NEED = 6
+export const DRILL_MAX = 4
+export type DrillCat = 'shoot' | 'pass' | 'reb' | 'drib' | 'def' | 'ath'
+// 조작: 누르고 떼기 · 타이밍 탭 · 방향 고르기 · 동료 고르기 · 페이크+돌파 · 켜진 등 누르기 · 버튼 연타
+export type DrillCtl = 'hold' | 'tap' | 'lr' | 'team' | 'fake' | 'lamp' | 'mash'
+export const DRILL_CATS: [DrillCat, string][] = [
+  ['shoot', '슈팅'],
+  ['pass', '패스'],
+  ['reb', '리바운드'],
+  ['drib', '드리블'],
+  ['def', '수비'],
+  ['ath', '운동능력'],
 ]
-export const DRILLS: Record<
-  DrillKind,
-  { title: string; body: string; attr: AttrKey }
-> = {
-  shootout: {
-    title: '슈팅 훈련',
-    body: '게이지를 정확히 채워 골대에 {reps}번 슛을 던지세요.',
+export const DRILL_KINDS: DrillKind[] = [
+  'ft',
+  'mid',
+  'three',
+  'pass',
+  'team',
+  'reb',
+  'drib',
+  'foot',
+  'react',
+  'bench',
+  'squat',
+]
+export interface Drill {
+  cat: DrillCat
+  title: string
+  attr: AttrKey
+  ctl: DrillCtl
+  // 카드 한 줄 소개, 플레이 화면 설명, 누르는 버튼 문구(조작이 버튼 하나일 때)
+  desc: string
+  body: string
+  btn?: string
+}
+export const DRILLS: Record<DrillKind, Drill> = {
+  ft: {
+    cat: 'shoot',
+    title: '자유투 훈련',
     attr: 'shooting',
+    ctl: 'hold',
+    desc: '성공 구간이 가장 넓은 루틴 슛',
+    body: '게이지가 초록 구간에 있을 때 떼면 골인. 같은 리듬으로 반복해요.',
+    btn: '누르고 있다가 떼서 슛',
   },
-  passDrill: {
-    title: '패스 훈련',
-    body: '동료까지의 거리에 맞춰 게이지를 채워 {reps}번 패스하세요.',
+  mid: {
+    cat: 'shoot',
+    title: '미들슛 훈련',
+    attr: 'shooting',
+    ctl: 'hold',
+    desc: '엘보에서 던지는 점퍼',
+    body: '자유투보다 구간이 좁아요. 게이지가 초록 구간에 있을 때 떼요.',
+    btn: '누르고 있다가 떼서 슛',
+  },
+  three: {
+    cat: 'shoot',
+    title: '3점슛 훈련',
+    attr: 'shooting',
+    ctl: 'hold',
+    desc: '구간은 가장 좁고 게이지는 빨라요',
+    body: '먼 거리라 구간이 좁고 게이지가 빨리 차요. 한 박자 빨리 떼는 감각이 필요해요.',
+    btn: '누르고 있다가 떼서 슛',
+  },
+  pass: {
+    cat: 'pass',
+    title: '일반 패스',
     attr: 'playmaking',
+    ctl: 'hold',
+    desc: '동료까지의 거리만큼 힘 조절',
+    body: '게이지가 곧 공이 날아갈 거리예요. 바닥의 초록 칸, 동료가 받을 수 있는 거리에서 떼요.',
+    btn: '누르고 있다가 떼서 패스',
   },
-  dribbleDrill: {
-    title: '드리블 훈련',
-    body: '수비가 기우는 반대쪽으로 {reps}번 돌파하세요.',
+  team: {
+    cat: 'pass',
+    title: '팀 패스 게임',
+    attr: 'playmaking',
+    ctl: 'team',
+    desc: '3자 패스: 받자마자 부르는 동료에게 원터치로',
+    body: '동료가 보낸 공이 점선 칸에 들어오는 순간, 손을 든 동료 쪽을 눌러 받자마자 바로 뿌려요. 너무 일찍 누르면 놓치고, 늦으면 공을 끌어요.',
+  },
+  reb: {
+    cat: 'reb',
+    title: '리바운드 점프',
+    attr: 'rebounding',
+    ctl: 'tap',
+    desc: '림에 맞고 튀는 공을 가장 높은 곳에서 잡기',
+    body: '림에 맞고 떨어지는 공이 점선 칸을 지날 때 손이 닿도록 미리 점프해요. 공마다 튀는 높이가 달라요.',
+    btn: '점프!',
+  },
+  drib: {
+    cat: 'drib',
+    title: '드리블로 선수 제치기',
     attr: 'finishing',
+    ctl: 'fake',
+    desc: '페이크로 수비를 속이고 반대쪽으로 돌파',
+    body: '페이크로 수비를 한쪽으로 끌어낸 뒤 반대쪽으로 치고 나가요. 수비가 자리를 잡고 있을 때 그냥 돌파하면 막혀요. 수비가 스스로 기울 때도 기회예요. 페이크를 반복하면 읽혀요.',
+  },
+  foot: {
+    cat: 'def',
+    title: '수비 풋워크',
+    attr: 'defense',
+    ctl: 'lr',
+    desc: '잽에 속지 말고 돌파하는 쪽으로 따라가기',
+    body: '공격수가 진짜로 치고 나가는 쪽으로 같이 미끄러져요. 살짝 움찔하는 잽 스텝에 반응하면 속은 거예요.',
+  },
+  react: {
+    cat: 'ath',
+    title: '반응속도 게임',
+    attr: 'speed',
+    ctl: 'lamp',
+    desc: '선수 주변 4개 등 중 켜진 등을 바로 누르기',
+    body: '선수를 둘러싼 4개의 등 중 하나가 파랗게 켜지면 그 등을 바로 눌러요. 다른 등을 누르거나 켜지기 전에 누르면 실패예요.',
+  },
+  bench: {
+    cat: 'ath',
+    title: '벤치 프레스',
+    attr: 'athleticism',
+    ctl: 'mash',
+    desc: '버튼을 연타해 바를 끝까지 밀어 올리기',
+    body: '바가 가슴까지 내려오면 버튼을 빠르게 연타해 밀어 올려요. 손을 멈추면 바가 다시 내려와요. 중간 고비에서 더 무거워지고 횟수가 쌓일수록 지쳐요.',
+    btn: '연타! 밀어 올리기',
+  },
+  squat: {
+    cat: 'ath',
+    title: '스쿼트',
+    attr: 'athleticism',
+    ctl: 'mash',
+    desc: '버튼을 연타해 깊은 자세에서 일어나기',
+    body: '바를 메고 깊게 앉은 자세에서 버튼을 빠르게 연타해 일어나요. 손을 멈추면 다시 주저앉아요. 무릎이 펴지기 직전 고비가 가장 무거워요.',
+    btn: '연타! 일어나기',
   },
 }
-export const isDrill = (kind: string): kind is DrillKind => kind in DRILLS
+// 이전 저장(훈련 3종 시절)의 id 와 큐에 남은 훈련 이벤트를 지금 종류로 읽는다
+const LEGACY_DRILLS: Record<string, DrillKind> = {
+  shootout: 'mid',
+  passDrill: 'pass',
+  dribbleDrill: 'drib',
+}
+export const drillKind = (kind: string): DrillKind | undefined =>
+  kind in DRILLS ? (kind as DrillKind) : LEGACY_DRILLS[kind]
+export const isDrill = (kind: string) => !!drillKind(kind)
 
 // 훈련 결과 안내: 성공했는데 못 오른 건 최고치(99)라서다
 export const drillOutcome = (
@@ -592,7 +709,7 @@ export const drillOutcome = (
       ? { k: '{attr} 이미 최고치예요', v: { attr: T(ATTR_LABELS[attr]) } }
       : '아쉽지만 감각은 익혔습니다.'
 
-// 'made:N' 또는 'auto'(코치에게 맡김: 3~7개). 6개 이상이면 해당 능력치 +1 (99 상한).
+// 'made:N' 또는 'auto'(코치에게 맡김: 3~7개). DRILL_NEED 개 이상이면 해당 능력치 +1 (99 상한).
 // raised 는 실제로 올랐는지 — 99 에 막히면 성공해도 false
 export function applyDrill(
   rng: Rng,
@@ -604,7 +721,7 @@ export function applyDrill(
   const made =
     optionId === 'auto' ? rng.int(3, 7) : Number(optionId.split(':')[1])
   const before = s.player.attrs[attr]
-  if (made >= 6) s.player.attrs[attr] = Math.min(99, before + 1)
+  if (made >= DRILL_NEED) s.player.attrs[attr] = Math.min(99, before + 1)
   return { made, raised: s.player.attrs[attr] > before }
 }
 
@@ -856,13 +973,13 @@ export function applyEvent(
     case 'shootout':
     case 'passDrill':
     case 'dribbleDrill': {
-      const kind = ev.kind as DrillKind
+      const kind = drillKind(ev.kind)!
       const { attr } = DRILLS[kind]
       const { made, raised } = applyDrill(rng, s, kind, optionId)
       return front(
         notice(
           { k: '{reps}개 중 {made}개 성공', v: { reps: DRILL_REPS, made } },
-          drillOutcome(attr, made >= 6, raised),
+          drillOutcome(attr, made >= DRILL_NEED, raised),
         ),
       )
     }
