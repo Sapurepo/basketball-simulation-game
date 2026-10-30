@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import {
   OUTDATED_CLIENT,
+  periodStart,
   toHallPayload,
   USD_TO_MANWON,
   validateHall,
@@ -52,4 +53,16 @@ test('통산 기록은 정규시즌 합, 수입은 달러를 만원으로 환산
   expect(p.kbl || p.nba).toBe(
     s.history.some((h) => h.stage === 'KBL' || h.stage === 'NBA'),
   )
+})
+
+test('기간 시작은 KST 기준 자정·월요일·1일', () => {
+  // 2026-10-30(금) 10:00 KST = 01:00 UTC
+  const now = Date.UTC(2026, 9, 30, 1)
+  const kst = (d: number) => Date.UTC(2026, 9, d) - 9 * 3_600_000
+  expect(periodStart('all', now)).toBe(0)
+  expect(periodStart('day', now)).toBe(kst(30))
+  expect(periodStart('week', now)).toBe(kst(26))
+  expect(periodStart('month', now)).toBe(kst(1))
+  // KST 로는 31일 00:30 이지만 UTC 로는 아직 30일: KST 날짜를 따른다
+  expect(periodStart('day', Date.UTC(2026, 9, 30, 15, 30))).toBe(kst(31))
 })

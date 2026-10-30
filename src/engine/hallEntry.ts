@@ -33,6 +33,18 @@ export const USD_TO_MANWON = 1400 / 10000
 export const NAME_MAX = 10
 // 랭킹 화면에 보여주는 인원 (API 한 번 조회 상한)
 export const HALL_TOP = 100
+// 등록 기간 필터: 한국 시간(KST) 기준 오늘·이번 주(월요일부터)·이번 달. 클라이언트 칩과 API 가 함께 쓴다
+export type HallPeriod = 'all' | 'day' | 'week' | 'month'
+export const HALL_PERIODS: HallPeriod[] = ['all', 'day', 'week', 'month']
+const KST = 9 * 3_600_000
+export function periodStart(period: HallPeriod, now: number): number {
+  if (period === 'all') return 0
+  const d = new Date(now + KST)
+  const [y, m, day] = [d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()]
+  if (period === 'month') return Date.UTC(y, m, 1) - KST
+  const back = period === 'week' ? (d.getUTCDay() + 6) % 7 : 0
+  return Date.UTC(y, m, day - back) - KST
+}
 const POSITIONS: Position[] = ['PG', 'SG', 'SF', 'PF', 'C']
 const HAIR_STYLES: HairStyle[] = [
   'crew',

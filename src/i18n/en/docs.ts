@@ -327,8 +327,8 @@ const docs: Record<string, string> = {
   '은퇴: 36세부터 매년 은퇴를 고민하고 45세에는 은퇴해요. 은퇴하면 은퇴식과 커리어 요약이 열려요.':
     'Retirement: from 36 you consider retiring every year, and at 45 you retire. Retiring opens a ceremony and a career summary.',
   '7. 명예의 전당': '7. Hall of Fame',
-  '은퇴하면 커리어를 공용 명예의 전당에 등록할 수 있어요. 이름과 기록이 모든 플레이어에게 공개되고 한 커리어는 한 번만 올라가요. 등록된 기록은 첫 화면과 「랭킹」에서 오버롤·파이널 MVP·수입·출전시간·득점·어시스트로 정렬하고 KBL·NBA 로 걸러 볼 수 있어요. 선수를 누르면 상세 기록이 보이고 ←/→ 키로 넘길 수 있어요. 내 브라우저에서 은퇴한 선수는 「내 기록」 탭에 따로 남아요.':
-    'After retiring you can register the career in the shared Hall of Fame. Name and stats are public to every player, and each career can be registered once. On the first screen and in "Rankings" you can sort by OVR, Finals MVPs, earnings, minutes, points and assists and filter by KBL or NBA. Tap a player for details and use ←/→ to browse. Players retired in this browser also stay in the "My records" tab.',
+  '은퇴하면 커리어를 공용 명예의 전당에 등록할 수 있어요. 이름과 기록이 모든 플레이어에게 공개되고 한 커리어는 한 번만 올라가요. 등록된 기록은 첫 화면과 「랭킹」에서 오버롤·파이널 MVP·수입·출전시간·득점·어시스트로 정렬하고 KBL·NBA 와 등록 기간(일간·주간·월간)으로 걸러 볼 수 있어요. 기간은 한국 시간(KST) 기준으로 오늘·이번 주(월요일부터)·이번 달에 등록된 기록이고, 첫 화면에는 오늘 등록된 기록이 보여요. 선수를 누르면 상세 기록이 보이고 ←/→ 키로 넘길 수 있어요. 내 브라우저에서 은퇴한 선수는 「내 기록」 탭에 따로 남아요.':
+    'After retiring you can register the career in the shared Hall of Fame. Name and stats are public to every player, and each career can be registered once. On the first screen and in "Rankings" you can sort by OVR, Finals MVPs, earnings, minutes, points and assists and filter by KBL or NBA and by registration period (daily, weekly, monthly). Periods follow Korea Standard Time (KST): today, this week from Monday, and this month. The first screen shows the entries registered today. Tap a player for details and use ←/→ to browse. Players retired in this browser also stay in the "My records" tab.',
   '8. 그 밖에': '8. Other',
   '언어: 푸터에서 한국어·영어·일본어를 바꿀 수 있어요.':
     'Language: switch between Korean, English and Japanese in the footer.',

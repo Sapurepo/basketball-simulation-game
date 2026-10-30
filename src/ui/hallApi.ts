@@ -1,4 +1,5 @@
 import { formatMoney } from '../engine/events'
+import { type HallPeriod, HALL_PERIODS } from '../engine/hallEntry'
 import { migrateLook } from '../engine/save'
 import type { Look, Position } from '../engine/types'
 import { tr } from '../i18n'
@@ -25,6 +26,16 @@ export const LEAGUES: [HallLeague, string][] = [
 ]
 export const isHallLeague = (v: string | null): v is HallLeague =>
   LEAGUES.some(([id]) => id === v)
+// 등록 기간 필터(KST 기준). 랭킹 화면 칩, 랜딩은 일간 고정
+export type { HallPeriod }
+export const PERIODS: [HallPeriod, string][] = [
+  ['all', '전체'],
+  ['day', '일간'],
+  ['week', '주간'],
+  ['month', '월간'],
+]
+export const isHallPeriod = (v: string | null): v is HallPeriod =>
+  (HALL_PERIODS as string[]).includes(v ?? '')
 // 베스트 5 3-2 배치: 앞줄 SF·C·PF, 뒷줄 PG·SG. 상세 팝업의 이전·다음도 이 순서
 export const BEST_ORDER: Position[][] = [
   ['SF', 'C', 'PF'],
@@ -51,12 +62,18 @@ export interface HallRow {
 // 상위 size 명(최대 100), best 면 포지션별 1위
 export async function fetchHall(
   sort: HallSort,
-  opts: { size?: number; best?: boolean; league?: HallLeague } = {},
+  opts: {
+    size?: number
+    best?: boolean
+    league?: HallLeague
+    period?: HallPeriod
+  } = {},
 ) {
   const q = new URLSearchParams({ sort })
   if (opts.size) q.set('size', String(opts.size))
   if (opts.best) q.set('best', '1')
   if (opts.league && opts.league !== 'all') q.set('league', opts.league)
+  if (opts.period && opts.period !== 'all') q.set('period', opts.period)
   const res = await fetch(`/api/hall?${q}`)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const data = (await res.json()) as {

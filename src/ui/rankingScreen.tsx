@@ -6,18 +6,21 @@ import {
   BEST_ORDER,
   fetchHall,
   type HallLeague,
+  type HallPeriod,
   type HallRow,
   type HallSort,
   isHallLeague,
+  isHallPeriod,
   isHallSort,
   LEAGUES,
+  PERIODS,
   rowDetail,
   SORTS,
 } from './hallApi'
 import { HallItem } from './hallBoard'
 import { HallPlayerDialog } from './hallPlayerDialog'
 
-// 주소(/ranking?sort=fmvp&league=NBA)에 정렬·리그를 남겨 새로고침해도 같은 화면으로 연다. #ranking?sort= 는 예전 주소
+// 주소(/ranking?sort=fmvp&league=NBA&period=week)에 정렬·리그·기간을 남겨 새로고침해도 같은 화면으로 연다. #ranking?sort= 는 예전 주소
 const readQuery = () =>
   new URLSearchParams(location.search || (location.hash.split('?')[1] ?? ''))
 const readSort = (): HallSort => {
@@ -28,6 +31,10 @@ const readLeague = (): HallLeague => {
   const v = readQuery().get('league')
   return isHallLeague(v) ? v : 'all'
 }
+const readPeriod = (): HallPeriod => {
+  const v = readQuery().get('period')
+  return isHallPeriod(v) ? v : 'all'
+}
 
 type Data = Awaited<ReturnType<typeof fetchHall>>
 
@@ -35,6 +42,7 @@ type Data = Awaited<ReturnType<typeof fetchHall>>
 export function RankingScreen({ onBack }: { onBack: () => void }) {
   const [sort, setSort] = useState(readSort)
   const [league, setLeague] = useState(readLeague)
+  const [period, setPeriod] = useState(readPeriod)
   const [data, setData] = useState<{ top: Data; best: Data }>()
   const [error, setError] = useState(false)
   // 열린 상세 팝업: 베스트 5 안에서 넘기는지, 몇 번째인지
@@ -54,28 +62,34 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
     setError(false)
     setTick((t) => t + 1)
   }
-  // 정렬·리그를 바꾸면 이전 목록을 지운다. 남겨 두면 새 정렬 라벨이 붙은 옛 순위를 눌러 팝업이 열린다
-  const pick = (next: { sort?: HallSort; league?: HallLeague }) => {
+  // 정렬·리그·기간을 바꾸면 이전 목록을 지운다. 남겨 두면 새 정렬 라벨이 붙은 옛 순위를 눌러 팝업이 열린다
+  const pick = (next: {
+    sort?: HallSort
+    league?: HallLeague
+    period?: HallPeriod
+  }) => {
     const s = next.sort ?? sort
     const l = next.league ?? league
-    if (s === sort && l === league) return
+    const p = next.period ?? period
+    if (s === sort && l === league && p === period) return
     setData(undefined)
     setError(false)
     setSel(undefined)
     setSort(s)
     setLeague(l)
+    setPeriod(p)
   }
 
   useEffect(() => {
     history.replaceState(
       null,
       '',
-      `/ranking?sort=${sort}${league === 'all' ? '' : `&league=${league}`}`,
+      `/ranking?sort=${sort}${league === 'all' ? '' : `&league=${league}`}${period === 'all' ? '' : `&period=${period}`}`,
     )
     let alive = true
     Promise.all([
-      fetchHall(sort, { league }),
-      fetchHall(sort, { best: true, league }),
+      fetchHall(sort, { league, period }),
+      fetchHall(sort, { best: true, league, period }),
     ])
       .then(
         ([top, best]) =>
@@ -86,10 +100,11 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
     return () => {
       alive = false
     }
-  }, [sort, league, tick])
+  }, [sort, league, period, tick])
 
   const sortLabel = tr(SORTS.find(([id]) => id === sort)![1])
   const scope = league === 'all' ? tr('전체 리그') : league
+  const periodLabel = tr(PERIODS.find(([id]) => id === period)![1])
   const ago =
     loadedAt && Math.floor((Math.max(now, loadedAt) - loadedAt) / 60_000)
   const updated =
@@ -152,6 +167,26 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
           </div>
         </div>
         <div className="ranking-field">
+          <span id="ranking-period">{tr('기간')}</span>
+          <div
+            className="chips"
+            role="radiogroup"
+            aria-labelledby="ranking-period"
+          >
+            {PERIODS.map(([id, label]) => (
+              <button
+                key={id}
+                role="radio"
+                aria-checked={period === id}
+                className={period === id ? 'chip on' : 'chip'}
+                onClick={() => pick({ period: id })}
+              >
+                {tr(label)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="ranking-field">
           <span id="ranking-sort">{tr('정렬 기준')}</span>
           <div
             className="chips"
@@ -176,7 +211,7 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
 
       <div className="ranking-meta">
         <b>
-          {scope} · {sortLabel}
+          {scope} · {periodLabel} · {sortLabel}
         </b>
         <div className="row nowrap">
           <span>{updated}</span>
