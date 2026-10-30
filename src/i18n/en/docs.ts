@@ -207,8 +207,8 @@ const docs: Record<string, string> = {
   '성장 +0.2 · +0.5': 'Growth +0.2 · +0.5',
   '1.3조 원': '₩1.3T',
   '성장 +0.3': 'Growth +0.3',
-  '효과에는 상한이 있어요. 같은 능력치의 버프는 합쳐서 +3 까지, 성장 보너스는 합쳐서 +2.0 까지예요. 벽지·바닥·모자는 하나만 적용하고 적용 중인 것만 효과가 나요. 다른 착용 아이템은 벗어도 보유 중이면 버프가 그대로예요. 등급은 가격으로 정해요: 1천만 원 미만 일반, 1억 미만 레어, 100억 미만 에픽, 그 이상 레전드.':
-    'Effects are capped: buffs to one attribute add up to +3, growth bonuses to +2.0. Wallpaper, floor and hat take one at a time and only the applied one counts. Other wearables keep their buff while owned even when taken off. Tier is by price: under ₩10M common, under ₩100M rare, under ₩10B epic, above that legend.',
+  '효과에는 상한이 있어요. 같은 능력치의 버프는 합쳐서 +5 까지, 성장 보너스는 합쳐서 +2.5 까지예요. 벽지·바닥·모자는 하나만 적용하고 적용 중인 것만 효과가 나요. 다른 착용 아이템은 벗어도 보유 중이면 버프가 그대로예요. 등급은 가격으로 정해요: 1천만 원 미만 일반, 1억 미만 레어, 100억 미만 에픽, 그 이상 레전드.':
+    'Effects are capped: buffs to one attribute add up to +5, growth bonuses to +2.5. Wallpaper, floor and hat take one at a time and only the applied one counts. Other wearables keep their buff while owned even when taken off. Tier is by price: under ₩10M common, under ₩100M rare, under ₩10B epic, above that legend.',
   '실측 (자동 플레이어, 커리어 3,000개, 2026-10-30)':
     'Measured (automated player, 3,000 careers, 2026-10-30)',
   '훈련 미니게임과 상점을 쓰지 않고 41세에 은퇴하는 단순한 플레이어 기준이라, 실제 플레이에서는 더 높게 나올 수 있어요. 훈련을 안 하므로 노력형은 손해를 본 수치예요.':
@@ -309,8 +309,8 @@ const docs: Record<string, string> = {
     'Furniture: plant, lamp, shelf, hoop, TV, sofa, bed, home gym and more. Each has its own spot and gives growth.',
   '펫: 무대를 돌아다니는 강아지·고양이 10종. 성장 보너스 +0.1 이고 눌러서 쓰다듬을 수 있어요.':
     'Pets: 10 dogs and cats that roam the stage. Growth +0.1 each, and you can tap to pet them.',
-  '아이템을 고르면 사기 전에 무대나 선수에게 미리 입혀 보여 주고, 효과 칸에 구매 전후 값이 나와요. 같은 능력치의 버프는 합쳐서 +3, 성장 보너스는 합쳐서 +2.0 까지만 쌓이니 상한에 걸리면 효과 칸이 +0 으로 보여요. 「배치 편집」에서 가구·탈것을 끌어 옮기고, 뒤집고, 보관할 수 있어요. 보관해도 효과는 그대로예요.':
-    'Selecting an item previews it on the stage or player before buying, and the effect box shows before and after values. Buffs to one attribute cap at +3 and growth at +2.0, so a capped item shows +0. In "Arrange" you can drag furniture and rides, flip them, or store them; stored items keep their effect.',
+  '아이템을 고르면 사기 전에 무대나 선수에게 미리 입혀 보여 주고, 효과 칸에 구매 전후 값이 나와요. 같은 능력치의 버프는 합쳐서 +5, 성장 보너스는 합쳐서 +2.5 까지만 쌓이니 상한에 걸리면 효과 칸이 +0 으로 보여요. 「배치 편집」에서 가구·탈것을 끌어 옮기고, 뒤집고, 보관할 수 있어요. 보관해도 효과는 그대로예요.':
+    'Selecting an item previews it on the stage or player before buying, and the effect box shows before and after values. Buffs to one attribute cap at +5 and growth at +2.5, so a capped item shows +0. In "Arrange" you can drag furniture and rides, flip them, or store them; stored items keep their effect.',
   '6. 진로': '6. Career path',
   '고교 3시즌이 끝나면 대학 진학과 KBL 드래프트 중에서 고릅니다. 오버롤이 높으면 미국 대학(NCAA) 제안도 와요.':
     'After 3 high-school seasons you choose between college and the KBL draft. With a high OVR, US colleges (NCAA) make offers too.',

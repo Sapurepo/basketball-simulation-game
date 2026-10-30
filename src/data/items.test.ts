@@ -56,13 +56,14 @@ describe('상점 아이템', () => {
     })
     expect(fx.growth).toBe(0.05)
     expect(fx.attrs).toEqual({ athleticism: 1 })
-    // 패스 +1 아이템 넷(이어폰·헤드폰·패스 벽·안경)은 +3 에서 멈춘다
+    // 패스 +1 아이템 넷(이어폰·헤드폰·패스 벽·안경)은 +4, 상한 +5 아래
     const buff = itemEffects({
       items: ['earbuds', 'headphones', 'passWall', 'glasses'],
     })
-    expect(buff.attrs.playmaking).toBe(BUFF_CAP)
+    expect(buff.attrs.playmaking).toBe(4)
+    expect(buff.attrs.playmaking).toBeLessThanOrEqual(BUFF_CAP)
     expect(buff.attrs.shooting).toBe(1)
-    // 성장 보너스 전부 모아도 +2.0
+    // 성장 보너스 전부 모으면 정확히 상한(+2.5)
     const all = itemEffects({ items: ITEMS.map((i) => i.id) })
     expect(all.growth).toBe(GROWTH_CAP)
   })

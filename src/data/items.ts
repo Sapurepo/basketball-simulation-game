@@ -553,9 +553,9 @@ export const tierOf = (price: number) =>
 
 export const itemById = (id: string) => ITEMS.find((i) => i.id === id)
 
-// 아이템 효과 상한: 능력치별 버프 합 +3, 시즌 성장 보너스 합 +2.0
-export const BUFF_CAP = 3
-export const GROWTH_CAP = 2
+// 아이템 효과 상한: 능력치별 버프 합 +5, 시즌 성장 보너스 합 +2.5
+export const BUFF_CAP = 5
+export const GROWTH_CAP = 2.5
 
 export type ItemSlots = Partial<Record<NonNullable<Item['slot']>, string>>
 

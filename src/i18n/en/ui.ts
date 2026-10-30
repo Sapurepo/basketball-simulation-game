@@ -578,8 +578,8 @@ const text: Record<string, string> = {
   '다음 시즌이 기대된다': "Can't wait for next season",
   // ── 상점 ──
   훈련용품: 'Training gear',
-  '무대에 두면 시즌 능력치 +1. 슈팅 슬리브는 선수에게 착용해요. 같은 능력치 버프는 합쳐서 +3까지예요.':
-    'Place it on the stage for a +1 season attribute buff. The shooting sleeve is worn by the player. Buffs to one attribute add up to +3.',
+  '무대에 두면 시즌 능력치 +1. 슈팅 슬리브는 선수에게 착용해요. 같은 능력치 버프는 합쳐서 +5까지예요.':
+    'Place it on the stage for a +1 season attribute buff. The shooting sleeve is worn by the player. Buffs to one attribute add up to +5.',
   '모자 · 하나만 착용': 'Hat · one at a time',
   '훈련용품 · 무대 배치': 'Training gear · on the stage',
   '효과 · 무대에 두고 훈련': 'Effect · trains on the stage',
@@ -868,6 +868,8 @@ const text: Record<string, string> = {
   '리바운드 종목에 「박스아웃 리바운드」, 운동능력 종목에 「속공 레이스」 훈련이 추가돼 6종목 12가지가 됐어요. 박스아웃은 버튼을 누르고 버티다 공이 떨어질 때 떼서 점프하고, 속공은 왼발·오른발을 번갈아 눌러 수비보다 먼저 레이업 지점에 닿아요.':
   '은퇴식을 「건너뛰기」로 바로 마지막 장면까지 넘길 수 있어요.':
     'The retirement ceremony has a "Skip" button that jumps straight to the final scene.',
+  '상점 아이템 효과 상한이 올라갔어요. 같은 능력치 버프는 합쳐서 +5, 성장 보너스는 합쳐서 +2.5까지 쌓여요.':
+    'Shop item caps went up: buffs to one attribute add up to +5 and growth bonuses to +2.5.',
     'Rebounding gains "Box-out rebound" and athleticism gains "Fast-break race", making 12 drills in 6 categories. Box out by holding the button and releasing to jump as the ball drops; in the race, alternate left and right foot to beat the defender to the layup spot.',
   '명예의 전당에서 KBL 리그를 고르면 파이널 MVP 대신 KBL 챔피언결정전 우승 횟수로 정렬하고, 목록·베스트 5·상세에도 우승 횟수가 보여요. 이전에 등록된 기록은 우승 횟수가 없어 이 정렬에서는 뒤로 가요.':
     'Choosing the KBL league in the Hall of Fame sorts by KBL championship titles instead of Finals MVPs, and the list, Best 5 and details show title counts. Earlier entries have no title count and sort last here.',
