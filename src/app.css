@@ -5194,6 +5194,8 @@ button.spot:hover {
   image-rendering: pixelated;
 }
 
+/* 지연이 붙은 steps() 애니메이션은 끝 진행도가 부동소수 오차로 1 에 못 미쳐 마지막 단계(예: opacity 2/3)에 멈출 수 있다.
+   jump-none 은 마지막 단계가 끝값이라 안전하다 */
 .fm-card {
   position: relative;
   background: var(--panel-hi);
@@ -5203,7 +5205,7 @@ button.spot:hover {
     0 0 0 9px var(--gold-lo),
     0 0 0 12px var(--ink),
     0 18px 0 0 var(--ink-deep);
-  animation: fm-shake 0.36s steps(6) 2.1s both;
+  animation: fm-shake 0.36s steps(6, jump-none) 2.1s both;
 }
 
 .fm-stage {
@@ -5268,7 +5270,7 @@ button.spot:hover {
   left: 50%;
   top: 150px;
   z-index: 2;
-  animation: fm-in 0.3s steps(3) 1.8s both;
+  animation: fm-in 0.3s steps(3, jump-none) 1.8s both;
 }
 
 .fm-rays > div {
@@ -5348,7 +5350,7 @@ button.spot:hover {
   height: 40px;
   margin: -20px 0 0 -20px;
   border: 4px solid var(--gold-hi);
-  animation: fm-ring 0.55s steps(6) 1.8s both;
+  animation: fm-ring 0.55s steps(6, jump-none) 1.8s both;
 }
 
 .fm-ring.two {
@@ -5429,7 +5431,7 @@ button.spot:hover {
   border-radius: 50%;
   background: rgb(255 236 170 / 0.3);
   animation:
-    fm-in 0.12s steps(2) 1.1s both,
+    fm-in 0.12s steps(2, jump-none) 1.1s both,
     fm-out 0.1s 1.8s forwards;
 }
 
@@ -5448,7 +5450,7 @@ button.spot:hover {
   justify-content: center;
   align-items: center;
   gap: 10px;
-  animation: fm-slam 0.32s steps(5) 2.05s both;
+  animation: fm-slam 0.32s steps(5, jump-none) 2.05s both;
 }
 
 .fm-plate img {
@@ -5485,7 +5487,7 @@ button.spot:hover {
   font: 400 12px var(--font-pixel);
   letter-spacing: 1px;
   color: var(--accent-lo);
-  animation: fm-rise 0.3s steps(3) 2.5s both;
+  animation: fm-rise 0.3s steps(3, jump-none) 2.5s both;
 }
 
 .fm-name {
@@ -5497,7 +5499,7 @@ button.spot:hover {
 .fm-name img {
   width: 28px;
   height: 48px;
-  animation: fm-laurel-l 0.3s steps(3) 2.75s both;
+  animation: fm-laurel-l 0.3s steps(3, jump-none) 2.75s both;
 }
 
 .fm-name img.r {
@@ -5508,13 +5510,13 @@ button.spot:hover {
   margin: 0;
   font: 400 38px/1.15 var(--font-pixel);
   text-shadow: 3px 3px 0 var(--gold);
-  animation: fm-pop 0.4s steps(5) 2.6s both;
+  animation: fm-pop 0.4s steps(5, jump-none) 2.6s both;
 }
 
 .fm-sub {
   font-size: 13px;
   color: var(--muted);
-  animation: fm-rise 0.3s steps(3) 2.75s both;
+  animation: fm-rise 0.3s steps(3, jump-none) 2.75s both;
 }
 
 .fm-stats {
@@ -5544,7 +5546,7 @@ button.spot:hover {
   box-shadow:
     inset 0 0 0 2px var(--ink),
     inset 0 -5px 0 0 var(--line);
-  animation: fm-pop 0.3s steps(4) 3s both;
+  animation: fm-pop 0.3s steps(4, jump-none) 3s both;
 }
 
 .fm-stats > div > div:nth-child(2) {
@@ -5576,7 +5578,7 @@ button.spot:hover {
   padding: 8px 12px;
   background: var(--ink);
   color: var(--panel-hi);
-  animation: fm-rise 0.3s steps(3) 3.55s both;
+  animation: fm-rise 0.3s steps(3, jump-none) 3.55s both;
 }
 
 .fm-shelf > div:first-child {
@@ -5645,7 +5647,7 @@ button.spot:hover {
 
 .modal.fmvp .fm-foot .primary {
   margin: 3px;
-  animation: fm-pop 0.35s steps(4) 4.15s both;
+  animation: fm-pop 0.35s steps(4, jump-none) 4.15s both;
 }
 
 .fm-foot .primary span {
@@ -5672,7 +5674,7 @@ button.spot:hover {
     0 0 0 3px var(--ink),
     inset 0 3px 0 0 var(--gold-hi),
     inset 0 -4px 0 0 var(--gold-lo);
-  animation: fm-stamp 0.36s steps(5) 2.3s both;
+  animation: fm-stamp 0.36s steps(5, jump-none) 2.3s both;
 }
 
 /* 리본 꼬리 */
@@ -5735,7 +5737,7 @@ button.spot:hover {
   font-size: 24px;
   line-height: 1.3;
   color: var(--panel-hi);
-  animation: fm-rise 0.35s steps(4) 0.35s both;
+  animation: fm-rise 0.35s steps(4, jump-none) 0.35s both;
 }
 
 .fm-dark > div > p:nth-child(2) span {
@@ -5808,7 +5810,7 @@ button.spot:hover {
   background: #fff8e6;
   opacity: 0;
   pointer-events: none;
-  animation: fm-flash 0.5s steps(5) 1.8s forwards;
+  animation: fm-flash 0.5s steps(5, jump-none) 1.8s forwards;
 }
 
 @keyframes fm-in {

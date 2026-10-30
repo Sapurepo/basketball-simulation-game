@@ -870,6 +870,8 @@ const text: Record<string, string> = {
     'The retirement ceremony has a "Skip" button that jumps straight to the final scene.',
   '상점 아이템 효과 상한이 올라갔어요. 같은 능력치 버프는 합쳐서 +5, 성장 보너스는 합쳐서 +2.5까지 쌓여요.':
     'Shop item caps went up: buffs to one attribute add up to +5 and growth bonuses to +2.5.',
+  '파이널 MVP 축하 카드의 문구와 트로피 배너가 연출이 끝난 뒤 반투명하게 남던 문제를 고쳤어요.':
+    'Fixed the Finals MVP card text and trophy banner staying semi-transparent after the animation ended.',
     'Rebounding gains "Box-out rebound" and athleticism gains "Fast-break race", making 12 drills in 6 categories. Box out by holding the button and releasing to jump as the ball drops; in the race, alternate left and right foot to beat the defender to the layup spot.',
   '명예의 전당에서 KBL 리그를 고르면 파이널 MVP 대신 KBL 챔피언결정전 우승 횟수로 정렬하고, 목록·베스트 5·상세에도 우승 횟수가 보여요. 이전에 등록된 기록은 우승 횟수가 없어 이 정렬에서는 뒤로 가요.':
     'Choosing the KBL league in the Hall of Fame sorts by KBL championship titles instead of Finals MVPs, and the list, Best 5 and details show title counts. Earlier entries have no title count and sort last here.',
