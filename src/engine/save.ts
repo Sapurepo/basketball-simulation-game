@@ -131,6 +131,8 @@ export interface HallEntry {
   // NBA 파이널 MVP 횟수. 이전 기록에는 없다
   fmvp?: number
   year: number
+  // KBL 챔피언결정전 우승 횟수. 이전 기록에는 없다
+  kblTitles?: number
   // 통산 수입(만원)·출전시간·득점·어시스트. 이전 기록에는 없다
   earnings?: number
   minutes?: number
@@ -165,6 +167,7 @@ export function recordHall(s: GameState): HallEntry[] {
     trophies: hallTrophies(s),
     fmvp: hallFmvp(s),
     year: s.year,
+    kblTitles: payload.kblTitles,
     earnings: payload.earnings,
     minutes: payload.minutes,
     pts: payload.pts,

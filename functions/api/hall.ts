@@ -7,7 +7,7 @@ import {
 } from '../../src/engine/hallEntry'
 
 // 공용 명예의 전당 API (Cloudflare Pages Function, D1 바인딩 DB)
-// GET  /api/hall?sort=ovr|fmvp|earnings|minutes|pts|ast&size=N → { rows(순위 포함), total }, 상위 100명까지
+// GET  /api/hall?sort=ovr|fmvp|titles|earnings|minutes|pts|ast&size=N → { rows(순위 포함), total }, 상위 100명까지
 // GET  /api/hall?sort=…&best=1 → 포지션별 1위 (베스트 5), rank 는 전체 순위
 //      &league=KBL|NBA 는 그 리그를 한 시즌이라도 뛴 선수만 (total 도 그 기준)
 //      &period=day|week|month 는 KST 기준 오늘·이번 주·이번 달에 등록된 기록만 (순위·total 도 그 안에서)
@@ -39,6 +39,7 @@ const IP_HASH_TTL = 24 * HOUR
 const ORDER = {
   ovr: 'peak_ovr DESC, fmvp DESC, created_at',
   fmvp: 'fmvp DESC, peak_ovr DESC, created_at',
+  titles: 'kbl_titles DESC NULLS LAST, peak_ovr DESC, created_at',
   earnings: 'earnings DESC NULLS LAST, peak_ovr DESC, created_at',
   minutes: 'minutes DESC NULLS LAST, peak_ovr DESC, created_at',
   pts: 'pts DESC NULLS LAST, peak_ovr DESC, created_at',
@@ -120,7 +121,7 @@ async function queryHall(
   best: boolean,
 ): Promise<HallBody> {
   const cols = `id, name, position, look, peak_ovr AS peakOvr, fmvp, trophies, seasons,
-    retired_year AS retiredYear, earnings, minutes, pts, ast`
+    retired_year AS retiredYear, kbl_titles AS kblTitles, earnings, minutes, pts, ast`
   // 기간 시작은 서버가 계산한 숫자라 그대로 넣는다 (캐시 1분이라 자정 경계는 최대 1분 늦다)
   const conds = [
     ...(league ? [`${league === 'NBA' ? 'nba' : 'kbl'} = 1`] : []),
@@ -208,8 +209,8 @@ export async function onRequestPost({ request, env }: Ctx) {
   // 같은 커리어는 한 번만 (id 기본키)
   const { meta } = await env.DB.prepare(
     `INSERT OR IGNORE INTO hall (id, name, position, look, peak_ovr, fmvp, trophies,
-       seasons, retired_year, ip_hash, created_at, kbl, nba, earnings, minutes, pts, ast)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       seasons, retired_year, ip_hash, created_at, kbl, nba, kbl_titles, earnings, minutes, pts, ast)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       entry.id,
@@ -225,6 +226,7 @@ export async function onRequestPost({ request, env }: Ctx) {
       now,
       entry.kbl ? 1 : 0,
       entry.nba ? 1 : 0,
+      entry.kblTitles,
       entry.earnings,
       entry.minutes,
       entry.pts,

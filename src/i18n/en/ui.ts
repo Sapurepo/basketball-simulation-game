@@ -302,6 +302,9 @@ const text: Record<string, string> = {
   뒤로: 'Back',
   '최고 OVR순': 'By peak OVR',
   '파이널 MVP순': 'By Finals MVPs',
+  'KBL 우승순': 'By KBL titles',
+  'KBL 우승 {n}회': '{n} KBL titles',
+  'OVR {ovr} · KBL 우승 {n}': 'OVR {ovr} · KBL titles {n}',
   '누르고 떼기': 'Hold & release',
   '타이밍 맞춰 누르기': 'Timed tap',
   '방향 고르기': 'Pick a side',
@@ -862,6 +865,8 @@ const text: Record<string, string> = {
     'Results no longer leak before a broadcast ends, and the live box score shows minutes played.',
   '선수 생성의 「다시 뽑기」가 「능력치 재분배」로 바뀌었어요.':
     "'Reroll' on the create screen is now 'Redistribute'.",
+  '명예의 전당에서 KBL 리그를 고르면 파이널 MVP 대신 KBL 챔피언결정전 우승 횟수로 정렬하고, 목록·베스트 5·상세에도 우승 횟수가 보여요. 이전에 등록된 기록은 우승 횟수가 없어 이 정렬에서는 뒤로 가요.':
+    'Choosing the KBL league in the Hall of Fame sorts by KBL championship titles instead of Finals MVPs, and the list, Best 5 and details show title counts. Earlier entries have no title count and sort last here.',
   // ── 공지 1.3.0 ──
   '경기 중계가 새로워졌어요. 스코어보드에서 점수·경기 시계·쿼터별 점수를 보며 슛 시도와 결과를 차례로 볼 수 있어요.':
     'Game broadcasts are redesigned. Follow the score, game clock and quarter scores on the scoreboard as each shot is taken and lands.',

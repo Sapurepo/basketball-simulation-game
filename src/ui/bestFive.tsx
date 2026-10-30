@@ -9,10 +9,13 @@ import { teamKit } from './pose'
 export function BestFive({
   rows,
   desc,
+  titles = false,
   onOpen,
 }: {
   rows: HallRow[]
   desc: string
+  // 이름판에 파이널 MVP 대신 KBL 챔피언결정전 우승 (KBL 필터)
+  titles?: boolean
   onOpen: (r: HallRow) => void
 }) {
   const leader = Math.min(...rows.map((r) => r.rank))
@@ -93,10 +96,15 @@ export function BestFive({
                 <span className="spot-plate">
                   <b>{p.name}</b>
                   <small>
-                    {tr('OVR {ovr} · 파이널 MVP {n}', {
-                      ovr: p.peakOvr,
-                      n: p.fmvp,
-                    })}
+                    {titles
+                      ? tr('OVR {ovr} · KBL 우승 {n}', {
+                          ovr: p.peakOvr,
+                          n: p.kblTitles ?? '-',
+                        })
+                      : tr('OVR {ovr} · 파이널 MVP {n}', {
+                          ovr: p.peakOvr,
+                          n: p.fmvp,
+                        })}
                   </small>
                 </span>
               </button>

@@ -21,6 +21,8 @@ export interface HallPayload {
   // 한 시즌이라도 뛴 리그 (둘 다 가능)
   kbl: boolean
   nba: boolean
+  // KBL 챔피언결정전 우승 횟수 (KBL 필터의 정렬 기준)
+  kblTitles: number
   // 통산 수입(만원, USD 는 환산)과 정규시즌 통산 출전시간·득점·어시스트
   earnings: number
   minutes: number
@@ -90,6 +92,9 @@ export const hallTrophies = (s: GameState) =>
 export const hallFmvp = (s: GameState) =>
   s.history.filter((h) => h.awards.includes('NBA 파이널 MVP')).length
 
+export const hallKblTitles = (s: GameState) =>
+  s.history.filter((h) => h.awards.includes('KBL 챔피언결정전 우승')).length
+
 export const hallEarnings = (s: GameState) =>
   s.earnings.KRW + Math.round(s.earnings.USD * USD_TO_MANWON)
 
@@ -109,6 +114,7 @@ export function toHallPayload(s: GameState): HallPayload {
     retiredYear: s.year,
     kbl: s.history.some((h) => h.stage === 'KBL'),
     nba: s.history.some((h) => h.stage === 'NBA'),
+    kblTitles: hallKblTitles(s),
     earnings: hallEarnings(s),
     minutes: hallTotal(s, 'minutes'),
     pts: hallTotal(s, 'pts'),
@@ -167,6 +173,9 @@ export function validateHall(v: unknown): HallPayload | string {
   if (!('kbl' in p) && !('earnings' in p)) return OUTDATED_CLIENT
   if (typeof p.kbl !== 'boolean' || typeof p.nba !== 'boolean')
     return '리그 오류'
+  // KBL 우승 정렬 전 번들은 kblTitles 를 보내지 않는다
+  if (!('kblTitles' in p)) return OUTDATED_CLIENT
+  if (!isInt(p.kblTitles, 0, seasons)) return 'KBL 우승 오류'
   // 시즌당 상한: 수입 1천억 원, 출전 5,000분, 6,000점, 3,000어시스트 (NBA 최고 연봉·82경기 48분 기준으로 넉넉히)
   if (!isInt(p.earnings, 0, seasons * 10_000_000)) return '수입 오류'
   if (!isInt(p.minutes, 0, seasons * 5000)) return '출전시간 오류'
@@ -184,6 +193,7 @@ export function validateHall(v: unknown): HallPayload | string {
     retiredYear: p.retiredYear,
     kbl: p.kbl,
     nba: p.nba,
+    kblTitles: p.kblTitles,
     earnings: p.earnings,
     minutes: p.minutes,
     pts: p.pts,

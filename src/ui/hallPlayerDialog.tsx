@@ -45,6 +45,10 @@ export function HallPlayerDialog({
   const stats = [
     [tr('최고 OVR'), String(p.peakOvr)],
     [tr('파이널 MVP'), tr('{n}회', { n: p.fmvp })],
+    // KBL 우승 정렬 전 기록에는 없어 있을 때만
+    ...(p.kblTitles === null
+      ? []
+      : [[tr('KBL 우승'), tr('{n}회', { n: p.kblTitles })]]),
     [tr('트로피'), tr('{n}개', { n: p.trophies })],
     ...(mine ? [] : [[tr('시즌 수'), String(p.seasons)]]),
     [tr('은퇴'), tr('{year}년', { year: p.retiredYear })],
