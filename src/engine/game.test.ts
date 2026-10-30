@@ -26,8 +26,9 @@ import {
   weightSpeedMod,
 } from './player'
 import { Rng } from './rng'
+import { injuryScale, minutesOvr, playerBox } from './sim'
 import { compactSave, migrateLook, parseSave } from './save'
-import type { GameState, Look, Player } from './types'
+import type { GameState, Look, Player, StatLine } from './types'
 import { botChoice, playCareer } from './testBot'
 import { ko } from '../i18n'
 
@@ -920,5 +921,53 @@ describe('잠재력 균등·성장 기질·노력치', () => {
     const loaded = parseSave(JSON.stringify(raw))
     expect(loaded.player.ethic).toBe('normal')
     expect(loaded.player.ev).toEqual({})
+  })
+})
+
+describe('스피드·운동능력의 경기 반영', () => {
+  // 능력치 하나만 다른 두 선수를 같은 시드로 많이 돌려 평균을 비교한다
+  const mk = (over: Partial<Player['attrs']>): Player => {
+    const p = createPlayer(new Rng(2), 'x', 'SF', 'n/a')
+    for (const k of Object.keys(p.attrs) as (keyof Player['attrs'])[])
+      p.attrs[k] = 60
+    Object.assign(p.attrs, over)
+    return p
+  }
+  const avg = (p: Player, pick: (b: StatLine) => number) => {
+    let sum = 0
+    for (let i = 1; i <= 400; i++) sum += pick(playerBox(new Rng(i), p, 60, 32))
+    return sum / 400
+  }
+
+  test('스피드가 높으면 야투 시도·2점 성공률·자유투 시도가 늘고 리바운드는 그대로다', () => {
+    const slow = mk({ speed: 30 })
+    const fast = mk({ speed: 90 })
+    expect(avg(fast, (b) => b.fga)).toBeGreaterThan(avg(slow, (b) => b.fga))
+    expect(avg(fast, (b) => (b.fgm - b.tpm) / (b.fga - b.tpa))).toBeGreaterThan(
+      avg(slow, (b) => (b.fgm - b.tpm) / (b.fga - b.tpa)),
+    )
+    expect(avg(fast, (b) => b.fta)).toBeGreaterThan(avg(slow, (b) => b.fta))
+    // 리바운드는 스피드와 무관 (난수 소비 순서가 달라 완전히 같진 않다)
+    expect(avg(fast, (b) => b.reb)).toBeCloseTo(
+      avg(slow, (b) => b.reb),
+      0,
+    )
+  })
+
+  test('운동능력이 높으면 리바운드·블록이 늘고 출전시간이 길고 덜 다친다', () => {
+    const stiff = mk({ athleticism: 30 })
+    const bouncy = mk({ athleticism: 90 })
+    expect(avg(bouncy, (b) => b.reb)).toBeGreaterThan(avg(stiff, (b) => b.reb))
+    expect(avg(bouncy, (b) => b.blk)).toBeGreaterThan(avg(stiff, (b) => b.blk))
+    // 출전시간용 OVR 은 운동능력이 OVR 보다 높은 만큼의 15% 를 얹는다
+    expect(minutesOvr(bouncy)).toBeCloseTo(
+      overall(bouncy) + (90 - overall(bouncy)) * 0.15,
+    )
+    expect(minutesOvr(bouncy) - minutesOvr(stiff)).toBeGreaterThan(
+      overall(bouncy) - overall(stiff),
+    )
+    expect(injuryScale(bouncy)).toBeCloseTo(0.8)
+    expect(injuryScale(stiff)).toBeCloseTo(1.1)
+    expect(injuryScale(mk({ athleticism: 50 }))).toBe(1)
   })
 })
