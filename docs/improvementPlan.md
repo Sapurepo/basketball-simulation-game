@@ -11,7 +11,7 @@
 | 26  | 중계 결과 스포 방지 + 출전시간 표시 | 소형 | [x]  | —         |
 | 27  | 명예의 전당 정렬 다양화             | 중형 | [x]  | ① 결정됨  |
 | 25  | 아이템 다양화 (저가·능력치 분배)    | 중형 | [ ]  | ②         |
-| 24  | 훈련 다양화 + 3개 제공 + 자동훈련   | 대형 | [ ]  | ③         |
+| 24  | 훈련 다양화 + 3개 제공 + 자동훈련   | 대형 | [x]  | ③ 결정됨  |
 | 23  | 잠재 특성 세분화 + 등급 균등 + 숨김 | 대형 | [ ]  | ④ ⑤       |
 
 권장 순서: **26 → 27 → 25 → 24 → 23**. 작은 것부터, 밸런스 결정이 필요한 23은 마지막(24가 끝나야 훈련 수가 정해진다). 항목마다 커밋 1개, 끝에 `changelog.ts` 1.4.0·`engines.md`·`odds.ts` 갱신 커밋 1개.
@@ -57,19 +57,21 @@
 
 **결정 ②** A+B 둘 다 / A 만 / B 만.
 
-## 24. 훈련 다양화 + 3개 제공 + 자동훈련
+## 24. 훈련 다양화 + 4개 제공 + 자동훈련
 
-- [ ] `DRILLS` 를 9종으로 확장하고 `game: 'hold' | 'distance' | 'react'` 필드 추가. **미니게임 메커니즘은 기존 3종을 재사용**하고 제목·문구·대상 능력치만 다르게
-  - 게이지(hold): 슈팅(shooting) · 자유투(shooting) · 웨이트(athleticism) · 리바운드 점프(rebounding)
-  - 거리 게이지(distance): 패스(playmaking) · 수비 풋워크(defense)
-  - 좌우 반응(react): 드리블(finishing) · 반응속도(speed) · 수비 스텝(defense, 공격자 방향 **따라가기**)
-- [ ] `DrillKind` 확장. 기존 id 3개(`shootout`·`passDrill`·`dribbleDrill`)는 그대로 두어 이전 저장의 `drillsDone` 과 이벤트 큐가 깨지지 않게
-- [ ] `buildOffseason` 에서 3종을 뽑아 `GameState.drillsOffered` 에 저장. 필드가 없는 이전 저장은 기존 3종을 제공
-- [ ] `availableDrills` 가 `drillsOffered` 기준으로. `drillGame.tsx` 는 `DRILLS[kind].game` 으로 컴포넌트를 고른다
-- [ ] `trainingPanel.tsx`: 카드 3장, 각각 **직접 하기 / 자동 훈련** 버튼. 자동은 이미 있는 `'auto'`(3~7개 랜덤, 6개 이상 40%) 경로
-- [ ] `drill.test.ts`·`game.test.ts`, i18n, `engines.md` 9장 훈련 표
+2026-10-29 설계 핸드오프(claude.ai/design `templates/training/Training.dc.html`, `train-art.js`) 기준으로 구현.
 
-**결정 ③** 미니게임 화면은 기존 3종 그대로 재사용(골대 화면에서 "웨이트" 문구만 바뀜)해도 되는지, 종류별 그림까지 바꿀지. 그림까지면 작업량 3~4배. 권장: 재사용으로 먼저 내고 반응 보고.
+- [x] `DRILLS` 11종(`ft·mid·three·pass·team·reb·drib·foot·react·bench·squat`), 6종목(`DRILL_CATS`), 조작 7종(`DrillCtl`). `DRILL_MAX = 4`, `DRILL_NEED = 6`. 이전 저장 id 3개는 `drillKind()` 가 `mid·pass·drib` 으로 읽고, 큐에 남은 훈련 이벤트도 같은 경로
+- [x] `availableDrills` 는 4개를 마치면 빈 배열. 메인 화면 "남은 훈련 n" 도 남은 횟수 기준
+- [x] `src/ui/trainArt.ts` — 설계 `train-art.js` 포팅(벤치 프레스·스쿼트 5단계, 측면 골대 스위시 프레임)
+- [x] `src/ui/drillEngine.ts` — 설계 클래스의 진행·판정·공 비행(Web Animations)·연출을 React 와 분리한 엔진으로 포팅. StrictMode 의 effect 되감기에 대비해 `start()` 가 `destroy()` 를 되돌린다
+- [x] `src/ui/drillPlay.tsx` — 480×270 고정 무대(좁으면 `zoom`), 8장면, 조작별 버튼·키보드. `trainingPanel.tsx` 전면 교체: 종목 탭 + 카드(시작 ▶ / 코치에게 맡기기) → 플레이 → 결과(통과 스탬프·before→after·다음 ▶). **헤더 TRAIN 뱃지 없음**, 진행도 "완료 n / 4"
+- [x] 기존 `shootDrill·passDrill·dribbleDrill·drillGame·drillHooks·drillParts` 삭제. `drill.ts` 의 `zoneWidth` 만 재사용
+- [x] CSS `.tr-*` 블록으로 교체, 키프레임 4개. i18n en·ja 약 130개(엔진 문구는 `engine.ts`, 화면 문구는 `ui.ts`)
+- [x] `game.test.ts` 11종·4개 한도·레거시 id. 브라우저에서 11종 장면 모두 렌더·판정 확인, 콘솔 오류 없음
+- [x] `engines.md` 9장 훈련 표·실측(1,500 커리어) 재측정, `odds.ts`
+
+**결정 ③** (2026-10-29) 설계대로 종목별 그림·조작을 모두 구현. 자동훈련은 카드의 "코치에게 맡기기" 버튼(3~7개 균등). 난이도·5회 모드는 제외.
 
 ## 23. 잠재 특성 세분화 + 등급 균등 + 잠재력 숨김
 
