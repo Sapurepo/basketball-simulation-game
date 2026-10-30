@@ -122,6 +122,9 @@ function validLook(v: unknown): v is Look {
   )
 }
 
+export const OUTDATED_CLIENT =
+  '게임이 업데이트됐어요. 페이지를 새로고침한 뒤 다시 등록해 주세요.'
+
 // 서버 검증: 통과하면 정리된 값, 아니면 거부 사유
 export function validateHall(v: unknown): HallPayload | string {
   if (!v || typeof v !== 'object') return '형식 오류'
@@ -141,6 +144,8 @@ export function validateHall(v: unknown): HallPayload | string {
   // 한 시즌 수상은 많아야 열 개 남짓, 아시안게임 메달까지 넉넉히
   if (!isInt(p.trophies, 0, seasons * 15)) return '트로피 오류'
   if (!isInt(p.retiredYear, 2026, 2200)) return '은퇴 연도 오류'
+  // 정렬 다양화(1.4.0) 전 번들은 아래 여섯 값을 보내지 않는다. "리그 오류" 대신 새로고침을 안내한다
+  if (!('kbl' in p) && !('earnings' in p)) return OUTDATED_CLIENT
   if (typeof p.kbl !== 'boolean' || typeof p.nba !== 'boolean')
     return '리그 오류'
   // 시즌당 상한: 수입 1천억 원, 출전 5,000분, 6,000점, 3,000어시스트 (NBA 최고 연봉·82경기 48분 기준으로 넉넉히)

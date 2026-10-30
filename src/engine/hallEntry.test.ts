@@ -1,5 +1,10 @@
 import { expect, test } from 'vitest'
-import { toHallPayload, USD_TO_MANWON, validateHall } from './hallEntry'
+import {
+  OUTDATED_CLIENT,
+  toHallPayload,
+  USD_TO_MANWON,
+  validateHall,
+} from './hallEntry'
 import { playCareer } from './testBot'
 
 const career = () => ({
@@ -18,6 +23,10 @@ test('조작된 값과 부적절한 이름은 거부한다', () => {
   expect(bad({ peakOvr: 120 })).toBeTypeOf('string')
   expect(bad({ fmvp: p.seasons + 1 })).toBeTypeOf('string')
   expect(bad({ kbl: 1 })).toBeTypeOf('string')
+  // 1.4.0 전 번들(통산 기록 6개 필드 없음)은 새로고침 안내를 받는다
+  const { kbl, nba, earnings, minutes, pts, ast, ...old } = p
+  void [kbl, nba, earnings, minutes, pts, ast]
+  expect(validateHall(old)).toBe(OUTDATED_CLIENT)
   expect(bad({ earnings: -1 })).toBeTypeOf('string')
   expect(bad({ pts: p.seasons * 6000 + 1 })).toBeTypeOf('string')
   expect(bad({ id: 'x' })).toBeTypeOf('string')

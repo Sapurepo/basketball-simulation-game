@@ -350,6 +350,8 @@ const docs: Record<string, string> = {
   '고교 대회 MVP': 'High-school tournament MVP',
   '영어·일본어로 문서 주소에 바로 들어오면 한국어로 보이던 문제를 고쳤어요.':
     'Fixed documents showing in Korean when opened directly by URL in English or Japanese.',
+  '게임이 업데이트됐어요. 페이지를 새로고침한 뒤 다시 등록해 주세요.':
+    'The game has been updated. Refresh the page and register again.',
 }
 
 export default docs
