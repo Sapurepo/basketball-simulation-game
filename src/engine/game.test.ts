@@ -13,9 +13,14 @@ import {
   toggleAccessory,
 } from './game'
 import {
+  addEv,
   createPlayer,
+  ethicBonus,
+  EV_MAX,
+  EV_TOTAL,
   grow,
   overall,
+  potentialGrade,
   START_TOTAL,
   WEIGHT_RANGE,
   weightSpeedMod,
@@ -299,7 +304,11 @@ test('이전 외형(팔레트 인덱스)은 v2 외형으로 바뀐다', () => {
 describe('훈련 미니게임', () => {
   const base = () => {
     const rng = new Rng(11)
-    return newGame(11, createPlayer(rng, 'a', 'PG', '플레이메이커'), 'yongsan')
+    const p = {
+      ...createPlayer(rng, 'a', 'PG', '플레이메이커'),
+      ethic: 'normal' as const,
+    }
+    return newGame(11, p, 'yongsan')
   }
 
   test.each([
@@ -803,4 +812,91 @@ test('OVR 95 이상은 양의 성장이 줄고, 노쇠는 줄지 않는다', () 
   // 40세 노쇠(보너스 0 → g < 0)는 체감 없음: 운동능력·스피드 추가 −1 포함 같은 폭
   expect(gain(97, 40, 0)).toBeLessThan(0)
   expect(gain(97, 40, 0)).toBeCloseTo(gain(90, 40, 0), 5)
+})
+
+describe('잠재력 균등·성장 기질·노력치', () => {
+  const players = Array.from({ length: 5000 }, (_, i) =>
+    createPlayer(new Rng(i + 1), 'x', 'SF', 'n/a'),
+  )
+
+  test('잠재력 등급은 5개가 각 20% 근처다 (기질 ±5 로 조금 흔들린다)', () => {
+    const n = players.length
+    for (const g of ['S', 'A', 'B', 'C', 'D']) {
+      const share =
+        players.filter((p) => potentialGrade(p.potential) === g).length / n
+      expect(share).toBeGreaterThan(0.14)
+      expect(share).toBeLessThan(0.26)
+    }
+    expect(players.every((p) => p.potential >= 60 && p.potential <= 97)).toBe(
+      true,
+    )
+  })
+
+  test('성장 기질은 천재 25% · 노력 25% · 보통 50%', () => {
+    const n = players.length
+    const share = (e: Player['ethic']) =>
+      players.filter((p) => p.ethic === e).length / n
+    expect(share('gifted')).toBeCloseTo(0.25, 1)
+    expect(share('steady')).toBeCloseTo(0.25, 1)
+    expect(share('normal')).toBeCloseTo(0.5, 1)
+  })
+
+  test('기질 보너스: 천재형은 훈련 0개면 −1, 노력형은 훈련마다 +0.3', () => {
+    expect(ethicBonus('gifted', 0)).toBe(-1)
+    expect(ethicBonus('gifted', 2)).toBe(0)
+    expect(ethicBonus('steady', 0)).toBe(0)
+    expect(ethicBonus('steady', 4)).toBeCloseTo(1.2)
+    expect(ethicBonus('normal', 4)).toBe(0)
+  })
+
+  test('노력형은 훈련 성공 시 +2, 노력치는 성공 여부와 무관하게 +1', () => {
+    const rng = new Rng(11)
+    const p = {
+      ...createPlayer(rng, 'a', 'PG', '플레이메이커'),
+      ethic: 'steady' as const,
+    }
+    const s = newGame(11, p, 'yongsan')
+    const before = s.player.attrs.shooting
+    const ok = playDrill(s, 'ft', 'made:9')
+    expect(ok.player.attrs.shooting).toBe(Math.min(99, before + 2))
+    expect(ok.player.ev.shooting).toBe(1)
+    const miss = playDrill(s, 'ft', 'made:3')
+    expect(miss.player.attrs.shooting).toBe(before)
+    expect(miss.player.ev.shooting).toBe(1)
+  })
+
+  test('노력치 상한: 능력치별 20, 합계 60', () => {
+    const p = createPlayer(new Rng(1), 'x', 'SF', 'n/a')
+    for (let i = 0; i < 25; i++) addEv(p, 'shooting')
+    expect(p.ev.shooting).toBe(EV_MAX)
+    for (let i = 0; i < 25; i++) addEv(p, 'defense')
+    for (let i = 0; i < 25; i++) addEv(p, 'speed')
+    expect(p.ev.speed).toBe(EV_TOTAL - 2 * EV_MAX)
+    expect(addEv(p, 'playmaking')).toBe(false)
+  })
+
+  test('노력치는 성장 총량은 그대로 두고 분배만 그 능력치로 기울인다', () => {
+    const mk = (): Player => ({
+      ...createPlayer(new Rng(7), 'x', 'SF', 'n/a'),
+      potential: 90,
+      growthType: 'normal',
+    })
+    const plain = mk()
+    const trained = { ...mk(), ev: { shooting: EV_MAX } }
+    grow(new Rng(1), plain, 20, 0.7, undefined, 0)
+    grow(new Rng(1), trained, 20, 0.7, undefined, 0)
+    expect(overall(trained)).toBe(overall(plain))
+    expect(trained.attrs.shooting).toBeGreaterThan(plain.attrs.shooting)
+    expect(trained.attrs.defense).toBeLessThan(plain.attrs.defense)
+  })
+
+  test('이전 저장 파일: 기질 보통, 노력치 0', () => {
+    const s = newGame(1, createPlayer(new Rng(1), 'x', 'SF', 'n/a'), 'yongsan')
+    const raw = JSON.parse(JSON.stringify(s))
+    delete raw.player.ethic
+    delete raw.player.ev
+    const loaded = parseSave(JSON.stringify(raw))
+    expect(loaded.player.ethic).toBe('normal')
+    expect(loaded.player.ev).toEqual({})
+  })
 })

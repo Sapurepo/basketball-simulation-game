@@ -15,7 +15,7 @@ import {
   playAsianGames,
   selectedForNational,
 } from './nationalTeam'
-import { ATTR_KEYS, ATTR_LABELS, overall } from './player'
+import { addEv, ATTR_KEYS, ATTR_LABELS, overall } from './player'
 import { clamp, sigmoid, type Rng } from './rng'
 import { getLang, T, type Text } from '../i18n'
 import type {
@@ -721,7 +721,10 @@ export function applyDrill(
   const made =
     optionId === 'auto' ? rng.int(3, 7) : Number(optionId.split(':')[1])
   const before = s.player.attrs[attr]
-  if (made >= DRILL_NEED) s.player.attrs[attr] = Math.min(99, before + 1)
+  // 노력형은 성공 시 +2. 노력치는 성공 여부와 무관하게 +1
+  const gain = s.player.ethic === 'steady' ? 2 : 1
+  if (made >= DRILL_NEED) s.player.attrs[attr] = Math.min(99, before + gain)
+  addEv(s.player, attr)
   return { made, raised: s.player.attrs[attr] > before }
 }
 

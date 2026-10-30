@@ -8,7 +8,7 @@ import {
   DRILL_MAX,
 } from './events'
 import { USD_TO_MANWON } from './hallEntry'
-import { grow, overall } from './player'
+import { ethicBonus, grow, overall } from './player'
 import { Rng } from './rng'
 import { simulateSeason } from './season'
 import type { AttrKey, DrillKind, GameState, Player } from './types'
@@ -97,7 +97,11 @@ export function advanceSeason(state: GameState): GameState {
       s.age,
       rec.minutesShare,
       s.mods.focus,
-      s.mods.growthBonus + injuredPenalty + armyPenalty + fx.growth,
+      s.mods.growthBonus +
+        injuredPenalty +
+        armyPenalty +
+        fx.growth +
+        ethicBonus(s.player.ethic, (s.drillsDone ?? []).length),
     )
     s.peakOvr = Math.max(s.peakOvr, overall(s.player))
     s.mods = { growthBonus: 0 }

@@ -13,6 +13,8 @@ export type Attributes = Record<AttrKey, number>
 export type Stage =
   'HS' | 'COLLEGE' | 'KBL' | 'NBA' | 'MILITARY' | 'FREE' | 'RETIRED'
 export type GrowthType = 'early' | 'normal' | 'late'
+// 성장 기질: 천재형(훈련 없으면 성장 둔화) · 노력형(훈련마다 성장 보너스, 훈련 성공 +2) · 보통
+export type Ethic = 'gifted' | 'steady' | 'normal'
 
 // 외형(픽셀 캐릭터 v2). 이전 저장 파일의 팔레트 인덱스 외형은 save.ts 에서 변환한다.
 export type HairStyle =
@@ -64,8 +66,11 @@ export interface Player {
   look?: Look
   attrs: Attributes
   potential: number
+  // 노력치: 훈련 1회마다 해당 능력치 +1 (능력치별 EV_MAX, 합계 EV_TOTAL). 성장 분배를 그쪽으로 기울인다
+  ev: Partial<Attributes>
   // 숨은 특성: UI 에 직접 노출하지 않는다.
   growthType: GrowthType
+  ethic: Ethic
   injuryProne: boolean
   clutch: boolean
 }

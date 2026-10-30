@@ -78,6 +78,9 @@ export function parseSave(raw: string): GameState {
   s.player.attrs.speed ??= s.player.attrs.athleticism
   s.player.weight ??= idealWeight(s.player.height)
   s.cash ??= START_CASH
+  // 성장 기질·노력치 이전 저장 파일: 보통 기질, 노력치 0
+  s.player.ethic ??= 'normal'
+  s.player.ev ??= {}
   s.items ??= []
   // 공용 명예의 전당 이전 저장 파일
   s.careerId ??= crypto.randomUUID()
