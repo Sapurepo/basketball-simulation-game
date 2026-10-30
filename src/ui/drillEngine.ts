@@ -1081,6 +1081,8 @@ export class DrillEngine {
   }
   mash = () => {
     if (!this.inp || this.phase !== 'push') return
+    // 버튼과 스페이스바를 같이 누르면 한 번에 두 번 들어오므로 70ms 안의 중복은 한 번으로 친다
+    if (now() - this.lastTap < 70) return
     this.lastTap = now()
     this.lp = Math.min(1, this.lp + this.mk)
     this.paintLift(this.lp)

@@ -836,6 +836,14 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.4.0 ──
+  '훈련에서 미들슛이 빠지고, 3점슛은 성공하면 슈팅이 +2 올라요. 훈련 카드에 성공 시 오르는 폭이 보여요.':
+    'Mid-range drill is gone, and passing the three-point drill now gives Shooting +2. Drill cards show how much a pass raises.',
+  '명예의 전당을 일간·주간·월간(한국 시간 기준 등록일)으로 볼 수 있어요. 첫 화면에는 오늘 등록된 기록이 보여요.':
+    "Browse the Hall of Fame by day, week or month (registration date, Korea Standard Time). The first screen shows today's entries.",
+  '메인 화면 이름 옆에 성장 기질(천재형·노력형·보통형) 뱃지가 보여요.':
+    'A growth-type badge (gifted, steady, balanced) now appears next to the name on the main screen.',
+  '벤치 프레스·스쿼트에서 내 선수 얼굴로 운동해요. 버튼과 스페이스바를 같이 눌러도 게이지가 두 배로 차지 않아요.':
+    "Bench press and squat now use your player's face. Pressing the button and the spacebar together no longer fills the bar twice as fast.",
   '훈련이 6종목 11가지 미니게임으로 늘었어요. 오프시즌마다 최대 4개까지 할 수 있고, 코치에게 맡기면 바로 결과가 나와요.':
     'Training now has 11 mini-games across 6 categories. Do up to 4 per offseason, or let the coach run it for an instant result.',
   '훈련을 하면 노력치가 쌓여요. 노력치가 많은 능력치로 시즌 성장이 더 많이 몰려요.':

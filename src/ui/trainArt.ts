@@ -1,6 +1,7 @@
 // 훈련 장면 아트: 측면 웨이트(벤치 프레스·스쿼트)와 측면 골대.
 // 관절 → 두꺼운 픽셀 사지 → 모서리 셰이딩 → 1px 잉크 외곽선 → PNG data URL (캐시)
-import { adj, OUT } from './sprite'
+// 머리는 내 선수 스프라이트(sprite.ts)의 머리를 그대로 붙여 머리 모양·얼굴·모자가 보이게 한다
+import { adj, build, OUT, SKINS, type Spec, W as SPRITE_W } from './sprite'
 
 const BASE: Record<string, string> = {
   W: '#fbf7ee',
@@ -15,8 +16,9 @@ const BASE: Record<string, string> = {
   B: '#f4f0e6',
   b: '#c9c2b2',
 }
-// 셰이딩을 넣지 않는 색(눈)
+// 셰이딩을 넣지 않는 색(눈). 스프라이트에서 가져온 머리 픽셀('#…')은 이미 셰이딩돼 있어 건너뛴다
 const FLAT = new Set(['E'])
+const flat = (k: string) => FLAT.has(k) || k.length > 1
 
 type Pt = [number, number]
 const lerp = (a: Pt, b: Pt, t: number): Pt => [
@@ -78,23 +80,39 @@ function shoe(c: Grid, an: Pt) {
     .put(an[0] + 1, an[1], 'N')
     .put(an[0] + 2, an[1], 'N')
 }
-function head(c: Grid, p: Pt, lying: boolean, band?: boolean) {
-  c.disk(p[0], p[1], 4.4, 'H')
-  if (lying) {
-    c.disk(p[0] + 0.6, p[1] - 1, 3.8, 'S')
-    c.put(p[0] + 1, p[1] - 3, 'E')
-    c.put(p[0] + 1, p[1] - 5, 'S')
+// 내 선수 스프라이트의 머리(목 위 20줄): 머리 모양·얼굴·모자·안경까지. 외곽선은 render 가 다시 그리니 뺀다
+const HEAD_H = 20
+function avatarHead(spec: Spec): (string | null)[][] {
+  const rows = build(spec, 'guard', 0)
+    .slice(0, HEAD_H)
+    .map((r) => r.map((c) => (c && c !== OUT ? c : null)))
+  let x0 = SPRITE_W
+  let x1 = -1
+  rows.forEach((r) =>
+    r.forEach((c, x) => {
+      if (c) {
+        x0 = Math.min(x0, x)
+        x1 = Math.max(x1, x)
+      }
+    }),
+  )
+  return rows.map((r) => r.slice(x0, x1 + 1))
+}
+// 머리 붙이기. p 는 얼굴 중심(위에서 12줄). lying 이면 반시계로 눕혀 정수리가 왼쪽
+function head(c: Grid, p: Pt, spec: Spec, lying: boolean) {
+  const h = avatarHead(spec)
+  const hw = h[0].length
+  if (!lying) {
+    const left = Math.round(p[0] - hw / 2)
+    const top = Math.round(p[1] - 12)
+    h.forEach((r, y) => r.forEach((k, x) => k && c.put(left + x, top + y, k)))
     return
   }
-  c.disk(p[0] + 1, p[1] + 1, 3.8, 'S')
-  c.put(p[0] + 3, p[1], 'E')
-  c.put(p[0] + 5, p[1] + 1, 'S')
-  c.put(p[0], p[1] + 1, 's')
-  if (band) {
-    const y = p[1] - 2
-    for (let x = p[0] - 4; x <= p[0] + 5; x++)
-      if (c.g[y] && c.g[y][x]) c.put(x, y, 'W')
-  }
+  const left = Math.round(p[0] - 12)
+  const top = Math.round(p[1] - hw / 2)
+  h.forEach((r, y) =>
+    r.forEach((k, x) => k && c.put(left + y, top + (hw - 1 - x), k)),
+  )
 }
 
 type Joints = Record<'hd' | 'sh' | 'hip' | 'kn' | 'an', Pt>
@@ -111,9 +129,17 @@ const lj = (A: Joints, B: Joints, t: number): Joints =>
 const sqJ = (f: number) =>
   f <= 2 ? lj(SQ[2], SQ[1], f / 2) : lj(SQ[1], SQ[0], (f - 2) / 2)
 
-function squat(f: number, band?: boolean) {
-  const J = sqJ(Math.max(0, Math.min(4, f)))
-  const c = new Grid(34, 54)
+// 선 자세에서 머리 위 여유 6줄
+const SQ_DY = 6
+function squat(f: number, spec: Spec) {
+  const J0 = sqJ(Math.max(0, Math.min(4, f)))
+  const J = Object.fromEntries(
+    (Object.keys(J0) as (keyof Joints)[]).map((k) => [
+      k,
+      [J0[k][0], J0[k][1] + SQ_DY] as Pt,
+    ]),
+  ) as Joints
+  const c = new Grid(34, 54 + SQ_DY)
   const bar: Pt = [J.sh[0] - 3, J.sh[1]]
   plate(c, bar)
   leg(c, J.hip, J.kn, J.an)
@@ -125,25 +151,26 @@ function squat(f: number, band?: boolean) {
   c.seg(J.sh, elb, 1.5, 'S')
     .seg(elb, hand, 1.3, 'S')
     .put(hand[0], hand[1] + 1, 'N')
-  head(c, J.hd, false, band)
+  head(c, [J.hd[0] + 1, J.hd[1] + 1], spec, false)
   return c
 }
-// bench(level) 0 = 바가 가슴에 … 4 = 락아웃. 누워서 머리는 왼쪽
-function bench(f: number) {
+// bench(level) 0 = 바가 가슴에 … 4 = 락아웃. 누워서 머리는 왼쪽 (머리가 커져 몸을 4칸 오른쪽으로)
+const BX = 4
+function bench(f: number, spec: Spec) {
   const c = new Grid(54, 40)
-  c.rect(5, 28, 39, 30, 'K')
-    .rect(9, 31, 10, 35, 'g')
-    .rect(34, 31, 35, 35, 'g')
-    .rect(6, 36, 13, 37, 'g')
-    .rect(31, 36, 38, 37, 'g')
-  const sh: Pt = [16, 24]
-  const hip: Pt = [30, 24]
-  const kn: Pt = [40, 23]
-  const an: Pt = [42, 35]
-  const hd: Pt = [10, 24]
+  c.rect(5 + BX, 28, 39 + BX, 30, 'K')
+    .rect(9 + BX, 31, 10 + BX, 35, 'g')
+    .rect(34 + BX, 31, 35 + BX, 35, 'g')
+    .rect(6 + BX, 36, 13 + BX, 37, 'g')
+    .rect(31 + BX, 36, 38 + BX, 37, 'g')
+  const sh: Pt = [16 + BX, 24]
+  const hip: Pt = [30 + BX, 24]
+  const kn: Pt = [40 + BX, 23]
+  const an: Pt = [42 + BX, 35]
+  const hd: Pt = [9 + BX, 22]
   const t = Math.max(0, Math.min(4, f)) / 4
-  const hand = lerp([17, 17], [16, 8], t)
-  const elb = lerp([12, 28], [16, 16], t)
+  const hand = lerp([17 + BX, 17], [16 + BX, 8], t)
+  const elb = lerp([12 + BX, 28], [16 + BX, 16], t)
   plate(c, hand)
   leg(c, hip, kn, an)
   shoe(c, an)
@@ -151,7 +178,7 @@ function bench(f: number) {
   c.seg(sh, elb, 1.5, 'S')
     .seg(elb, hand, 1.3, 'S')
     .put(hand[0], hand[1] + 1, 'N')
-  head(c, hd, true)
+  head(c, hd, spec, true)
   return c
 }
 // 측면 골대: 오른쪽 기둥, 백보드, 왼쪽을 향한 림. frame 1 = 스위시로 흔들린 네트
@@ -191,7 +218,7 @@ function render(c: Grid, pal: Record<string, string>) {
       let col: string | null = null
       if (k) {
         col = pal[k] || BASE[k] || k
-        if (!FLAT.has(k)) {
+        if (!flat(k)) {
           if (!at(x + 1, y) || !at(x, y + 1)) col = adj(col, 0.76)
           else if (!at(x, y - 1) || !at(x - 1, y)) col = adj(col, 1.2)
         }
@@ -205,22 +232,19 @@ function render(c: Grid, pal: Record<string, string>) {
   return cv.toDataURL()
 }
 
-// 선수 색: 피부·머리·유니폼·트림, 헤드밴드 여부
-export interface LiftKit {
-  skin: string
-  hair: string
-  jersey: string
-  trim: string
-  band?: boolean
+// 선수 외형(머리용) + 유니폼·트림(몸용)
+export type LiftKit = Spec
+const kitPal = (k: LiftKit) => {
+  const skin = SKINS[k.skin] ?? SKINS[0]
+  return {
+    S: skin,
+    s: adj(skin, 0.8),
+    H: k.hair,
+    J: k.jersey,
+    P: k.jersey,
+    N: k.trim,
+  }
 }
-const kitPal = (k: LiftKit) => ({
-  S: k.skin,
-  s: adj(k.skin, 0.8),
-  H: k.hair,
-  J: k.jersey,
-  P: k.jersey,
-  N: k.trim,
-})
 
 const cache = new Map<string, string>()
 const get = (
@@ -236,6 +260,6 @@ const get = (
 export const hoopURL = (swish: boolean) =>
   get(`hoop${swish ? 1 : 0}`, () => hoop(swish ? 1 : 0))
 export const squatURL = (k: LiftKit, f: number) =>
-  get(`sq${f}${k.jersey}${k.skin}${k.hair}`, () => squat(f, k.band), kitPal(k))
+  get(`sq${f}${JSON.stringify(k)}`, () => squat(f, k), kitPal(k))
 export const benchURL = (k: LiftKit, f: number) =>
-  get(`bp${f}${k.jersey}${k.skin}${k.hair}`, () => bench(f), kitPal(k))
+  get(`bp${f}${JSON.stringify(k)}`, () => bench(f, k), kitPal(k))
