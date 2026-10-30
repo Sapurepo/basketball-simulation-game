@@ -1,6 +1,7 @@
 import {
   type CSSProperties,
   type PointerEvent,
+  type ReactNode,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -42,6 +43,8 @@ const KB_HINT: Record<DrillCtl, string> = {
   fake: '키보드 ← → 돌파 · A D 페이크',
   lamp: '등을 직접 누르거나 방향키 ↑ ← → ↓',
   mash: '스페이스바 연타도 돼요',
+  box: '스페이스바를 누르고 있다가 떼도 돼요',
+  alt: '키보드 ← → 번갈아 눌러도 돼요',
 }
 const OPP: Kit = { jersey: '#cc3049', number: '#ffffff' }
 const OPP_LOOK = ROSTER[7].look
@@ -151,7 +154,13 @@ export function DrillPlay({
     trim: '#f7f3ea',
   }
   const [lo, hi] = st.zone
-  const me = (scale: number, extra?: CSSProperties, key = 'p') => (
+  // child: 선수를 따라 움직여야 하는 말풍선 (속공의 "헛발!")
+  const me = (
+    scale: number,
+    extra?: CSSProperties,
+    key = 'p',
+    child?: ReactNode,
+  ) => (
     <div
       ref={rf(key)}
       className={`tr-fig s${scale}`}
@@ -159,6 +168,7 @@ export function DrillPlay({
       aria-hidden={key !== 'p'}
     >
       <Figure fig={st.me} kit={kit} look={look} scale={scale} />
+      {child}
     </div>
   )
   const opp = (extra: CSSProperties) => (
@@ -183,9 +193,11 @@ export function DrillPlay({
   const btnText =
     d.ctl === 'mash' && st.lphase === 'lower'
       ? tr('바를 내리는 중…')
-      : d.btn
-        ? `${tr(d.btn)} (${cur}/${DRILL_REPS})`
-        : ''
+      : d.ctl === 'box' && st.boxing
+        ? `${tr('버티는 중… 떼면 점프!')} (${cur}/${DRILL_REPS})`
+        : d.btn
+          ? `${tr(d.btn)} (${cur}/${DRILL_REPS})`
+          : ''
   const big = (
     label: string,
     handlers: Record<string, (e: PointerEvent) => void>,
@@ -286,6 +298,53 @@ export function DrillPlay({
                 />
                 <div className="tr-reb-box" />
                 {me(2, { left: 310, top: 128 })}
+              </>
+            )}
+            {scene === 'box' && (
+              <>
+                <div className="tr-key" />
+                <img
+                  ref={rf('hoop')}
+                  className="px tr-hoop"
+                  src={hoopURL(st.swish)}
+                  alt=""
+                />
+                <div className="tr-reb-box" />
+                {opp({ left: 258, top: 128, zIndex: 1 })}
+                {me(2, { left: 310, top: 128 })}
+                {st.boxing && (
+                  <span className="tr-bubble gold tr-boxing">
+                    {tr('박스아웃!')}
+                  </span>
+                )}
+              </>
+            )}
+            {scene === 'fast' && (
+              <>
+                <div className="tr-key" />
+                <img
+                  ref={rf('hoop')}
+                  className="px tr-hoop"
+                  src={hoopURL(st.swish)}
+                  alt=""
+                />
+                <div className="tr-spot" style={{ left: 49 }} />
+                <div className="tr-layup" />
+                <span className="tr-spot-label" style={{ left: 50 }}>
+                  {tr('출발')}
+                </span>
+                <span className="tr-spot-label" style={{ left: 330 }}>
+                  {tr('레이업 지점')}
+                </span>
+                {opp({ left: -40, top: 128, zIndex: 1 })}
+                {me(
+                  2,
+                  { left: 20, top: 128 },
+                  'p',
+                  st.trip && (
+                    <span className="tr-bubble tr-trip">{tr('헛발!')}</span>
+                  ),
+                )}
               </>
             )}
             {scene === 'front' && (
@@ -404,6 +463,21 @@ export function DrillPlay({
         })}
       {d.ctl === 'tap' && big(btnText, { onPointerDown: down(E.tap) })}
       {d.ctl === 'mash' && big(btnText, { onPointerDown: down(E.mash) })}
+      {d.ctl === 'box' &&
+        big(btnText, {
+          onPointerDown: down(E.boxDown),
+          onPointerUp: () => E.boxUp(),
+          onPointerLeave: () => E.boxUp(),
+          onPointerCancel: () => E.boxUp(),
+        })}
+      {d.ctl === 'alt' && (
+        <div className="tr-keys">
+          {big(`← ${tr('왼발')}`, { onPointerDown: down(() => E.stepRun(-1)) })}
+          {big(`${tr('오른발')} →`, {
+            onPointerDown: down(() => E.stepRun(1)),
+          })}
+        </div>
+      )}
       {d.ctl === 'lr' && (
         <div className="tr-keys">
           {big(`← ${tr('왼쪽')}`, { onPointerDown: down(() => E.choose(-1)) })}

@@ -552,14 +552,15 @@ function freeChoice(s: GameState): GameEvent {
   }
 }
 
-// 훈련 미니게임: 오프시즌마다 10종 중 최대 DRILL_MAX 개, 종류별로 한 번.
+// 훈련 미니게임: 오프시즌마다 12종 중 최대 DRILL_MAX 개, 종류별로 한 번.
 // UI 가 게임을 돌리고 DRILL_REPS 회 중 성공 수를 넘긴다. DRILL_NEED 개 이상이면 능력치 +gain(기본 1)
 export const DRILL_REPS = 10
 export const DRILL_NEED = 6
 export const DRILL_MAX = 4
 export type DrillCat = 'shoot' | 'pass' | 'reb' | 'drib' | 'def' | 'ath'
-// 조작: 누르고 떼기 · 타이밍 탭 · 방향 고르기 · 동료 고르기 · 페이크+돌파 · 켜진 등 누르기 · 버튼 연타
-export type DrillCtl = 'hold' | 'tap' | 'lr' | 'team' | 'fake' | 'lamp' | 'mash'
+// 조작: 누르고 떼기 · 타이밍 탭 · 방향 고르기 · 동료 고르기 · 페이크+돌파 · 켜진 등 누르기 · 버튼 연타 · 누르고 버티다 떼기 · 좌우 번갈아 연타
+export type DrillCtl =
+  'hold' | 'tap' | 'lr' | 'team' | 'fake' | 'lamp' | 'mash' | 'box' | 'alt'
 export const DRILL_CATS: [DrillCat, string][] = [
   ['shoot', '슈팅'],
   ['pass', '패스'],
@@ -574,9 +575,11 @@ export const DRILL_KINDS: DrillKind[] = [
   'pass',
   'team',
   'reb',
+  'box',
   'drib',
   'foot',
   'react',
+  'fast',
   'bench',
   'squat',
 ]
@@ -638,6 +641,15 @@ export const DRILLS: Record<DrillKind, Drill> = {
     body: '림에 맞고 떨어지는 공이 점선 칸을 지날 때 손이 닿도록 미리 점프해요. 공마다 튀는 높이가 달라요.',
     btn: '점프!',
   },
+  box: {
+    cat: 'reb',
+    title: '박스아웃 리바운드',
+    attr: 'rebounding',
+    ctl: 'box',
+    desc: '몸으로 자리를 지키다 공이 떨어질 때 점프',
+    body: '슛이 림에 닿기 전에 버튼을 눌러 뒤의 상대를 막아요. 누르는 동안 자리를 지키고, 공이 점선 칸으로 떨어질 때 떼면 점프해요. 림에 닿기 전에 떼거나 안 누르고 있으면 자리를 뺏겨요.',
+    btn: '누르고 버티다 떼서 점프',
+  },
   drib: {
     cat: 'drib',
     title: '드리블로 선수 제치기',
@@ -661,6 +673,14 @@ export const DRILLS: Record<DrillKind, Drill> = {
     ctl: 'lamp',
     desc: '선수 주변 4개 등 중 켜진 등을 바로 누르기',
     body: '선수를 둘러싼 4개의 등 중 하나가 파랗게 켜지면 그 등을 바로 눌러요. 다른 등을 누르거나 켜지기 전에 누르면 실패예요.',
+  },
+  fast: {
+    cat: 'ath',
+    title: '속공 레이스',
+    attr: 'speed',
+    ctl: 'alt',
+    desc: '뒤쫓는 수비보다 먼저 레이업 지점까지 질주',
+    body: '출발 신호가 뜨면 왼발·오른발 버튼을 번갈아 빠르게 눌러 달려요. 같은 버튼을 연달아 누르면 헛발을 디뎌요. 뒤에서 쫓아오는 수비보다 먼저 레이업 지점에 닿으면 성공.',
   },
   bench: {
     cat: 'ath',

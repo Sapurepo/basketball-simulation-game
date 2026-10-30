@@ -2436,6 +2436,33 @@ tr.me td {
   font-size: 12px;
 }
 
+/* 박스아웃 "박스아웃!": 둘 사이 위 */
+.tr-boxing {
+  left: 282px;
+  top: 98px;
+  z-index: 5;
+  font-size: 12px;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* 속공 "헛발!": 선수 머리 위, 선수와 함께 움직인다 */
+.tr-trip {
+  left: 50%;
+  top: -24px;
+  padding: 3px 6px;
+  background: var(--loss);
+  color: #fffdf7;
+  font-size: 11px;
+}
+
+/* 속공 레이업 지점 */
+.tr-layup {
+  left: 329px;
+  top: 176px;
+  bottom: 0;
+  border-left: 3px dashed var(--ink);
+}
+
 /* 반응속도: 기록판 · 최고 · 4방향 등 */
 .tr-rt {
   left: 12px;

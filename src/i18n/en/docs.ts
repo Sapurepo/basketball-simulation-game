@@ -168,8 +168,8 @@ const docs: Record<string, string> = {
   '능력치 하나 +2 / 성장 +0.5': 'One attribute +2 / growth +0.5',
   '잠재력 +1': 'Potential +1',
   '50% 성장 +2 / 50% 성장 -1': '50% growth +2 / 50% growth -1',
-  '훈련 미니게임은 6종목 10가지 중 오프시즌마다 최대 4개, 10회 중 6회 성공하면 해당 능력치 +1 (3점슛은 +2, 노력형 기질은 여기에 +1). 성공 여부와 무관하게 노력치 +1. 게이지 훈련의 초록 구간 폭은 능력치 20 이면 4%, 50 이면 8%, 99 면 15% 이고 자유투는 1.6배, 3점슛은 0.7배, 패스는 1.6배예요. 반응·타이밍 훈련도 능력치가 높을수록 허용 시간이 길어져요. 코치에게 맡기면 3~7회 성공 중 균등 추첨이라 성공 확률은 40% 입니다.':
-    'Training mini-games: up to 4 per offseason out of 10 drills in 6 categories; 6 of 10 passes gives that attribute +1 (+2 for threes, +1 more for the steady type). Effort +1 regardless. The green zone of gauge drills is 4% of the gauge at attribute 20, 8% at 50 and 15% at 99, times 1.6 for free throws, 0.7 for threes and 1.6 for passing. Reaction and timing drills also allow more time at higher attributes. Leaving it to the coach draws 3~7 passes evenly, a 40% chance to pass.',
+  '훈련 미니게임은 6종목 12가지 중 오프시즌마다 최대 4개, 10회 중 6회 성공하면 해당 능력치 +1 (3점슛은 +2, 노력형 기질은 여기에 +1). 성공 여부와 무관하게 노력치 +1. 게이지 훈련의 초록 구간 폭은 능력치 20 이면 4%, 50 이면 8%, 99 면 15% 이고 자유투는 1.6배, 3점슛은 0.7배, 패스는 1.6배예요. 반응·타이밍 훈련도 능력치가 높을수록 허용 시간이 길어져요. 코치에게 맡기면 3~7회 성공 중 균등 추첨이라 성공 확률은 40% 입니다.':
+    'Training mini-games: up to 4 per offseason out of 12 drills in 6 categories; 6 of 10 passes gives that attribute +1 (+2 for threes, +1 more for the steady type). Effort +1 regardless. The green zone of gauge drills is 4% of the gauge at attribute 20, 8% at 50 and 15% at 99, times 1.6 for free throws, 0.7 for threes and 1.6 for passing. Reaction and timing drills also allow more time at higher attributes. Leaving it to the coach draws 3~7 passes evenly, a 40% chance to pass.',
   '훈련이 커리어에 주는 영향 (자동 플레이어 커리어 1,500개, 매 오프시즌 훈련 4개 기준):':
     'How training affects a career (1,500 automated careers, 4 drills every offseason):',
   '훈련 방식': 'Training',
@@ -270,8 +270,8 @@ const docs: Record<string, string> = {
   '선수마다 성장 기질이 있고, 메인 화면 이름 옆 뱃지로 볼 수 있어요. 천재형은 잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해지고, 노력형은 잠재력이 낮은 대신 훈련할수록 성장 보너스를 받고 훈련 성공 시 능력치가 1 더 올라요. 매 오프시즌 훈련 4개를 채우면 어느 기질이든 손해가 없어요.':
     'Every player has a growth type, shown as a badge next to the name on the main screen. The gifted have higher potential but grow less in an offseason without any drills; the steady have lower potential but gain a growth bonus per drill and +1 more on a passed drill. Doing all 4 drills every offseason means no type loses out.',
   '4. 훈련 미니게임': '4. Training mini-games',
-  '오프시즌마다 6종목 10가지 중 최대 4개를, 종류별로 한 번씩 할 수 있어요. 10회 중 6회 이상 성공하면 해당 능력치가 +1(3점슛은 +2, 노력형은 여기에 +1) 바로 오르고, 성공 여부와 상관없이 노력치가 +1 쌓여요. 「코치에게 맡기기」를 누르면 3~7회 성공 중 무작위로 결과가 바로 나옵니다. 모든 훈련은 키보드로도 할 수 있어요.':
-    'Each offseason you can do up to 4 of the 10 drills in 6 categories, once per drill. Passing 6 of 10 attempts raises that attribute by +1 (+2 for threes, +1 more for the steady type) immediately, and effort rises +1 either way. "Leave it to the coach" draws a result of 3~7 passes instantly. Every drill also works with the keyboard.',
+  '오프시즌마다 6종목 12가지 중 최대 4개를, 종류별로 한 번씩 할 수 있어요. 10회 중 6회 이상 성공하면 해당 능력치가 +1(3점슛은 +2, 노력형은 여기에 +1) 바로 오르고, 성공 여부와 상관없이 노력치가 +1 쌓여요. 「코치에게 맡기기」를 누르면 3~7회 성공 중 무작위로 결과가 바로 나옵니다. 모든 훈련은 키보드로도 할 수 있어요.':
+    'Each offseason you can do up to 4 of the 12 drills in 6 categories, once per drill. Passing 6 of 10 attempts raises that attribute by +1 (+2 for threes, +1 more for the steady type) immediately, and effort rises +1 either way. "Leave it to the coach" draws a result of 3~7 passes instantly. Every drill also works with the keyboard.',
   종목: 'Category',
   훈련: 'Drill',
   능력치: 'Attribute',

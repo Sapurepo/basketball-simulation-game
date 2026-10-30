@@ -318,9 +318,11 @@ describe('훈련 미니게임', () => {
     ['pass', 'playmaking'],
     ['team', 'playmaking'],
     ['reb', 'rebounding'],
+    ['box', 'rebounding'],
     ['drib', 'finishing'],
     ['foot', 'defense'],
     ['react', 'speed'],
+    ['fast', 'speed'],
     ['bench', 'athleticism'],
     ['squat', 'athleticism'],
   ] as const)(
@@ -360,14 +362,14 @@ describe('훈련 미니게임', () => {
     expect(availableDrills({ ...base(), stage: 'RETIRED' })).toEqual([])
   })
 
-  test('오프시즌마다 10종 중 최대 4개까지만, 시즌을 진행하면 다시 4개', () => {
+  test('오프시즌마다 12종 중 최대 4개까지만, 시즌을 진행하면 다시 4개', () => {
     let s = base()
-    expect(availableDrills(s)).toHaveLength(10)
+    expect(availableDrills(s)).toHaveLength(12)
     for (const k of ['ft', 'team', 'react', 'squat'] as const)
       s = playDrill(s, k, 'made:9')
     expect(availableDrills(s)).toEqual([])
     expect(playDrill(s, 'pass', 'made:9')).toBe(s)
-    expect(availableDrills(advanceSeason(s))).toHaveLength(10)
+    expect(availableDrills(advanceSeason(s))).toHaveLength(12)
   })
 
   test('이전 저장의 훈련 id 는 지금 종류로 읽는다', () => {

@@ -6,6 +6,8 @@ const text: Record<string, string> = {
   '일반 패스': 'Basic pass',
   '팀 패스 게임': 'Team pass game',
   '리바운드 점프': 'Rebound jump',
+  '박스아웃 리바운드': 'Box-out rebound',
+  '속공 레이스': 'Fast-break race',
   '드리블로 선수 제치기': 'Beat the defender',
   '수비 풋워크': 'Defensive footwork',
   '반응속도 게임': 'Reaction game',
@@ -19,6 +21,10 @@ const text: Record<string, string> = {
     'Three-man passing: one-touch to whoever calls for it',
   '림에 맞고 튀는 공을 가장 높은 곳에서 잡기':
     'Grab the ball off the rim at its peak',
+  '몸으로 자리를 지키다 공이 떨어질 때 점프':
+    'Hold your spot with your body, then jump as the ball drops',
+  '뒤쫓는 수비보다 먼저 레이업 지점까지 질주':
+    'Beat the chasing defender to the layup spot',
   '페이크로 수비를 속이고 반대쪽으로 돌파':
     'Fake the defender out, then drive the other way',
   '잽에 속지 말고 돌파하는 쪽으로 따라가기':
@@ -39,6 +45,10 @@ const text: Record<string, string> = {
     'The moment the pass enters the dotted box, tap the teammate with their hand up to redirect it. Too early drops it; too late holds the ball.',
   '림에 맞고 떨어지는 공이 점선 칸을 지날 때 손이 닿도록 미리 점프해요. 공마다 튀는 높이가 달라요.':
     'Jump early so your hands reach the ball as it passes the dotted box. Every bounce is a different height.',
+  '슛이 림에 닿기 전에 버튼을 눌러 뒤의 상대를 막아요. 누르는 동안 자리를 지키고, 공이 점선 칸으로 떨어질 때 떼면 점프해요. 림에 닿기 전에 떼거나 안 누르고 있으면 자리를 뺏겨요.':
+    'Press the button before the shot hits the rim to seal the opponent behind you. Hold to keep your spot, and release to jump as the ball drops into the dotted box. Release before the rim, or never hold, and you lose the spot.',
+  '출발 신호가 뜨면 왼발·오른발 버튼을 번갈아 빠르게 눌러 달려요. 같은 버튼을 연달아 누르면 헛발을 디뎌요. 뒤에서 쫓아오는 수비보다 먼저 레이업 지점에 닿으면 성공.':
+    'On the go signal, alternate the left and right foot buttons quickly to run. Pressing the same button twice stumbles. Reach the layup spot before the chasing defender to succeed.',
   '페이크로 수비를 한쪽으로 끌어낸 뒤 반대쪽으로 치고 나가요. 수비가 자리를 잡고 있을 때 그냥 돌파하면 막혀요. 수비가 스스로 기울 때도 기회예요. 페이크를 반복하면 읽혀요.':
     'Pull the defender one way with a fake, then drive the other. Driving into a set defender gets you blocked. When they lean on their own, go. Repeated fakes get read.',
   '공격수가 진짜로 치고 나가는 쪽으로 같이 미끄러져요. 살짝 움찔하는 잽 스텝에 반응하면 속은 거예요.':
@@ -52,6 +62,7 @@ const text: Record<string, string> = {
   '누르고 있다가 떼서 슛': 'Hold, then release to shoot',
   '누르고 있다가 떼서 패스': 'Hold, then release to pass',
   '점프!': 'Jump!',
+  '누르고 버티다 떼서 점프': 'Hold, then release to jump',
   '연타! 밀어 올리기': 'Mash! Press it up',
   '연타! 일어나기': 'Mash! Stand up',
   // ── 라운드·공통 ──

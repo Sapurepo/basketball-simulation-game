@@ -225,16 +225,18 @@ export interface Service {
   }
 }
 
-// 훈련 10종 (6종목). 이전 저장의 shootout·passDrill·dribbleDrill 은 events.ts drillKind 가 ft·pass·drib 으로 읽는다
+// 훈련 12종 (6종목). 이전 저장의 shootout·passDrill·dribbleDrill 은 events.ts drillKind 가 ft·pass·drib 으로 읽는다
 export type DrillKind =
   | 'ft'
   | 'three'
   | 'pass'
   | 'team'
   | 'reb'
+  | 'box'
   | 'drib'
   | 'foot'
   | 'react'
+  | 'fast'
   | 'bench'
   | 'squat'
 
