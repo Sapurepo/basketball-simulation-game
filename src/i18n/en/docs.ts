@@ -267,8 +267,8 @@ const docs: Record<string, string> = {
     'Bonuses: random events, shop items, growth type, and penalties like injury or active-duty service are added.',
   '능력치 분배는 포지션 가중치를 따르되, 집중 능력치(+0.2)와 노력치(훈련 1회마다 +1, 능력치별 20까지)가 많은 쪽으로 더 몰려요. 노력치는 성장 총량을 바꾸지 않고 방향만 바꿉니다.':
     'The split follows position weights, leaning toward the focus attribute (+0.2) and attributes with more effort (+1 per drill, up to 20 each). Effort changes only the direction of growth, not the total.',
-  '선수마다 보이지 않는 성장 기질이 있어요. 천재형은 잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해지고, 노력형은 잠재력이 낮은 대신 훈련할수록 성장 보너스를 받고 훈련 성공 시 능력치가 +2 올라요. 매 오프시즌 훈련 4개를 채우면 어느 기질이든 손해가 없어요.':
-    'Every player has a hidden growth type. The gifted have higher potential but grow less in an offseason without any drills; the steady have lower potential but gain a growth bonus per drill and +2 on a passed drill. Doing all 4 drills every offseason means no type loses out.',
+  '선수마다 성장 기질이 있고, 메인 화면 이름 옆 뱃지로 볼 수 있어요. 천재형은 잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해지고, 노력형은 잠재력이 낮은 대신 훈련할수록 성장 보너스를 받고 훈련 성공 시 능력치가 1 더 올라요. 매 오프시즌 훈련 4개를 채우면 어느 기질이든 손해가 없어요.':
+    'Every player has a growth type, shown as a badge next to the name on the main screen. The gifted have higher potential but grow less in an offseason without any drills; the steady have lower potential but gain a growth bonus per drill and +1 more on a passed drill. Doing all 4 drills every offseason means no type loses out.',
   '4. 훈련 미니게임': '4. Training mini-games',
   '오프시즌마다 6종목 10가지 중 최대 4개를, 종류별로 한 번씩 할 수 있어요. 10회 중 6회 이상 성공하면 해당 능력치가 +1(3점슛은 +2, 노력형은 여기에 +1) 바로 오르고, 성공 여부와 상관없이 노력치가 +1 쌓여요. 「코치에게 맡기기」를 누르면 3~7회 성공 중 무작위로 결과가 바로 나옵니다. 모든 훈련은 키보드로도 할 수 있어요.':
     'Each offseason you can do up to 4 of the 10 drills in 6 categories, once per drill. Passing 6 of 10 attempts raises that attribute by +1 (+2 for threes, +1 more for the steady type) immediately, and effort rises +1 either way. "Leave it to the coach" draws a result of 3~7 passes instantly. Every drill also works with the keyboard.',

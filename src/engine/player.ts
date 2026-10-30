@@ -209,6 +209,18 @@ function rollPotential(rng: Rng) {
   const [lo, hi] = rng.pick(GRADE_BANDS)
   return rng.int(lo, hi)
 }
+// 메인 화면 이름 옆 뱃지와 그 설명
+export const ETHIC_LABELS: Record<Ethic, string> = {
+  gifted: '천재형',
+  steady: '노력형',
+  normal: '보통형',
+}
+export const ETHIC_DESC: Record<Ethic, string> = {
+  gifted: '잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해져요.',
+  steady:
+    '잠재력이 낮은 대신 훈련마다 성장 보너스를 받고, 훈련 성공 시 1 더 올라요.',
+  normal: '성장 보너스도 불이익도 없어요.',
+}
 // 천재형은 잠재력 +5, 노력형은 −5 (뽑은 뒤 60~97 로 자른다)
 const ETHIC_POTENTIAL: Partial<Record<Ethic, number>> = {
   gifted: 5,

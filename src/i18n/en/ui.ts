@@ -438,6 +438,15 @@ const text: Record<string, string> = {
   '오늘 {n}명 등록': '{n} registered today',
   '오늘 등록된 선수가 아직 없어요. 은퇴하면 첫 번째로 이름을 올려 보세요.':
     'No one registered today yet. Retire and be the first on the list.',
+  천재형: 'Gifted',
+  노력형: 'Steady',
+  보통형: 'Balanced',
+  '{ethic} 기질: {desc}': '{ethic} type: {desc}',
+  '잠재력이 높지만 오프시즌에 훈련을 하나도 안 하면 성장이 둔해져요.':
+    'Higher potential, but growth slows in an offseason without any drills.',
+  '잠재력이 낮은 대신 훈련마다 성장 보너스를 받고, 훈련 성공 시 1 더 올라요.':
+    'Lower potential, but a growth bonus per drill and +1 more on a passed drill.',
+  '성장 보너스도 불이익도 없어요.': 'No growth bonus or penalty.',
   '총 {n}명 등록': '{n} players registered',
   '첫 등록을 기다려요': 'Awaiting first entry',
   'OVR {ovr} · 파이널 MVP {n}': 'OVR {ovr} · Finals MVP {n}',
