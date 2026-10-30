@@ -9,6 +9,7 @@ import {
   TERMS,
 } from './data/legal'
 import { CHANGELOG, CHANGELOG_DOC, SEEN_VERSION_KEY } from './data/changelog'
+import { GUIDE } from './data/guide'
 import { ODDS } from './data/odds'
 import { LANGS, setLang, tr, useLang } from './i18n'
 import { CreateScreen } from './ui/createScreen'
@@ -28,6 +29,7 @@ const DOC_PATHS: [string, LegalDoc][] = [
   ['/privacy', PRIVACY],
   ['/terms', TERMS],
   ['/odds', ODDS],
+  ['/guide', GUIDE],
 ]
 const docAt = (path: string) => DOC_PATHS.find(([p]) => p === path)?.[1]
 // 크롤러가 따라갈 수 있게 주소 링크로 두고, 누르면 새로 불러오지 않고 연다 (보조키를 누르면 새 탭 그대로)
@@ -215,6 +217,13 @@ export default function App() {
               </a>
               <a
                 className="link"
+                href="/guide"
+                onClick={go(() => openDoc(GUIDE))}
+              >
+                {tr('게임 가이드')}
+              </a>
+              <a
+                className="link"
                 href="/odds"
                 onClick={go(() => openDoc(ODDS))}
               >
@@ -297,6 +306,13 @@ export default function App() {
                     label: tr('이용약관'),
                     desc: tr('서비스 이용 조건'),
                     onSelect: () => openDoc(TERMS),
+                  },
+                  {
+                    label: tr('게임 가이드'),
+                    desc: tr(
+                      '선수 만들기부터 은퇴까지 게임 흐름과 시스템 안내',
+                    ),
+                    onSelect: () => openDoc(GUIDE),
                   },
                   {
                     label: tr('게임 확률표'),
