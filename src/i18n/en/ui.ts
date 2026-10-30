@@ -530,6 +530,15 @@ const text: Record<string, string> = {
   '{team} 화이팅!': "Let's go {team}!",
   '다음 시즌이 기대된다': "Can't wait for next season",
   // ── 상점 ──
+  훈련용품: 'Training gear',
+  '무대에 두면 시즌 능력치 +1. 슈팅 슬리브는 선수에게 착용해요. 같은 능력치 버프는 합쳐서 +3까지예요.':
+    'Place it on the stage for a +1 season attribute buff. The shooting sleeve is worn by the player. Buffs to one attribute add up to +3.',
+  '모자 · 하나만 착용': 'Hat · one at a time',
+  '훈련용품 · 무대 배치': 'Training gear · on the stage',
+  '효과 · 무대에 두고 훈련': 'Effect · trains on the stage',
+  '보유 · 미착용': 'Owned · not worn',
+  벗기: 'Take off',
+  착용하기: 'Put on',
   '보유 자금': 'Cash',
   사치품: 'Luxury',
   '보유하면 시즌 능력치 버프. 입히고 벗을 수 있고, 탈것은 무대 앞에 세워져요.':
@@ -628,6 +637,34 @@ const text: Record<string, string> = {
   코리안숏헤어: 'Korean Shorthair',
   페르시안: 'Persian cat',
   스코티시폴드: 'Scottish Fold',
+  저항밴드: 'Resistance band',
+  점프로프: 'Jump rope',
+  '리바운드 패드': 'Rebound pad',
+  '수비 슬라이드 콘': 'Defensive slide cones',
+  '슈팅 슬리브': 'Shooting sleeve',
+  '패스 벽': 'Pass-back net',
+  '니트 비니': 'Knit beanie',
+  헤어밴드: 'Headband',
+  썬바이저: 'Sun visor',
+  '카본 무릎 보호대': 'Carbon knee pads',
+  버킷햇: 'Bucket hat',
+  '전동 킥보드': 'Electric scooter',
+  '트러커 캡': 'Trucker cap',
+  '뿔테 안경': 'Horn-rimmed glasses',
+  '로드 자전거': 'Road bike',
+  페도라: 'Fedora',
+  '크라프트지 벽지': 'Kraft paper wallpaper',
+  '신문지 벽지': 'Newspaper wallpaper',
+  '하늘 도트 벽지': 'Sky dot wallpaper',
+  '타공판 벽지': 'Pegboard wallpaper',
+  '팀 컬러 사선 벽지': 'Team-color stripe wallpaper',
+  '체육관 블록 벽지': 'Gym block wallpaper',
+  '몬스테라 화분': 'Monstera plant',
+  '스탠드 조명': 'Floor lamp',
+  '트로피 선반': 'Trophy shelf',
+  '미니 골대': 'Mini hoop',
+  '벽걸이 TV': 'Wall-mounted TV',
+  '아이스 배스': 'Ice bath',
   // ── 무대 배치 편집 ──
   '벽 · 창문과 커튼은 함께 움직여요':
     'Wall · the window and curtain move together',
@@ -657,6 +694,60 @@ const text: Record<string, string> = {
     'Arranging · drag to move · arrow keys for 1 step',
   '배치 옮기기': 'Move it',
   // 아이템 소개
+  '어디서든 하체 루틴. 점프 첫 동작이 묵직해진다.':
+    'Leg day anywhere. Your first jump gets heavier.',
+  '하루 천 번. 발이 바닥에 닿는 시간이 짧아진다.':
+    'A thousand a day. Your feet spend less time on the floor.',
+  '몸싸움 연습용 패드. 박스아웃 자리를 뺏기지 않는다.':
+    'A contact pad for drills. Nobody takes your box-out spot.',
+  '콘 사이 사이드 스텝. 수비 자세가 낮고 빨라진다.':
+    'Side steps between cones. Your stance gets lower and quicker.',
+  '팔꿈치를 잡아주는 압박 슬리브. 릴리스가 일정해진다.':
+    'A compression sleeve that holds the elbow. Your release stays consistent.',
+  '던지면 돌아오는 리바운더 네트. 혼자서도 패스 천 개.':
+    'A net that throws it back. A thousand passes, all alone.',
+  '새벽 러닝에도 귀가 따뜻하다.': 'Warm ears even on dawn runs.',
+  '땀이 눈에 안 들어가면 공이 떨어질 곳까지 보인다.':
+    'Keep the sweat out of your eyes and you see where the ball will land.',
+  '햇빛을 가리면 야외 코트에서도 림이 또렷하다.':
+    'Block the sun and the rim stays sharp even outdoors.',
+  '바닥에 몸을 던져도 무섭지 않다.':
+    "Diving on the floor doesn't scare you anymore.",
+  '느긋한 챙 아래로 코트가 넓게 보인다.':
+    'Under the easy brim, the court looks wider.',
+  '체육관까지 5분. 남는 시간은 개인 훈련에.':
+    'Five minutes to the gym. The time you save goes to extra reps.',
+  '메시 뒤판으로 열이 빠진다. 발걸음이 가볍다.':
+    'The mesh back lets the heat out. Light on your feet.',
+  '경기 영상을 분석할 땐 안경부터 쓴다.':
+    "Glasses on first when it's time to study film.",
+  '비시즌 유산소는 강변 라이딩으로.':
+    'Off-season cardio is a ride along the river.',
+  '입장할 때 쓰는 신사 모자. 존재감으로 자리를 잡는다.':
+    "A gentleman's hat for the walk-in. Presence alone claims the spot.",
+  '포장지 같은 갈색 종이. 첫 자취방 감성.':
+    'Brown paper like packing wrap. First-apartment vibes.',
+  '스포츠면만 골라 붙였다. 언젠가 내 기사도.':
+    'Only the sports pages. Someday your own headline.',
+  '맑은 하늘에 흰 도트. 기분이 가벼워진다.':
+    'White dots on a clear sky. Your mood lifts.',
+  '공구 대신 농구공을 거는 차고 감성.':
+    'Garage vibes, with basketballs instead of tools.',
+  '주황과 네이비 사선. 매일이 홈 경기 날.':
+    'Orange and navy stripes. Every day is a home game.',
+  '페인트 칠한 블록 벽. 체육관 냄새가 난다.':
+    'A painted block wall. It smells like the gym.',
+  '초록이 있으면 회복이 빠르다는 소문.':
+    'Word is you recover faster with some green around.',
+  '밤에 경기 영상을 볼 때 켜는 노란 불빛.':
+    'The warm light you switch on for late-night film.',
+  '첫 트로피 자리를 미리 비워 둔다.': 'A spot saved for your first trophy.',
+  '벽에 단 작은 림. 자기 전 마지막 슛 100개.':
+    'A little rim on the wall. A hundred last shots before bed.',
+  '75인치 화면으로 상대 팀 경기를 돌려 본다.':
+    "Replay the other team's games on a 75-inch screen.",
+  '경기 다음 날 10분. 다리가 다시 가벼워진다.':
+    'Ten minutes the day after a game. Your legs feel light again.',
   '챙을 꾹 눌러쓰면 수비 집중력이 올라간다.':
     'Pull the brim down tight and your defensive focus sharpens.',
   '노이즈 캔슬링 ON. 코트 위 시야가 넓어진다.':
