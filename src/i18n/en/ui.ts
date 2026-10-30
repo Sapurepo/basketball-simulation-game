@@ -866,6 +866,8 @@ const text: Record<string, string> = {
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.4.0 ──
   '리바운드 종목에 「박스아웃 리바운드」, 운동능력 종목에 「속공 레이스」 훈련이 추가돼 6종목 12가지가 됐어요. 박스아웃은 버튼을 누르고 버티다 공이 떨어질 때 떼서 점프하고, 속공은 왼발·오른발을 번갈아 눌러 수비보다 먼저 레이업 지점에 닿아요.':
+  '은퇴식을 「건너뛰기」로 바로 마지막 장면까지 넘길 수 있어요.':
+    'The retirement ceremony has a "Skip" button that jumps straight to the final scene.',
     'Rebounding gains "Box-out rebound" and athleticism gains "Fast-break race", making 12 drills in 6 categories. Box out by holding the button and releasing to jump as the ball drops; in the race, alternate left and right foot to beat the defender to the layup spot.',
   '명예의 전당에서 KBL 리그를 고르면 파이널 MVP 대신 KBL 챔피언결정전 우승 횟수로 정렬하고, 목록·베스트 5·상세에도 우승 횟수가 보여요. 이전에 등록된 기록은 우승 횟수가 없어 이 정렬에서는 뒤로 가요.':
     'Choosing the KBL league in the Hall of Fame sorts by KBL championship titles instead of Finals MVPs, and the list, Best 5 and details show title counts. Earlier entries have no title count and sort last here.',

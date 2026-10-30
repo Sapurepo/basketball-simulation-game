@@ -242,8 +242,13 @@ function Ceremony({
     >
       <div className="retire-bar">
         <span>{tr('은퇴식')} · CEREMONY</span>
-        <span>
+        <span className="row nowrap">
           {step + 1} / {BEATS.length}
+          {step < last && (
+            <button className="ghost mini" onClick={() => setStep(last)}>
+              {tr('건너뛰기')} ▶
+            </button>
+          )}
         </span>
       </div>
       <RetireScene
