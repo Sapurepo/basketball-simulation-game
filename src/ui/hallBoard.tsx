@@ -26,7 +26,7 @@ export function HallItem({
   look,
   peakOvr,
   fmvp,
-  kblTitles,
+  kblFmvp,
   titles = false,
   best,
   detail,
@@ -38,8 +38,8 @@ export function HallItem({
   look?: Look
   peakOvr: number
   fmvp: number
-  kblTitles?: number | null
-  // 트로피 칸에 파이널 MVP 대신 KBL 챔피언결정전 우승을 보여 준다 (KBL 필터)
+  kblFmvp?: number | null
+  // 트로피 칸에 NBA 파이널 MVP 대신 KBL 챔피언결정전 MVP 를 보여 준다 (KBL 필터)
   titles?: boolean
   best?: boolean
   // 이름 아래 보조 정보(트로피·시즌·은퇴 연도). 항목 하나가 두 줄로 갈라지지 않게 항목 단위로 줄바꿈
@@ -87,10 +87,10 @@ export function HallItem({
           <img
             className="px"
             src={iconURL('trophy')}
-            alt={tr(titles ? 'KBL 챔피언결정전 우승' : 'NBA 파이널 MVP')}
-            title={tr(titles ? 'KBL 챔피언결정전 우승' : 'NBA 파이널 MVP')}
+            alt={tr(titles ? 'KBL 챔피언결정전 MVP' : 'NBA 파이널 MVP')}
+            title={tr(titles ? 'KBL 챔피언결정전 MVP' : 'NBA 파이널 MVP')}
           />
-          {titles ? (kblTitles ?? '-') : fmvp}
+          {titles ? (kblFmvp ?? '-') : fmvp}
         </span>
         <span className="hall-top-ovr">
           OVR <b>{peakOvr}</b>
@@ -149,7 +149,7 @@ export function HallBoard({
       trophies: e.trophies,
       seasons: 0,
       retiredYear: e.year,
-      kblTitles: e.kblTitles ?? null,
+      kblFmvp: e.kblFmvp ?? null,
       earnings: e.earnings ?? null,
       minutes: e.minutes ?? null,
       pts: e.pts ?? null,

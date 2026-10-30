@@ -302,9 +302,10 @@ const text: Record<string, string> = {
   뒤로: 'Back',
   '최고 OVR순': 'By peak OVR',
   '파이널 MVP순': 'By Finals MVPs',
-  'KBL 우승순': 'By KBL titles',
-  'KBL 우승 {n}회': '{n} KBL titles',
-  'OVR {ovr} · KBL 우승 {n}': 'OVR {ovr} · KBL titles {n}',
+  'KBL 챔피언결정전 MVP순': 'By KBL Finals MVPs',
+  '챔결 MVP': 'KBL Finals MVP',
+  '챔결 MVP {n}회': '{n} KBL Finals MVPs',
+  'OVR {ovr} · 챔결 MVP {n}': 'OVR {ovr} · KBL Finals MVP {n}',
   '누르고 떼기': 'Hold & release',
   '타이밍 맞춰 누르기': 'Timed tap',
   '방향 고르기': 'Pick a side',
@@ -865,16 +866,16 @@ const text: Record<string, string> = {
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
   // ── 공지 1.4.0 ──
-  '리바운드 종목에 「박스아웃 리바운드」, 운동능력 종목에 「속공 레이스」 훈련이 추가돼 6종목 12가지가 됐어요. 박스아웃은 버튼을 누르고 버티다 공이 떨어질 때 떼서 점프하고, 속공은 왼발·오른발을 번갈아 눌러 수비보다 먼저 레이업 지점에 닿아요.':
   '은퇴식을 「건너뛰기」로 바로 마지막 장면까지 넘길 수 있어요.':
     'The retirement ceremony has a "Skip" button that jumps straight to the final scene.',
   '상점 아이템 효과 상한이 올라갔어요. 같은 능력치 버프는 합쳐서 +5, 성장 보너스는 합쳐서 +2.5까지 쌓여요.':
     'Shop item caps went up: buffs to one attribute add up to +5 and growth bonuses to +2.5.',
   '파이널 MVP 축하 카드의 문구와 트로피 배너가 연출이 끝난 뒤 반투명하게 남던 문제를 고쳤어요.':
     'Fixed the Finals MVP card text and trophy banner staying semi-transparent after the animation ended.',
+  '리바운드 종목에 「박스아웃 리바운드」, 운동능력 종목에 「속공 레이스」 훈련이 추가돼 6종목 12가지가 됐어요. 박스아웃은 버튼을 누르고 버티다 공이 떨어질 때 떼서 점프하고, 속공은 왼발·오른발을 번갈아 눌러 수비보다 먼저 레이업 지점에 닿아요.':
     'Rebounding gains "Box-out rebound" and athleticism gains "Fast-break race", making 12 drills in 6 categories. Box out by holding the button and releasing to jump as the ball drops; in the race, alternate left and right foot to beat the defender to the layup spot.',
-  '명예의 전당에서 KBL 리그를 고르면 파이널 MVP 대신 KBL 챔피언결정전 우승 횟수로 정렬하고, 목록·베스트 5·상세에도 우승 횟수가 보여요. 이전에 등록된 기록은 우승 횟수가 없어 이 정렬에서는 뒤로 가요.':
-    'Choosing the KBL league in the Hall of Fame sorts by KBL championship titles instead of Finals MVPs, and the list, Best 5 and details show title counts. Earlier entries have no title count and sort last here.',
+  '명예의 전당에서 KBL 리그를 고르면 NBA 파이널 MVP 대신 KBL 챔피언결정전 MVP 횟수로 정렬하고, 목록·베스트 5·상세에도 그 횟수가 보여요. 이전에 등록된 기록은 이 값이 없어 그 정렬에서는 뒤로 가요.':
+    'Choosing the KBL league in the Hall of Fame sorts by KBL Finals MVPs instead of NBA Finals MVPs, and the list, Best 5 and details show that count. Earlier entries have no value and sort last there.',
   '훈련에서 미들슛이 빠지고, 3점슛은 성공하면 슈팅이 +2 올라요. 훈련 카드에 성공 시 오르는 폭이 보여요.':
     'Mid-range drill is gone, and passing the three-point drill now gives Shooting +2. Drill cards show how much a pass raises.',
   '명예의 전당을 일간·주간·월간(한국 시간 기준 등록일)으로 볼 수 있어요. 첫 화면에는 오늘 등록된 기록이 보여요.':

@@ -14,7 +14,7 @@ export function BestFive({
 }: {
   rows: HallRow[]
   desc: string
-  // 이름판에 파이널 MVP 대신 KBL 챔피언결정전 우승 (KBL 필터)
+  // 이름판에 NBA 파이널 MVP 대신 KBL 챔피언결정전 MVP (KBL 필터)
   titles?: boolean
   onOpen: (r: HallRow) => void
 }) {
@@ -97,9 +97,9 @@ export function BestFive({
                   <b>{p.name}</b>
                   <small>
                     {titles
-                      ? tr('OVR {ovr} · KBL 우승 {n}', {
+                      ? tr('OVR {ovr} · 챔결 MVP {n}', {
                           ovr: p.peakOvr,
-                          n: p.kblTitles ?? '-',
+                          n: p.kblFmvp ?? '-',
                         })
                       : tr('OVR {ovr} · 파이널 MVP {n}', {
                           ovr: p.peakOvr,

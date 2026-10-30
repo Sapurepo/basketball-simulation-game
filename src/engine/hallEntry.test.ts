@@ -26,19 +26,19 @@ test('조작된 값과 부적절한 이름은 거부한다', () => {
   expect(bad({ peakOvr: 120 })).toBeTypeOf('string')
   expect(bad({ fmvp: p.seasons + 1 })).toBeTypeOf('string')
   expect(bad({ kbl: 1 })).toBeTypeOf('string')
-  expect(bad({ kblTitles: p.seasons + 1 })).toBeTypeOf('string')
+  expect(bad({ kblFmvp: p.seasons + 1 })).toBeTypeOf('string')
   // 1.4.0 전 번들(통산 기록 6개 필드 없음)은 새로고침 안내를 받는다
-  const { kbl, nba, earnings, minutes, pts, ast, kblTitles, ...old } = p
+  const { kbl, nba, earnings, minutes, pts, ast, kblFmvp, ...old } = p
   void [kbl, nba, earnings, minutes, pts, ast]
   expect(validateHall(old)).toBe(OUTDATED_CLIENT)
-  // KBL 우승 정렬 전 번들(kblTitles 없음)도 마찬가지
+  // KBL 챔결 MVP 정렬 전 번들(kblFmvp 없음)도 마찬가지
   expect(validateHall({ ...old, kbl, nba, earnings, minutes, pts, ast })).toBe(
     OUTDATED_CLIENT,
   )
-  expect(p.kblTitles).toBe(
-    s.history.filter((h) => h.awards.includes('KBL 챔피언결정전 우승')).length,
+  expect(p.kblFmvp).toBe(
+    s.history.filter((h) => h.awards.includes('KBL 챔피언결정전 MVP')).length,
   )
-  void kblTitles
+  void kblFmvp
   expect(bad({ earnings: -1 })).toBeTypeOf('string')
   expect(bad({ pts: p.seasons * 6000 + 1 })).toBeTypeOf('string')
   expect(bad({ id: 'x' })).toBeTypeOf('string')

@@ -6,12 +6,12 @@ import { tr } from '../i18n'
 
 // 공용 명예의 전당 API 조회 (functions/api/hall.ts)
 export type HallSort =
-  'ovr' | 'fmvp' | 'titles' | 'earnings' | 'minutes' | 'pts' | 'ast'
+  'ovr' | 'fmvp' | 'kfmvp' | 'earnings' | 'minutes' | 'pts' | 'ast'
 // [id, 정렬 이름, 칩에 쓰는 짧은 이름 — '정렬 기준' 라벨 아래 한 줄에 들어가게]
 export const SORTS: [HallSort, string, string][] = [
   ['ovr', '최고 OVR순', '최고 OVR'],
   ['fmvp', '파이널 MVP순', '파이널 MVP'],
-  ['titles', 'KBL 우승순', 'KBL 우승'],
+  ['kfmvp', 'KBL 챔피언결정전 MVP순', '챔결 MVP'],
   ['earnings', '수익순', '수익'],
   ['minutes', '출전시간순', '출전시간'],
   ['pts', '통산 득점순', '득점'],
@@ -28,10 +28,10 @@ export const LEAGUES: [HallLeague, string][] = [
 ]
 export const isHallLeague = (v: string | null): v is HallLeague =>
   LEAGUES.some(([id]) => id === v)
-// 리그에 맞는 정렬 칩: KBL 은 파이널 MVP 대신 챔피언결정전 우승, 나머지는 그 반대
+// 리그에 맞는 정렬 칩: KBL 은 NBA 파이널 MVP 대신 KBL 챔피언결정전 MVP, 나머지는 그 반대
 export const sortsFor = (league: HallLeague) =>
-  SORTS.filter(([id]) => id !== (league === 'KBL' ? 'fmvp' : 'titles'))
-// 목록 오른쪽 트로피 칸: KBL 필터면 챔피언결정전 우승, 아니면 NBA 파이널 MVP
+  SORTS.filter(([id]) => id !== (league === 'KBL' ? 'fmvp' : 'kfmvp'))
+// 목록 오른쪽 트로피 칸: KBL 필터면 KBL 챔피언결정전 MVP, 아니면 NBA 파이널 MVP
 export const showTitles = (league: HallLeague) => league === 'KBL'
 // 등록 기간 필터(KST 기준). 랭킹 화면 칩, 랜딩은 일간 고정
 export type { HallPeriod }
@@ -59,8 +59,8 @@ export interface HallRow {
   trophies: number
   seasons: number
   retiredYear: number
-  // KBL 챔피언결정전 우승. 이 정렬이 생기기 전 기록은 null
-  kblTitles: number | null
+  // KBL 챔피언결정전 MVP. 이 정렬이 생기기 전 기록은 null
+  kblFmvp: number | null
   // 통산 수입(만원)·출전시간·득점·어시스트. 정렬 다양화 전 기록은 null
   earnings: number | null
   minutes: number | null
@@ -104,8 +104,8 @@ const sortValue = (sort: HallSort, r: HallRow) =>
     ? r.peakOvr
     : sort === 'fmvp'
       ? r.fmvp
-      : sort === 'titles'
-        ? (r.kblTitles ?? -1)
+      : sort === 'kfmvp'
+        ? (r.kblFmvp ?? -1)
         : (r[sort] ?? -1)
 // 이 브라우저의 기록처럼 서버를 거치지 않는 목록을 같은 기준으로 정렬할 때
 export const compareRows = (sort: HallSort) => (a: HallRow, b: HallRow) =>
@@ -115,12 +115,12 @@ export const compareRows = (sort: HallSort) => (a: HallRow, b: HallRow) =>
 
 // 통산 기록 칸의 표시값. 없으면 undefined
 export function statText(
-  k: 'titles' | 'earnings' | 'minutes' | 'pts' | 'ast',
+  k: 'kfmvp' | 'earnings' | 'minutes' | 'pts' | 'ast',
   r: HallRow,
 ): string | undefined {
-  const v = k === 'titles' ? r.kblTitles : r[k]
+  const v = k === 'kfmvp' ? r.kblFmvp : r[k]
   if (v === null) return undefined
-  if (k === 'titles') return tr('KBL 우승 {n}회', { n: v })
+  if (k === 'kfmvp') return tr('챔결 MVP {n}회', { n: v })
   if (k === 'earnings') return formatMoney(v, 'KRW')
   if (k === 'minutes') return tr('{n}분', { n: v.toLocaleString() })
   return k === 'pts'
