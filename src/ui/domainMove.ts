@@ -44,6 +44,7 @@ export async function moveURL() {
     : `${SITE}/`
 }
 
+export const hasMove = () => location.hash.startsWith(PREFIX)
 // 새 주소: 해시로 넘어온 데이터를 저장하고 주소에서 지운다. 앱을 그리기 전에 한 번 부른다
 export async function receiveMove(
   check: (save: string) => void,
