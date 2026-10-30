@@ -58,22 +58,29 @@ const HAIR_STYLES: HairStyle[] = [
   'messy',
 ]
 const FACES: Face[] = ['fierce', 'calm', 'grin']
-const ACCESSORIES: Accessory[] = [
-  'wrist',
-  'knee',
-  'sleeve',
-  'headband',
-  'bandaid',
-  'glasses',
-  'cap',
-  'shades',
-  'chain',
-  'headphones',
-  'earbuds',
-  'goldShoes',
-  'undershirt',
-  'tights',
-]
+// 착용 가능한 액세서리 전부. Record 라 타입(types.ts Accessory)에 새로 생기면 여기서 컴파일이 깨진다
+const ACC_ALL: Record<Accessory, true> = {
+  wrist: true,
+  knee: true,
+  sleeve: true,
+  headband: true,
+  bandaid: true,
+  glasses: true,
+  cap: true,
+  shades: true,
+  chain: true,
+  headphones: true,
+  earbuds: true,
+  goldShoes: true,
+  undershirt: true,
+  beanie: true,
+  visor: true,
+  bucketHat: true,
+  truckerCap: true,
+  fedora: true,
+  tights: true,
+}
+const ACCESSORIES = Object.keys(ACC_ALL) as Accessory[]
 // ponytail: 짧은 금칙어 목록만 거른다. 우회 표기까지 막으려면 신고·삭제 운영이나 외부 필터가 필요
 const BANNED = ['시발', '씨발', '병신', '좆', '개새', '섹스', 'fuck', 'shit']
 
