@@ -58,6 +58,7 @@ Cloudflare Pages가 저장소를 직접 빌드한다. 게임은 정적 SPA이고
 ### 공용 명예의 전당 (D1 + Turnstile)
 
 - 스키마는 `migrations/` 에 둔다. 새 마이그레이션은 `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --remote` 로 운영 DB 에 적용한다.
+- **열을 추가하는 마이그레이션은 머지 전에 운영 DB 에 먼저 적용한다.** Pages 는 머지 즉시 빌드·배포하는데, 새 코드가 없는 열을 읽고 쓰면 조회·등록 API 가 모두 Cloudflare 1101(500) 로 죽는다 (2026-10-30 `0004` 누락으로 실제 장애). 미적용 목록은 `pnpm dlx wrangler d1 migrations list bench-to-mvp-hall --remote` 로 확인한다.
 - 로컬 확인: `pnpm build` → `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --local` → `pnpm dlx wrangler pages dev dist`. `.dev.vars` 에 `TURNSTILE_SECRET=1x0000000000000000000000000000000AA` (Cloudflare 테스트 키, 항상 통과)를 둔다. 로컬 호스트에서는 클라이언트도 테스트 사이트 키를 쓴다.
 - 미리보기 배포도 같은 D1 을 쓰므로, 미리보기에서 등록한 기록은 운영 명예의 전당에 그대로 남는다.
 - 기록 삭제 요청은 D1 콘솔에서 `DELETE FROM hall WHERE id = '...'` 로 처리한다.
