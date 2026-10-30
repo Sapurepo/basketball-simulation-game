@@ -5,13 +5,14 @@ import { tr } from '../i18n'
 
 // 공용 명예의 전당 API 조회 (functions/api/hall.ts)
 export type HallSort = 'ovr' | 'fmvp' | 'earnings' | 'minutes' | 'pts' | 'ast'
-export const SORTS: [HallSort, string][] = [
-  ['ovr', '최고 OVR순'],
-  ['fmvp', '파이널 MVP순'],
-  ['earnings', '수익순'],
-  ['minutes', '출전시간순'],
-  ['pts', '통산 득점순'],
-  ['ast', '통산 어시스트순'],
+// [id, 정렬 이름, 칩에 쓰는 짧은 이름 — '정렬 기준' 라벨 아래 한 줄에 들어가게]
+export const SORTS: [HallSort, string, string][] = [
+  ['ovr', '최고 OVR순', '최고 OVR'],
+  ['fmvp', '파이널 MVP순', '파이널 MVP'],
+  ['earnings', '수익순', '수익'],
+  ['minutes', '출전시간순', '출전시간'],
+  ['pts', '통산 득점순', '득점'],
+  ['ast', '통산 어시스트순', '어시스트'],
 ]
 export const isHallSort = (v: string | null): v is HallSort =>
   SORTS.some(([id]) => id === v)

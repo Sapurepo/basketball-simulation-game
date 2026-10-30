@@ -41,6 +41,13 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   const [sel, setSel] = useState<{ inBest: boolean; i: number }>()
   // 새로고침 버튼: 값을 올리면 같은 정렬로 다시 불러온다
   const [tick, setTick] = useState(0)
+  // 마지막으로 불러온 시각. 1분마다 다시 그려 'n분 전 갱신'을 맞춘다
+  const [loadedAt, setLoadedAt] = useState<number>()
+  const [now, setNow] = useState(Date.now)
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000)
+    return () => clearInterval(id)
+  }, [])
   // 다시 불러오는 동안은 이전 오류 문구 대신 '불러오는 중…'
   const refresh = () => {
     setData(undefined)
@@ -70,7 +77,11 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
       fetchHall(sort, { league }),
       fetchHall(sort, { best: true, league }),
     ])
-      .then(([top, best]) => alive && (setData({ top, best }), setError(false)))
+      .then(
+        ([top, best]) =>
+          alive &&
+          (setData({ top, best }), setError(false), setLoadedAt(Date.now())),
+      )
       .catch(() => alive && setError(true))
     return () => {
       alive = false
@@ -78,6 +89,15 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   }, [sort, league, tick])
 
   const sortLabel = tr(SORTS.find(([id]) => id === sort)![1])
+  const scope = league === 'all' ? tr('전체 리그') : league
+  const ago =
+    loadedAt && Math.floor((Math.max(now, loadedAt) - loadedAt) / 60_000)
+  const updated =
+    loadedAt === undefined
+      ? ''
+      : ago
+        ? tr('{n}분 전 갱신', { n: ago })
+        : tr('방금 갱신')
   const best = BEST_ORDER.flat()
     .map((pos) => data?.best.rows.find((r) => r.position === pos))
     .filter((r): r is HallRow => !!r)
@@ -91,47 +111,84 @@ export function RankingScreen({ onBack }: { onBack: () => void }) {
   return (
     <main className="ranking">
       <header className="ranking-head">
-        <h1>{tr('명예의 전당')}</h1>
-        <div className="row ranking-btns">
+        <button className="ghost ranking-back" onClick={onBack}>
+          ◀ {tr('뒤로')}
+        </button>
+        {/* 불러오는 동안에도 자리를 비워 둔다. 빠지면 제목 줄이 들썩인다 */}
+        <div className="ranking-title">
+          <h1>{tr('명예의 전당')}</h1>
+          <span className="ranking-count">
+            {data?.top.total
+              ? tr('총 {n}명 등록', { n: data.top.total.toLocaleString() })
+              : '\u00a0'}
+          </span>
+        </div>
+      </header>
+
+      {/* 스크롤해도 위에 붙어 있는 보기 설정 */}
+      <div
+        className="ranking-bar"
+        role="group"
+        aria-label={tr('랭킹 보기 설정')}
+      >
+        <div className="ranking-field">
+          <span id="ranking-league">{tr('리그')}</span>
+          <div
+            className="chips"
+            role="radiogroup"
+            aria-labelledby="ranking-league"
+          >
+            {LEAGUES.map(([id, label]) => (
+              <button
+                key={id}
+                role="radio"
+                aria-checked={league === id}
+                className={league === id ? 'chip on' : 'chip'}
+                onClick={() => pick({ league: id })}
+              >
+                {tr(label)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="ranking-field">
+          <span id="ranking-sort">{tr('정렬 기준')}</span>
+          <div
+            className="chips"
+            role="radiogroup"
+            aria-labelledby="ranking-sort"
+          >
+            {SORTS.map(([id, label, chip]) => (
+              <button
+                key={id}
+                aria-label={tr(label)}
+                role="radio"
+                aria-checked={sort === id}
+                className={sort === id ? 'chip on' : 'chip'}
+                onClick={() => pick({ sort: id })}
+              >
+                {tr(chip)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="ranking-meta">
+        <b>
+          {scope} · {sortLabel}
+        </b>
+        <div className="row nowrap">
+          <span>{updated}</span>
           <button
             className="ghost"
             onClick={refresh}
             disabled={!data && !error}
           >
-            {tr('새로고침')}
-          </button>
-          <button className="ghost" onClick={onBack}>
-            {tr('뒤로')}
+            ↻ {tr('새로고침')}
           </button>
         </div>
-        {/* 불러오는 동안에도 줄을 비워 둔다. 줄이 빠지면 헤더 높이가 줄어 아래 목록이 들썩인다 */}
-        <p className="ranking-count">
-          {data?.top.total
-            ? tr('총 {n}명 등록', { n: data.top.total.toLocaleString() })
-            : '\u00a0'}
-        </p>
-        <div className="chips">
-          {SORTS.map(([id, label]) => (
-            <button
-              key={id}
-              className={sort === id ? 'chip on' : 'chip'}
-              onClick={() => pick({ sort: id })}
-            >
-              {tr(label)}
-            </button>
-          ))}
-          <span className="chips-gap" aria-hidden="true" />
-          {LEAGUES.map(([id, label]) => (
-            <button
-              key={id}
-              className={league === id ? 'chip on' : 'chip'}
-              onClick={() => pick({ league: id })}
-            >
-              {tr(label)}
-            </button>
-          ))}
-        </div>
-      </header>
+      </div>
 
       {error ? (
         <p className="ranking-note">

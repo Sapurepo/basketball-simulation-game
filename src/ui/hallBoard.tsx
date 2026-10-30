@@ -163,8 +163,13 @@ export function HallBoard({
   return (
     <section className="hall-top hall-board">
       <div className="hall-top-bar">
-        <div className="row nowrap">
+        <div className="ranking-title">
           <h2>{tr('명예의 전당')}</h2>
+          {tab === 'all' && !!all?.total && (
+            <span className="ranking-count">
+              {tr('총 {n}명 등록', { n: all.total.toLocaleString() })}
+            </span>
+          )}
         </div>
         <div className="tabs" role="tablist">
           {(
@@ -184,16 +189,26 @@ export function HallBoard({
           ))}
         </div>
       </div>
-      <div className="chips">
-        {SORTS.map(([id, label]) => (
-          <button
-            key={id}
-            className={sort === id ? 'chip on' : 'chip'}
-            onClick={() => pickSort(id)}
-          >
-            {tr(label)}
-          </button>
-        ))}
+      <div className="ranking-field">
+        <span id="hall-board-sort">{tr('정렬 기준')}</span>
+        <div
+          className="chips"
+          role="radiogroup"
+          aria-labelledby="hall-board-sort"
+        >
+          {SORTS.map(([id, label, chip]) => (
+            <button
+              key={id}
+              aria-label={tr(label)}
+              role="radio"
+              aria-checked={sort === id}
+              className={sort === id ? 'chip on' : 'chip'}
+              onClick={() => pickSort(id)}
+            >
+              {tr(chip)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {tab === 'all' ? (
@@ -245,7 +260,6 @@ export function HallBoard({
       {tab === 'all' && (
         <button className="primary hall-board-more" onClick={onOpenRanking}>
           {tr('전체 랭킹 보기')}
-          {all ? ` ${tr('({n}명)', { n: all.total })}` : ''}
         </button>
       )}
 
