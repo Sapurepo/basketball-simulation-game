@@ -725,6 +725,14 @@ select {
   font-weight: 700;
 }
 
+/* 노력치: 라벨 아래 작은 글씨 */
+.bars li > span .ev {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
 .bars b {
   text-align: right;
   font: 400 14px var(--font-pixel);

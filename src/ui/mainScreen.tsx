@@ -8,7 +8,6 @@ import {
   ATTR_LABELS,
   overall,
   POSITION_LABELS,
-  potentialGrade,
 } from '../engine/player'
 import { clamp } from '../engine/rng'
 import type {
@@ -310,7 +309,6 @@ export function MainScreen({
               onClick={() => setEditNum(true)}
             />
             <Plate label={tr('스타일')} v={tr(p.style)} />
-            <Plate label={tr('잠재력')} v={potentialGrade(p.potential)} />
             <Plate label={tr('병역')} v={serviceLabel(state.service)} />
           </div>
           {state.contract && (
@@ -334,6 +332,7 @@ export function MainScreen({
             keys={ATTR_KEYS}
             labels={ATTR_LABELS}
             delta={delta ?? undefined}
+            ev={p.ev}
           />
           <div className="cmds">
             {/* 남은 훈련이 있으면 대각선으로 나눠 오른쪽에 훈련하기 */}

@@ -9,7 +9,7 @@ import {
   DRILLS,
 } from '../engine/events'
 import { availableDrills, playDrill } from '../engine/game'
-import { ATTR_LABELS } from '../engine/player'
+import { ATTR_LABELS, EV_MAX } from '../engine/player'
 import type { DrillKind, GameState } from '../engine/types'
 import { T, tr } from '../i18n'
 import { CTL_LABEL } from './drillEngine'
@@ -173,6 +173,12 @@ export function TrainingPanel({
                         {tr(ATTR_LABELS[d.attr])}{' '}
                         {Math.round(state.player.attrs[d.attr])}
                       </span>
+                      <span className="tr-chip">
+                        {tr('노력치 {n}/{max}', {
+                          n: state.player.ev[d.attr] ?? 0,
+                          max: EV_MAX,
+                        })}
+                      </span>
                     </span>
                   </div>
                   {isDone ? (
@@ -239,8 +245,9 @@ function ResultView({
         need: DRILL_NEED,
       })
     : after > before
-      ? tr('{attr} 능력치가 1 올랐어요. 다음 시즌 경기에 바로 반영돼요.', {
+      ? tr('{attr} 능력치가 {n} 올랐어요. 다음 시즌 경기에 바로 반영돼요.', {
           attr,
+          n: after - before,
         })
       : tr('{attr} 이미 최고치예요', { attr })
   const results = Array.from({ length: DRILL_REPS }, (_, i) => i < view.made)

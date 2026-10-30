@@ -131,7 +131,6 @@ const text: Record<string, string> = {
   체중: 'Weight',
   등번호: 'Number',
   스타일: 'Style',
-  잠재력: 'Potential',
   병역: 'Service',
   '{team} 계약, 연봉 {money}': '{team} contract, {money}/yr',
   '{team} 투웨이 계약, 연봉 {money}': '{team} two-way contract, {money}/yr',
@@ -227,10 +226,9 @@ const text: Record<string, string> = {
   포지션: 'Position',
   '플레이 스타일': 'Play style',
   고등학교: 'High school',
-  '다시 뽑기': 'Reroll',
+  '능력치 재분배': 'Redistribute',
   몸무게: 'Weight',
   오버롤: 'Overall',
-  '잠재력 등급': 'Potential grade',
   '남은 포인트': 'Points left',
   '능력치는 {min}~{max} 사이에서 총합 {total} 포인트를 나눠 가져요.':
     'Attributes range from {min} to {max} and share {total} points in total.',
@@ -359,8 +357,8 @@ const text: Record<string, string> = {
   페이크: 'Fake',
   '왼쪽 동료': 'Left teammate',
   '오른쪽 동료': 'Right teammate',
-  '{attr} 능력치가 1 올랐어요. 다음 시즌 경기에 바로 반영돼요.':
-    '{attr} went up by 1. It counts from next season.',
+  '{attr} 능력치가 {n} 올랐어요. 다음 시즌 경기에 바로 반영돼요.':
+    '{attr} went up by {n}. It counts from next season.',
   '{need}개 이상 성공해야 능력치가 올라요. 감각은 익혔어요.':
     'You need {need} or more to raise the attribute. Good practice anyway.',
   '{n}개 중': 'out of {n}',
@@ -476,6 +474,9 @@ const text: Record<string, string> = {
   '종류마다 오프시즌에 한 번, {reps}개 중 6개 이상 성공하면 능력치 +1.':
     'Once per drill each offseason. Make 6 of {reps} for +1 to the attribute.',
   '이번 오프시즌 완료': 'Done this offseason',
+  노력치: 'Effort',
+  '노력치 {n}': 'Effort {n}',
+  '노력치 {n}/{max}': 'Effort {n}/{max}',
   '코치에게 맡기기 · {attr}': 'Let the coach run it · {attr}',
   '{attr} 능력치': '{attr} attribute',
   '훈련 결과': 'Drill results',
