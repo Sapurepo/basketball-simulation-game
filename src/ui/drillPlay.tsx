@@ -7,8 +7,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { DRILL_CATS, DRILL_REPS, DRILLS, type DrillCtl } from '../engine/events'
-import { ATTR_LABELS } from '../engine/player'
+import { DRILL_REPS, DRILLS, type DrillCtl } from '../engine/events'
 import type { DrillKind, Look } from '../engine/types'
 import { tr } from '../i18n'
 import {
@@ -147,7 +146,6 @@ export function DrillPlay({
           ? 'shoot'
           : kind
   const side = kind === 'react'
-  const catLabel = DRILL_CATS.find(([c]) => c === d.cat)![1]
   const lift: LiftKit = {
     skin: SKINS[look?.skin ?? 1],
     hair: look?.hair ?? '#2a2324',
@@ -208,12 +206,6 @@ export function DrillPlay({
   return (
     <div className="drill">
       <div className="tr-head">
-        <div>
-          <p className="tr-eyebrow">
-            {tr(catLabel)} · {tr(ATTR_LABELS[d.attr])} {skill}
-          </p>
-          <h3>{tr(d.title)}</h3>
-        </div>
         <span className="tr-rep">
           {cur} / {DRILL_REPS}
         </span>

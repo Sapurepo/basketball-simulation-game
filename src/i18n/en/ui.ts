@@ -385,7 +385,6 @@ const text: Record<string, string> = {
     'All training for this offseason is done. It reopens when you play the season.',
   '최고 {s}초': 'Best {s}s',
   '코치에게 맡기기': 'Let the coach run it',
-  '통과!': 'Passed!',
   '훈련 종목': 'Training categories',
   '훈련마다 오프시즌에 한 번, {reps}개 중 {need}개 이상 성공하면 능력치 +1. 이번 오프시즌에는 최대 {max}개까지 할 수 있어요.':
     'Each drill once per offseason; make {need} of {reps} for +1 to the attribute. Up to {max} drills this offseason.',

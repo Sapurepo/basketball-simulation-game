@@ -126,12 +126,7 @@ export function TrainingPanel({
       )}
 
       {view.at === 'result' && (
-        <ResultView
-          view={view}
-          next={nextOf(view.kind)}
-          onBack={back}
-          onNext={start}
-        />
+        <ResultView view={view} next={nextOf(view.kind)} onNext={start} />
       )}
 
       {view.at === 'list' && (
@@ -175,7 +170,8 @@ export function TrainingPanel({
                         {tr(CTL_LABEL[d.ctl])}
                       </span>
                       <span className="tr-chip">
-                        {tr(ATTR_LABELS[d.attr])} {state.player.attrs[d.attr]}
+                        {tr(ATTR_LABELS[d.attr])}{' '}
+                        {Math.round(state.player.attrs[d.attr])}
                       </span>
                     </span>
                   </div>
@@ -225,23 +221,24 @@ export function TrainingPanel({
 function ResultView({
   view,
   next,
-  onBack,
   onNext,
 }: {
   view: Extract<View, { at: 'result' }>
   next: DrillKind | null
-  onBack: () => void
   onNext: (k: DrillKind) => void
 }) {
   const d = DRILLS[view.kind]
   const pass = view.made >= DRILL_NEED
+  // 능력치는 소수로 쌓이므로 화면(AttrBars)처럼 반올림해 보여 준다
+  const before = Math.round(view.before)
+  const after = Math.round(view.after)
   const attr = T(ATTR_LABELS[d.attr])
   const attrLabel = tr(ATTR_LABELS[d.attr])
   const msg = !pass
     ? tr('{need}개 이상 성공해야 능력치가 올라요. 감각은 익혔어요.', {
         need: DRILL_NEED,
       })
-    : view.after > view.before
+    : after > before
       ? tr('{attr} 능력치가 1 올랐어요. 다음 시즌 경기에 바로 반영돼요.', {
           attr,
         })
@@ -257,30 +254,27 @@ function ResultView({
         <span>{tr('{n}개 중', { n: DRILL_REPS })}</span>
         <b>{view.made}</b>
         <span>{tr('개 성공')}</span>
-        {pass && <span className="tr-stamp">{tr('통과!')}</span>}
       </div>
       <DrillDots results={results} />
       <div className="tr-attr">
         <span>{attrLabel}</span>
-        <b>{view.before}</b>
-        {view.after > view.before && (
+        <b>{before}</b>
+        {after > before && (
           <>
             <span>→</span>
-            <b className="up">{view.after}</b>
+            <b className="up">{after}</b>
           </>
         )}
       </div>
       <p className="muted tr-msg">{msg}</p>
-      <div className="row tr-result-btns">
-        <button className="ghost" onClick={onBack}>
-          {tr('목록으로')}
-        </button>
-        {next && (
+      {/* 목록으로는 머리글 버튼 하나만 둔다 */}
+      {next && (
+        <div className="row tr-result-btns">
           <button className="primary" onClick={() => onNext(next)}>
             {tr('다음 · {name} ▶', { name: T(DRILLS[next].title) })}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

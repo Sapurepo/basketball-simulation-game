@@ -2203,16 +2203,15 @@ tr.me td {
   background: var(--muted);
 }
 
-/* 플레이: 머리글 + 무대 */
+/* 플레이: 머리글(진행 수) + 무대 */
 .tr-head {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-end;
   gap: 8px;
 }
 
-.tr-head h3,
 .tr-result h3 {
   margin: 0;
   font: 22px/1.2 var(--font-pixel);
@@ -2799,12 +2798,11 @@ tr.me td {
 }
 
 .tr-score {
-  position: relative;
   display: grid;
   justify-items: center;
   gap: 6px;
   min-width: 200px;
-  margin: 3px 30px 3px 3px;
+  margin: 3px;
   padding: 16px 28px 14px;
   background: var(--ink);
   color: var(--panel-hi);
@@ -2821,21 +2819,6 @@ tr.me td {
 .tr-score b {
   font: 56px/1 var(--font-pixel);
   color: var(--gold);
-}
-
-.tr-stamp {
-  position: absolute;
-  right: -30px;
-  top: -14px;
-  padding: 6px 12px 5px;
-  background: var(--gold);
-  color: var(--ink);
-  font: 15px var(--font-pixel);
-  box-shadow:
-    0 0 0 3px var(--ink),
-    inset 0 3px 0 0 var(--gold-hi),
-    inset 0 -4px 0 0 var(--gold-lo);
-  animation: tr-stamp 0.36s steps(5) 0.3s both;
 }
 
 .tr-result .shots {
@@ -2917,27 +2900,11 @@ tr.me td {
   }
 }
 
-@keyframes tr-stamp {
-  0% {
-    opacity: 0;
-    transform: rotate(-10deg) scale(1.9);
-  }
-  60% {
-    opacity: 1;
-    transform: rotate(2deg) scale(0.94);
-  }
-  100% {
-    opacity: 1;
-    transform: rotate(-4deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .tr-bubble,
   .tr-stick,
   .tr-call,
   .tr-result,
-  .tr-stamp,
   .tr-attr b.up {
     animation: none;
   }
