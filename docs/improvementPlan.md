@@ -43,7 +43,7 @@
 - [x] `HallPlayerDialog` 에 통산 4칸(수입·출전·득점·어시스트) 2×2 — 값이 있을 때만
 - [x] 내 기록(`save.ts` `HallEntry`)도 같은 4개 필드 저장(이전 기록은 optional)
 - [x] `hallEntry.test.ts` 검증 보강. 마이그레이션·정렬·필터 SQL 은 로컬 sqlite3 로 확인
-- [ ] **배포 전** 운영 D1 에 `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --remote` (README 참고). 적용 전에 새 코드가 배포되면 등록 INSERT 가 열 없음으로 실패한다
+- [x] **배포 전** 운영 D1 에 `pnpm dlx wrangler d1 migrations apply bench-to-mvp-hall --remote` (README 참고). 적용 전에 새 코드가 배포되면 등록 INSERT 가 열 없음으로 실패한다 → 2026-10-30 적용 완료. `d1_migrations` 가 비어 있어 0001(전부 IF NOT EXISTS, 변화 없음)·0002 가 함께 적용됐고 `hall` 열 17개 확인
 - [x] 배포 뒤에도 열어 둔 옛 탭은 통산 기록 6개 필드 없이 등록을 보내 `리그 오류` 로 거부된다 → `validateHall` 이 필드 자체가 없으면 "게임이 업데이트됐어요. 새로고침한 뒤 다시 등록해 주세요" 를 돌려준다 (2026-10-30)
 
 **결정 ①** (2026-10-29) 리그는 AND — KBL·NBA 둘 다 뛸 수 있으므로 각각 한 시즌이라도 뛰었으면 양쪽 필터에 다 나온다. `kbl`·`nba` 두 열.
