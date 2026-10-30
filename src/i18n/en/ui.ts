@@ -817,6 +817,25 @@ const text: Record<string, string> = {
   '2026년 10월 28일': 'October 28, 2026',
   '2026년 10월 기준 · 코드와 같은 수치':
     'As of October 2026 · same numbers as the code',
+  // ── 공지 1.4.0 ──
+  '훈련이 6종목 11가지 미니게임으로 늘었어요. 오프시즌마다 최대 4개까지 할 수 있고, 코치에게 맡기면 바로 결과가 나와요.':
+    'Training now has 11 mini-games across 6 categories. Do up to 4 per offseason, or let the coach run it for an instant result.',
+  '훈련을 하면 노력치가 쌓여요. 노력치가 많은 능력치로 시즌 성장이 더 많이 몰려요.':
+    'Training builds effort points. Season growth leans toward the attributes with more effort.',
+  '잠재력 등급이 화면에서 사라졌어요. 등급은 S부터 D까지 똑같은 확률로 정해지고, 초반 성장 속도로 짐작할 수 있어요.':
+    'Potential grades are no longer shown. Grades S to D are now equally likely, and your early growth hints at it.',
+  '선수마다 숨은 성장 기질이 있어요. 천재형은 훈련을 안 하면 성장이 둔해지고, 노력형은 훈련할수록 더 크게 성장해요.':
+    'Every player has a hidden growth trait. Gifted players slow down without training, while steady players grow more the more they train.',
+  '스피드가 속공과 돌파 득점에, 운동능력이 리바운드·블록·출전시간·부상 확률에 영향을 줘요.':
+    'Speed now affects fast breaks and drives; athleticism affects rebounds, blocks, minutes and injury risk.',
+  '상점에 훈련용품·모자·저가 벽지·가구가 들어와 고교·대학 때도 살 게 있어요. 아이템 효과에는 상한이 있고, 모자는 쓴 것만 효과가 나요.':
+    "The shop adds training gear, hats, budget wallpapers and furniture, so there's something to buy even in high school and college. Item effects are capped, and only the hat you wear counts.",
+  '명예의 전당을 오버롤·파이널 MVP·수입·출전·득점·어시스트로 정렬하고 KBL·NBA로 걸러 볼 수 있어요.':
+    'Sort the Hall of Fame by overall, Finals MVPs, earnings, minutes, points or assists, and filter by KBL or NBA.',
+  '경기 중계가 끝나기 전에 결과가 비치던 문제를 고쳤고, 중계 박스스코어에 출전시간이 보여요.':
+    'Results no longer leak before a broadcast ends, and the live box score shows minutes played.',
+  '선수 생성의 「다시 뽑기」가 「능력치 재분배」로 바뀌었어요.':
+    "'Reroll' on the create screen is now 'Redistribute'.",
   // ── 공지 1.3.0 ──
   '경기 중계가 새로워졌어요. 스코어보드에서 점수·경기 시계·쿼터별 점수를 보며 슛 시도와 결과를 차례로 볼 수 있어요.':
     'Game broadcasts are redesigned. Follow the score, game clock and quarter scores on the scoreboard as each shot is taken and lands.',
